@@ -6,6 +6,6 @@
 
 <suppressions>
     <!-- Don't require javadoc in tests. -->
-    <suppress checks="Javadoc.*|MagicNumber|VisibilityModifier"
+    <suppress checks="Javadoc.*|MagicNumber|VisibilityModifier|DesignForExtension"
               files="(Test.*\.java)|(.*Test\.java)$"/>
 </suppressions>

@@ -41,6 +41,9 @@ dependencies {
     compile 'ch.qos.logback:logback-core:1.1.8'
     compile 'org.codehaus.groovy:groovy:2.4.+'
 
+    // Jetty.
+    compile 'org.eclipse.jetty:jetty-server:9.4.+'
+
     // Test dependencies.
     // JUnit and matchers.
     testCompile 'org.hamcrest:hamcrest-all:1.3'

@@ -1,11 +1,14 @@
 package net.cmpsb.cacofony;
 
+import net.cmpsb.cacofony.di.DefaultDependencyResolver;
+import net.cmpsb.cacofony.di.DependencyResolver;
+
 /**
  * The server's default entry point.
  *
  * @author Luc Everse
  */
-public class Main {
+public final class Main {
 
     /**
      * Don't instantiate.
@@ -21,6 +24,8 @@ public class Main {
      * @param args any command line arguments
      */
     public static void main(final String[] args) {
-        Server server = new Server();
+        final DependencyResolver resolver = new DefaultDependencyResolver();
+
+        final Server server = new Server(resolver, null);
     }
 }

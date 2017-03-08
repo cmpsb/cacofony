@@ -1,0 +1,37 @@
+stages:
+  - test
+  - build
+  - deploy
+
+test:freebsd:
+  stage: test
+  tags:
+    - freebsd
+    - jdk8
+  script:
+    - ./gradlew check
+
+build:all:
+  stage: build
+  tags:
+    - jdk8
+  script:
+    - ./gradlew build
+  artifacts:
+    paths:
+      - Build/reports
+      - Build/libs/Server.jar
+    expire_in: 1 week
+
+pages:
+  stage: deploy
+  dependencies:
+    - 'build:all'
+  script:
+    - ./gradlew javadoc
+    - mkdir -p public/
+    - cp -r Build/{reports,docs/javadoc} public/
+  artifacts:
+    paths:
+    - public
+    expire_in: 1 week
