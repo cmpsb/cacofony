@@ -4,6 +4,8 @@ import net.cmpsb.cacofony.http.BadRoutePathException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -23,7 +25,7 @@ public class PathCompiler {
     /**
      * The default regex parameters should comply with.
      */
-    private static final String PARAMETER_VALUE_PATTERN = "[0-9a-zA-Z-\\._~]+";
+    public static final String PARAMETER_VALUE_PATTERN = "[0-9a-zA-Z-\\._~]+";
 
     /**
      * Compile the path into a regex pattern with named matches.
@@ -33,8 +35,11 @@ public class PathCompiler {
      *
      * @return the path compiled as a regex
      */
-    public Pattern compile(final String path, final Map<String, String> requirements) {
+    public CompiledPath compile(final String path, final Map<String, String> requirements) {
         final StringBuilder patternBuilder = new StringBuilder();
+
+        // All parguments present in the path.
+        final List<String> parameters = new ArrayList<>();
 
         // See if there's a parameter in there somewhere.
         int parameterStartIndex = path.indexOf('{');
@@ -62,6 +67,9 @@ public class PathCompiler {
                         "Route parameter \"" + parameter + "\" is not a valid parameter name."
                 );
             }
+
+            // Remember this argument.
+            parameters.add(parameter);
 
             // Get the requirements regex or use ".*" if there is none.
             final String regex = requirements.getOrDefault(parameter, PARAMETER_VALUE_PATTERN);
@@ -91,10 +99,12 @@ public class PathCompiler {
         // Ignore the query string and fragment identifier.
         patternBuilder.append("(?<QUERY>\\?[^#]*)?(?<FRAGMENT>#.*)?");
 
-        final String pattern = patternBuilder.toString();
+        final String regex = patternBuilder.toString();
 
-        logger.debug("Compiled \"{}\" -> \"{}\".", path, pattern);
+        logger.debug("Compiled \"{}\" -> \"{}\".", path, regex);
 
-        return Pattern.compile(pattern);
+        final Pattern pattern = Pattern.compile(regex);
+
+        return new CompiledPath(path, pattern, parameters);
     }
 }

@@ -1,5 +1,5 @@
 /**
- * (Almost) all things HTTP.
+ * HTTP classes.
  *
  * @author Luc Everse
  */

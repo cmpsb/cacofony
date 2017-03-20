@@ -32,13 +32,17 @@ public class PathCompilerTest {
     public void testNormalPath() {
         final String path = "/about";
 
-        final Pattern compiled = this.compiler.compile(path, this.requirements);
+        final CompiledPath compiled = this.compiler.compile(path, this.requirements);
 
-        final Matcher fullMatcher = compiled.matcher("/about");
-        final Matcher trailingSlashMatcher = compiled.matcher("/about/");
-        final Matcher queryMatcher = compiled.matcher("/about/?foo=bar");
-        final Matcher fragmentMatcher = compiled.matcher("/about#why-us");
-        final Matcher combinedMatcher = compiled.matcher("/about?bar=foo#why-us");
+        final Matcher fullMatcher = compiled.getPattern().matcher("/about");
+        final Matcher trailingSlashMatcher = compiled.getPattern().matcher("/about/");
+        final Matcher queryMatcher = compiled.getPattern().matcher("/about/?foo=bar");
+        final Matcher fragmentMatcher = compiled.getPattern().matcher("/about#why-us");
+        final Matcher combinedMatcher = compiled.getPattern().matcher("/about?bar=foo#why-us");
+
+        assertThat("The pattern compiled with no parameters.",
+                   compiled.getParameters().size(),
+                   is(0));
 
         assertThat("The path itself matches.",
                    fullMatcher.matches(),
@@ -65,11 +69,16 @@ public class PathCompilerTest {
     public void testParameterPath() {
         final String path = "/api/items/{groupid}/{itemid}/";
 
-        final Pattern compiled = this.compiler.compile(path, this.requirements);
+        final CompiledPath compiled = this.compiler.compile(path, this.requirements);
 
-        final Matcher shortSlashMatcher = compiled.matcher("/api/items/");
+        final Matcher shortSlashMatcher = compiled.getPattern().matcher("/api/items/");
 
-        final Matcher fullMatcher = compiled.matcher("/api/items/group1/item3?foo=bar");
+        final Matcher fullMatcher =
+                compiled.getPattern().matcher("/api/items/group1/item3?foo=bar");
+
+        assertThat("The path compiled with two parameters.",
+                   compiled.getParameters().size(),
+                   is(2));
 
         assertThat("The short form does not match.",
                    shortSlashMatcher.matches(),
@@ -102,11 +111,16 @@ public class PathCompilerTest {
         this.requirements.put("groupid", "[A-Z]+");
         this.requirements.put("itemid", "\\d+");
 
-        Pattern compiled = this.compiler.compile(path, this.requirements);
+        final CompiledPath compiled = this.compiler.compile(path, this.requirements);
+        final Pattern pattern = compiled.getPattern();
 
-        final Matcher correctMatcher = compiled.matcher("/api/items/GROUPONE/2233");
-        final Matcher badGroupMatcher = compiled.matcher("/api/items/GROUP1/2233");
-        final Matcher badItemMatcher  = compiled.matcher("/api/items/GROUPONE/twotwothreethree");
+        final Matcher correctMatcher = pattern.matcher("/api/items/GROUPONE/2233");
+        final Matcher badGroupMatcher = pattern.matcher("/api/items/GROUP1/2233");
+        final Matcher badItemMatcher  = pattern.matcher("/api/items/GROUPONE/twotwothreethree");
+
+        assertThat("The path compiled with two parameters.",
+                   compiled.getParameters().size(),
+                   is(2));
 
         assertThat("A correct route matches the requirements.",
                    correctMatcher.matches(),

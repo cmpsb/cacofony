@@ -1,6 +1,10 @@
 package net.cmpsb.cacofony;
 
+import fi.iki.elonen.NanoHTTPD;
 import net.cmpsb.cacofony.di.DependencyResolver;
+import net.cmpsb.cacofony.routing.Router;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The server's runtime environment.
@@ -12,25 +16,32 @@ import net.cmpsb.cacofony.di.DependencyResolver;
  * @author Luc Everse
  */
 public class Server {
+    private static final Logger logger = LoggerFactory.getLogger(Server.class);
+
     /**
      * The dependency resolver to use.
      */
     private final DependencyResolver dependencyResolver;
 
     /**
-     * The Jetty server the framework runs on.
+     * The handler processing incoming requests.
      */
-    private final org.eclipse.jetty.server.Server server;
+    private final Router handler;
+
+    /**
+     * The embedded server to run.
+     */
+    private final NanoHTTPD server;
 
     /**
      * Create a new server instance.
      *
      * @param dependencyResolver the dependency resolver to use
-     * @param server             the Jetty server the framework runs on
+     * @param server             the embedded web server to run
      */
-    public Server(final DependencyResolver dependencyResolver,
-                  final org.eclipse.jetty.server.Server server) {
+    public Server(final DependencyResolver dependencyResolver, final NanoHTTPD server) {
         this.dependencyResolver = dependencyResolver;
+        this.handler = this.dependencyResolver.get(Router.class);
         this.server = server;
     }
 }

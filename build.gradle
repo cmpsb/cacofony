@@ -41,8 +41,11 @@ dependencies {
     compile 'ch.qos.logback:logback-core:1.1.8'
     compile 'org.codehaus.groovy:groovy:2.4.+'
 
-    // Jetty.
-    compile 'org.eclipse.jetty:jetty-server:9.4.+'
+    // CSV parser.
+    compile 'com.opencsv:opencsv:3.9'
+
+    // JSON.
+    compile 'com.google.code.gson:gson:2.8.+'
 
     // Test dependencies.
     // JUnit and matchers.

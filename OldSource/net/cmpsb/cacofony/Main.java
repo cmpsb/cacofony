@@ -26,6 +26,10 @@ public final class Main {
     public static void main(final String[] args) {
         final DependencyResolver resolver = new DefaultDependencyResolver();
 
-        final Server server = new Server(resolver, null);
+        final org.eclipse.jetty.server.Server jetty = new org.eclipse.jetty.server.Server(8080);
+
+        final Server server = new Server(resolver, jetty);
+
+        server.start();
     }
 }

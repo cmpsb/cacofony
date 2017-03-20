@@ -4,13 +4,13 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.Test;
 
 /**
- * Tests for the routing entry model class.
+ * Tests for the compiled path container class.
  *
  * @author Luc Everse
  */
-public class RoutingEntryTest {
+public class CompiledPathTest {
     @Test
     public void testEquals() {
-        EqualsVerifier.forClass(RoutingEntry.class).verify();
+        EqualsVerifier.forClass(CompiledPath.class).verify();
     }
 }
