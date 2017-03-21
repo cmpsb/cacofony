@@ -1,6 +1,7 @@
 package net.cmpsb.cacofony.io;
 
 import net.cmpsb.cacofony.http.exception.BadRequestException;
+import net.cmpsb.cacofony.http.exception.SilentException;
 import net.cmpsb.cacofony.http.request.HeaderParser;
 import net.cmpsb.cacofony.http.request.MutableRequest;
 import org.junit.Before;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import static junit.framework.TestCase.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 
 /**
@@ -185,25 +187,87 @@ public class ChunkedInputStreamTest {
                    is(0));
     }
 
-    @Test
+    @Test(expected = SilentException.class)
     public void testTruncatedChunk() throws IOException {
         final ChunkedInputStream in = this.getStream(this.truncatedChunk);
 
         final byte[] data = new byte[10];
+        in.read(data);
+    }
 
-        for (int i = 0; i < data.length; ++i) {
-            data[i] = 0;
-        }
+    @Test
+    public void testSkipSingleChunk() throws IOException {
+        final ChunkedInputStream in = this.getStream(this.singleChunkPacket);
 
+        final long skipped = in.skip(4);
+        assertThat("4 bytes have been reported as skipped.",
+                   skipped,
+                   is(4L));
+
+        final byte[] data = new byte[4];
         final int length = in.read(data);
 
-        assertThat("The returned amount is the amount it could read before EOF.",
+        assertThat("4 bytes have been read.",
                    length,
-                   is(2));
+                   is(data.length));
 
-        assertThat("The correct data is returned.",
+        assertThat("The next read returns the correct data.",
                    data,
-                   is(equalTo(new byte[] {0, 1, 0, 0, 0, 0, 0, 0, 0, 0})));
+                   is(equalTo(new byte[] {4, 5, 6, 7})));
+    }
+
+    @Test
+    public void testSkipMultiChunk() throws IOException {
+        final ChunkedInputStream in = this.getStream(this.multiChunkPacket);
+
+        final long skipped = in.skip(6);
+        assertThat("6 bytes have been reported as skipped.",
+                skipped,
+                is(6L));
+
+        final byte[] data = new byte[4];
+        final int length = in.read(data);
+
+        assertThat("4 bytes have been read.",
+                length,
+                is(data.length));
+
+        assertThat("The next read returns the correct data.",
+                data,
+                is(equalTo(new byte[] {6, 7, 8, 9})));
+    }
+
+    @Test(expected = SilentException.class)
+    public void testSkipTruncatedPacket() throws IOException {
+        final ChunkedInputStream in = this.getStream(this.truncatedChunk);
+
+        final long skipped = in.skip(4);
+    }
+
+    @Test
+    public void testSkipBeyondPacket() throws IOException {
+        final ChunkedInputStream in = this.getStream(this.multiChunkPacket);
+
+        final long skipped = in.skip(Long.MAX_VALUE);
+        assertThat("At least 10 bytes have been skipped.",
+                   skipped,
+                   is(greaterThanOrEqualTo(10L)));
+
+        final int nextRead = in.read();
+        assertThat("The next read returns EOF.",
+                   nextRead,
+                   is(-1));
+    }
+
+    @Test
+    public void testSkipNegativeBytes() throws IOException {
+        final ChunkedInputStream in = this.getStream(this.singleChunkPacket);
+
+        final long skipped = in.skip(-10);
+
+        assertThat("The stream has skipped 0 bytes.",
+                   skipped,
+                   is(0L));
     }
 
     @Test(expected = BadRequestException.class)

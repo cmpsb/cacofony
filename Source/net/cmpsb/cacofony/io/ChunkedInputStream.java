@@ -1,6 +1,7 @@
 package net.cmpsb.cacofony.io;
 
 import net.cmpsb.cacofony.http.exception.BadRequestException;
+import net.cmpsb.cacofony.http.exception.SilentException;
 import net.cmpsb.cacofony.http.request.HeaderParser;
 import net.cmpsb.cacofony.http.request.MutableRequest;
 
@@ -195,10 +196,10 @@ public class ChunkedInputStream extends InputStream {
             // Read some of the bytes.
             final int justRead = this.source.read(buffer, offset + total, this.bytesLeftInChunk);
 
-            // If the source reports EOF, set it and return the total number of bytes read.
             if (justRead == -1) {
-                this.eof = true;
-                return total;
+                throw new SilentException(
+                        "Reached EOF while still expecting bytes from a chunked transfer."
+                );
             }
 
             // Update the totals and the number of bytes left to read.
@@ -211,10 +212,10 @@ public class ChunkedInputStream extends InputStream {
 
         final int justRead = this.source.read(buffer, offset + total, leftToRead);
 
-        // If the source reports EOF, set it and return the total number of bytes read.
-        if (justRead == -1) {
-            this.eof = true;
-            return total;
+        if (justRead < leftToRead) {
+            throw new SilentException(
+                    "Reached EOF while still expecting bytes from a chunked transfer."
+            );
         }
 
         // Update how many bytes are left for that chunk and the total amount of bytes read.
@@ -263,7 +264,7 @@ public class ChunkedInputStream extends InputStream {
     @Override
     public long skip(final long bytes) throws IOException {
         // Sanitize the length to skip.
-        if (bytes <= 0) {
+        if (bytes <= 0 || this.eof) {
             return 0;
         }
 
@@ -279,10 +280,10 @@ public class ChunkedInputStream extends InputStream {
                 final long skippedThisIteration =
                         this.source.skip(this.bytesLeftInChunk - skippedWithinChunk);
 
-                if (skippedThisIteration == -1) {
-                    // The chunk was truncated, stop skipping.
-                    this.eof = true;
-                    return bytesSkipped;
+                if (skippedThisIteration == 0) {
+                    throw new SilentException(
+                            "Reached EOF while still expecting bytes from a chunked transfer."
+                    );
                 }
 
                 skippedWithinChunk += skippedThisIteration;
@@ -291,16 +292,28 @@ public class ChunkedInputStream extends InputStream {
             bytesSkipped += this.bytesLeftInChunk;
             bytesLeftToSkip -= this.bytesLeftInChunk;
 
-            final int newSize = this.readChunk();
+            this.readChunk();
 
             // Stop skipping if we've reached EOF.
-            if (newSize == -1) {
+            if (this.eof) {
                 return bytesSkipped;
             }
 
         }
 
         this.bytesLeftInChunk -= bytesLeftToSkip;
+
+        long skippedInSource = 0;
+        while (skippedInSource < bytesLeftToSkip) {
+            final long thisIteration = this.source.skip(bytesLeftToSkip);
+            if (thisIteration == 0) {
+                throw new SilentException(
+                        "Reached EOF while still expecting bytes from a chunked transfer."
+                );
+            }
+
+            skippedInSource += thisIteration;
+        }
 
         // All requested bytes have been skipped.
         return bytes;
