@@ -3,7 +3,6 @@ package net.cmpsb.cacofony.http.request;
 import net.cmpsb.cacofony.io.HttpInputStream;
 import net.cmpsb.cacofony.io.StreamHelper;
 import org.junit.Test;
-import sun.misc.IOUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
