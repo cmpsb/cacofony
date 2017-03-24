@@ -18,12 +18,13 @@ import static org.hamcrest.Matchers.is;
 public class CombinedGzipChunkedRequestTest {
     @Test
     public void test() throws IOException {
-        final byte[] packet = {
-            'P', 'O', 'S', 'T', ' ', '/', ' ', 'H', 'T', 'T', 'P', '/', '1', '.', '1', '\r', '\n',
-            'T', 'r', 'a', 'n', 's', 'f', 'e', 'r', '-', 'E', 'n', 'c', 'o', 'd', 'i', 'n', 'g',
-                ':', 'g', 'z', 'i', 'p', ',', ' ', 'c', 'h', 'u', 'n', 'k', 'e', 'd', '\r', '\n',
-            '\r', '\n',
+        final StringBuilder builder = new StringBuilder();
+        builder.append("POST / HTTP/1.1\r\n");
+        builder.append("Transfer-Encoding: gzip, chunked\r\n");
+        builder.append("\r\n");
 
+        final byte[] header = builder.toString().getBytes(StandardCharsets.ISO_8859_1);
+        final byte[] body = {
             '5', '\r', '\n',
             0x1f, (byte) 0x8b, 0x08, 0x00, 0x3c,
             '\r', '\n',
@@ -44,6 +45,10 @@ public class CombinedGzipChunkedRequestTest {
             '0', '\r', '\n',
             '\r', '\n'
         };
+
+        final byte[] packet = new byte[header.length + body.length];
+        System.arraycopy(header, 0, packet, 0, header.length);
+        System.arraycopy(body, 0, packet, header.length, body.length);
 
         final HttpInputStream stream = this.getStream(packet);
 
