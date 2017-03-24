@@ -1,6 +1,8 @@
 package net.cmpsb.cacofony.http.request;
 
 import net.cmpsb.cacofony.http.Method;
+import net.cmpsb.cacofony.http.exception.HttpException;
+import net.cmpsb.cacofony.http.exception.NotImplementedException;
 import net.cmpsb.cacofony.io.HttpInputStream;
 import net.cmpsb.cacofony.io.StreamHelper;
 import org.junit.Before;
@@ -99,6 +101,41 @@ public class RequestParserTest {
         assertThat("The body length is correct.",
                 body,
                 is(equalTo("14616742")));
+    }
+
+    @Test(expected = NotImplementedException.class)
+    public void testUnknownEncoding() throws IOException {
+        final String packet = "HEAD / HTTP/1.1\r\nTransfer-Encoding: _invalid\r\n\r\n";
+        final HttpInputStream in = this.getStream(packet);
+        this.parser.parse(in);
+    }
+
+    @Test(expected = HttpException.class)
+    public void testBadRequestLine() throws IOException {
+        final String packet = "GET /";
+        final HttpInputStream in = this.getStream(packet);
+        this.parser.parse(in);
+    }
+
+    @Test(expected = HttpException.class)
+    public void testUnknownMethod() throws IOException {
+        final String packet = "FROBNICATE / HTTP/1.1\r\n\r\n";
+        final HttpInputStream in = this.getStream(packet);
+        this.parser.parse(in);
+    }
+
+    @Test(expected = HttpException.class)
+    public void testBadVersion() throws IOException {
+        final String packet = "GET / HTTPbis\r\n\r\n";
+        final HttpInputStream in = this.getStream(packet);
+        this.parser.parse(in);
+    }
+
+    @Test(expected = HttpException.class)
+    public void testFutureVersion() throws IOException {
+        final String packet = "GET / HTTP/99.99";
+        final HttpInputStream in = this.getStream(packet);
+        this.parser.parse(in);
     }
 
     private HttpInputStream getStream(final String packet) {
