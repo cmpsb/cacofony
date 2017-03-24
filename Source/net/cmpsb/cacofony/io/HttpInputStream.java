@@ -246,8 +246,8 @@ public class HttpInputStream extends LineAwareInputStream {
             // Return the total number of bytes read.
             return numReadDirectly + bytesInBuffer;
         } else {
-            this.available = -1;
             // The buffer has ended, return the bytes copied from the buffer.
+            this.available = -1;
             return bytesInBuffer;
         }
     }

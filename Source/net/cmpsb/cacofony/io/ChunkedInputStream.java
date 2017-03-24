@@ -89,12 +89,12 @@ public class ChunkedInputStream extends InputStream {
             return -1;
         }
 
-        --this.bytesLeftInChunk;
-
         // Read the next part of the chunk if there's not enough data left.
         if (this.bytesLeftInChunk <= 0) {
             this.readChunk();
         }
+
+        --this.bytesLeftInChunk;
 
         return this.source.read();
     }
@@ -342,7 +342,7 @@ public class ChunkedInputStream extends InputStream {
         try {
             size = Integer.parseInt(parts[0], 16);
         } catch (final NumberFormatException ex) {
-            throw new BadRequestException("Unparsable chunk size.");
+            throw new BadRequestException("Unparsable chunk size.", ex);
         }
 
         // Check for an invalid size.

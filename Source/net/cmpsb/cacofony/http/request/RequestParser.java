@@ -189,6 +189,8 @@ public class RequestParser {
             Collections.addAll(encodings, values);
         }
 
+        Collections.reverse(encodings);
+
         InputStream userStream = in;
 
         for (final String encoding : encodings) {
