@@ -1,6 +1,6 @@
 package net.cmpsb.cacofony.http.request;
 
-import net.cmpsb.cacofony.http.Method;
+import net.cmpsb.cacofony.mime.MimeType;
 
 import java.io.InputStream;
 import java.util.List;
@@ -13,11 +13,36 @@ import java.util.Map;
  */
 public interface Request {
     /**
+     * Returns the client's major HTTP version.
+     *
+     * @return the client's major HTTP version
+     */
+    int getMajorVersion();
+
+    /**
+     * Returns the client's minor HTTP version.
+     *
+     * @return the client's minor HTTP version
+     */
+    int getMinorVersion();
+
+    /**
      * Returns the HTTP method (verb) used for this request.
+     * <p>
+     * This may not be the actual method requested. For instance, a GET route may be issued
+     * if there is no explicit HEAD route. Use {@link #getRealMethod()} to get the method as sent
+     * by the client.
      *
      * @return the HTTP method for this request
      */
     Method getMethod();
+
+    /**
+     * Returns the actual HTTP method (verb) used for this request.
+     *
+     * @return the HTTP method for this request
+     */
+    Method getRealMethod();
 
     /**
      * Returns the path given in the request line.
@@ -120,6 +145,25 @@ public interface Request {
     String getHost();
 
     /**
+     * Returns a parameter parsed from the URI.
+     *
+     * @param param the parameter to look for
+     *
+     * @return the value for that parameter or {@code null} if it doesn't exist
+     */
+    String getPathParameter(String param);
+
+    /**
+     * Returns a parameter parsed from the URI.
+     *
+     * @param param the parameter to look for
+     * @param def   the default to return if the paramater doesn't exist
+     *
+     * @return the value for that parameter or {@code def} if it doesn't exist
+     */
+    String getPathParameter(String param, String def);
+
+    /**
      * Returns all headers with all values that were sent in the original request.
      *
      * <p>
@@ -178,6 +222,13 @@ public interface Request {
     boolean hasHeader(String key);
 
     /**
+     * Returns the effective MIME type acceptable for this request.
+     *
+     * @return the effective MIME type acceptable for this request
+     */
+    MimeType getContentType();
+
+    /**
      * Returns the body of the message as an input stream.
      * <p>
      * This stream may be filtered by zero or more transforming input streams because of
@@ -186,4 +237,14 @@ public interface Request {
      * @return the body as an input stream
      */
     InputStream getBody();
+
+    /**
+     * Returns the number of bytes in the request body.
+     * <p>
+     * A value of {@code -1} indicates an unknown length, possibly due to a request with a specific
+     * transfer encoding.
+     *
+     * @return the number of bytes in the request or {@code -1}
+     */
+    long getContentLength();
 }

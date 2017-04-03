@@ -15,7 +15,7 @@ public class UnbufferedLineAwareInputStream extends LineAwareInputStream {
     /**
      * The source stream to read from.
      */
-    private final InputStream source;
+    private InputStream source;
 
     /**
      * Creates a new unbuffered line-aware input stream.
@@ -40,6 +40,7 @@ public class UnbufferedLineAwareInputStream extends LineAwareInputStream {
      *                          or if some other I/O error occurs.
      */
     public long skip(final long n) throws IOException {
+        this.ensureOpen();
         return this.source.skip(n);
     }
 
@@ -62,6 +63,7 @@ public class UnbufferedLineAwareInputStream extends LineAwareInputStream {
      */
     @Override
     public int available() throws IOException {
+        this.ensureOpen();
         return this.source.available();
     }
 
@@ -73,6 +75,7 @@ public class UnbufferedLineAwareInputStream extends LineAwareInputStream {
      */
     public void close() throws IOException {
         this.source.close();
+        this.source = null;
     }
 
     /**
@@ -97,7 +100,9 @@ public class UnbufferedLineAwareInputStream extends LineAwareInputStream {
      * @see     java.io.InputStream#reset()
      */
     public synchronized void mark(final int readlimit) {
-        this.source.mark(readlimit);
+        if (this.source != null) {
+            this.source.mark(readlimit);
+        }
     }
 
     /**
@@ -112,7 +117,7 @@ public class UnbufferedLineAwareInputStream extends LineAwareInputStream {
      * @see     java.io.InputStream#reset()
      */
     public boolean markSupported() {
-        return this.source.markSupported();
+        return this.source != null && this.source.markSupported();
     }
 
     /**
@@ -160,6 +165,7 @@ public class UnbufferedLineAwareInputStream extends LineAwareInputStream {
      * @see     java.io.IOException
      */
     public synchronized void reset() throws IOException {
+        this.ensureOpen();
         this.source.reset();
     }
 
@@ -178,6 +184,7 @@ public class UnbufferedLineAwareInputStream extends LineAwareInputStream {
      */
     @Override
     public int read() throws IOException {
+        this.ensureOpen();
         return this.source.read();
     }
 
@@ -240,6 +247,7 @@ public class UnbufferedLineAwareInputStream extends LineAwareInputStream {
      */
     @Override
     public int read(final byte[] buffer, final int offset, final int length) throws IOException {
+        this.ensureOpen();
         return this.source.read(buffer, offset, length);
     }
 
@@ -255,6 +263,8 @@ public class UnbufferedLineAwareInputStream extends LineAwareInputStream {
      */
     @Override
     public String readLine() throws IOException {
+        this.ensureOpen();
+
         final StringBuilder lineBuilder = new StringBuilder();
 
         while (true) {
@@ -288,6 +298,17 @@ public class UnbufferedLineAwareInputStream extends LineAwareInputStream {
 
             // Push the last-read character.
             lineBuilder.append((char) character);
+        }
+    }
+
+    /**
+     * Ensures that the stream is open.
+     *
+     * @throws IOException if the stream has been closed
+     */
+    private void ensureOpen() throws IOException {
+        if (this.source == null) {
+            throw new IOException("The stream has been closed.");
         }
     }
 }

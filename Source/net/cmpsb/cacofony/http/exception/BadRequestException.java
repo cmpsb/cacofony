@@ -9,7 +9,14 @@ import net.cmpsb.cacofony.http.response.ResponseCode;
  */
 public class BadRequestException extends HttpException {
     /**
-     * Create a new Bad Request exception.
+     * Creates a new Bad Request exception.
+     */
+    public BadRequestException() {
+        super(ResponseCode.BAD_REQUEST);
+    }
+
+    /**
+     * Creates a new Bad Request exception.
      *
      * @param message the detail message
      */
@@ -18,7 +25,7 @@ public class BadRequestException extends HttpException {
     }
 
     /**
-     * Create a new Bad Request exception.
+     * Creates a new Bad Request exception.
      *
      * @param cause the exception that caused this exception
      */
@@ -27,7 +34,7 @@ public class BadRequestException extends HttpException {
     }
 
     /**
-     * Create a new Bad Request exception.
+     * Creates a new Bad Request exception.
      *
      * @param message the detail message
      * @param cause   the exception that caused this exception

@@ -28,7 +28,7 @@ public class ChunkedInputStream extends InputStream {
     /**
      * The source stream to read from.
      */
-    private final LineAwareInputStream source;
+    private LineAwareInputStream source;
 
     /**
      * The request this stream is reading for.
@@ -84,6 +84,8 @@ public class ChunkedInputStream extends InputStream {
      */
     @Override
     public int read() throws IOException {
+        this.ensureOpen();
+
         // Return EOF if the last chunk was read.
         if (this.eof) {
             return -1;
@@ -158,6 +160,8 @@ public class ChunkedInputStream extends InputStream {
      */
     @Override
     public int read(final byte[] buffer, final int offset, final int length) throws IOException {
+        this.ensureOpen();
+
         // Make sure the buffer is valid.
         if (buffer == null) {
             throw new NullPointerException("The buffer is null.");
@@ -242,6 +246,8 @@ public class ChunkedInputStream extends InputStream {
      */
     @Override
     public int available() throws IOException {
+        this.ensureOpen();
+
         return this.bytesLeftInChunk;
     }
 
@@ -263,6 +269,8 @@ public class ChunkedInputStream extends InputStream {
      */
     @Override
     public long skip(final long bytes) throws IOException {
+        this.ensureOpen();
+
         // Sanitize the length to skip.
         if (bytes <= 0 || this.eof) {
             return 0;
@@ -322,12 +330,9 @@ public class ChunkedInputStream extends InputStream {
     /**
      * Reads the next chunk's metadata.
      *
-     * @return the number of bytes available in the next read chunk or {@code -1}
-     *         if the stream has ended
-     *
      * @throws IOException if an I/O error occurs while reading
      */
-    private int readChunk() throws IOException {
+    private void readChunk() throws IOException {
         // If needed, read the last chunk's tail.
         if (!this.firstChunk) {
             this.source.readLine();
@@ -360,7 +365,27 @@ public class ChunkedInputStream extends InputStream {
         // Register the just-read information and remember that at least one chunk was read.
         this.bytesLeftInChunk = size;
         this.firstChunk = false;
+    }
 
-        return this.bytesLeftInChunk;
+    /**
+     * Ensures that the stream is open.
+     *
+     * @throws IOException if the stream has been closed
+     */
+    private void ensureOpen() throws IOException {
+        if (this.source == null) {
+            throw new IOException("The stream has been closed.");
+        }
+    }
+
+    /**
+     * Closes the input stream.
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    public void close() throws IOException {
+        this.source.close();
+        this.source = null;
     }
 }

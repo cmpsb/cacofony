@@ -1,6 +1,5 @@
 package net.cmpsb.cacofony.http.request;
 
-import net.cmpsb.cacofony.http.Method;
 import net.cmpsb.cacofony.http.exception.HttpException;
 import net.cmpsb.cacofony.http.exception.NotImplementedException;
 import net.cmpsb.cacofony.io.HttpInputStream;

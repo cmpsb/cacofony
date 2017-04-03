@@ -1,6 +1,5 @@
 package net.cmpsb.cacofony.http.request;
 
-import net.cmpsb.cacofony.http.Method;
 import net.cmpsb.cacofony.http.exception.BadRequestException;
 import net.cmpsb.cacofony.http.exception.NotImplementedException;
 import net.cmpsb.cacofony.http.exception.HttpException;
@@ -152,19 +151,21 @@ public class RequestParser {
                 throw new BadRequestException("Both Transfer-Encoding and Content-Length present.");
             }
 
+            request.setContentLength(-1);
             this.stackBodyStreams(in, teHeaders, request);
         } else {
             // This is a plain message. There must be a content-length value.
             final String contentLengthString = request.getHeader("Content-Length");
+            final long contentLength;
 
             // If the header is missing, reply an error.
             if (contentLengthString == null) {
-                throw new BadRequestException("No Content-Length nor Transfer-Encoding present.");
+                contentLength = 0;
+            } else {
+                contentLength = Long.parseLong(contentLengthString);
             }
 
-            // Otherwise parse the expected length.
-            final long contentLength = Long.parseLong(contentLengthString);
-
+            request.setContentLength(contentLength);
             request.setBody(in);
         }
     }

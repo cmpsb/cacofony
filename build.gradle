@@ -47,6 +47,12 @@ dependencies {
     // JSON.
     compile 'com.google.code.gson:gson:2.8.+'
 
+    // Reflections.
+    compile 'org.reflections:reflections:0.9.+'
+
+    // Freemarker.
+    compile 'org.freemarker:freemarker:2.3.+'
+
     // Test dependencies.
     // JUnit and matchers.
     testCompile 'org.hamcrest:hamcrest-all:1.3'

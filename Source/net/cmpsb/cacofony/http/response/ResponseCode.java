@@ -122,7 +122,7 @@ public enum ResponseCode {
     /**
      * The server can not process the request because of a client error.
      */
-    BAD_REQUEST(400, "Bad MutableRequest"),
+    BAD_REQUEST(400, "Bad Request"),
 
     /**
      * The request has not been applied because it lacks valid authentication credentials.
@@ -162,7 +162,7 @@ public enum ResponseCode {
     /**
      * The server did not complete a request within the time it was prepared to wait.
      */
-    REQUEST_TIMEOUT(408, "MutableRequest Timeout"),
+    REQUEST_TIMEOUT(408, "Request Timeout"),
 
     /**
      * The request could not be completed due to a conflict with the current state of the resource.
@@ -213,7 +213,7 @@ public enum ResponseCode {
     /**
      * The request was directed to a server that was not able to produce a response.
      */
-    MISDIRECTED_REQUEST(421, "Misdirected MutableRequest"),
+    MISDIRECTED_REQUEST(421, "Misdirected Request"),
 
     /**
      * The server was unable to process the enclosed entity.
@@ -234,12 +234,12 @@ public enum ResponseCode {
     FAILED_DEPENDENCY(424, "Failed Dependency"),
 
     /**
-     * The server refuses to perform the request using the current protocol.
+     * The server refuses to perform the Request using the current protocol.
      */
     UPGRADE_REQUIRED(426, "Upgrade Required"),
 
     /**
-     * The server requires the request to be conditional.
+     * The server requires the Request to be conditional.
      */
     PRECONDITION_REQUIRED(427, "Precondition Required"),
 
@@ -251,7 +251,7 @@ public enum ResponseCode {
     /**
      * The server refuses to process the requests because the header fields are too large.
      */
-    REQUEST_HEADER_FIELDS_TOO_LARGE(431, "MutableRequest Header Fields Too Large"),
+    REQUEST_HEADER_FIELDS_TOO_LARGE(431, "Request Header Fields Too Large"),
 
     /**
      * The server is denying access to the resource as a consequence of a legal demand.

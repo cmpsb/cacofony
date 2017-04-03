@@ -17,17 +17,12 @@ public class HttpInputStream extends LineAwareInputStream {
     /**
      * The source stream to read from.
      */
-    private final InputStream source;
-
-    /**
-     * The flag indicating whether the stream has been closed.
-     */
-    private boolean open = true;
+    private InputStream source;
 
     /**
      * The buffer to temporarily store bytes in.
      */
-    private final byte[] buffer;
+    private byte[] buffer;
 
     /**
      * A pointer into the buffer where the next read will start.
@@ -87,11 +82,9 @@ public class HttpInputStream extends LineAwareInputStream {
      */
     @Override
     public void close() throws IOException {
-        super.close();
-
         this.source.close();
-
-        this.open = false;
+        this.source = null;
+        this.buffer = null;
     }
 
     /**
@@ -323,7 +316,7 @@ public class HttpInputStream extends LineAwareInputStream {
      * @throws IOException if the source stream is closed
      */
     private void ensureOpen() throws IOException {
-        if (!this.open) {
+        if (this.source == null) {
             throw new IOException("The stream has been closed.");
         }
     }
