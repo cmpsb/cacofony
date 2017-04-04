@@ -27,4 +27,10 @@ public interface ServerSettings {
      * @return a list of allowed compression algorithms
      */
     List<TransferEncoding> getCompressionAlgorithms();
+
+    /**
+     * Returns whether the server may add its name and version to each response.
+     * @return whether to add the Server header
+     */
+    boolean mayBroadcastServerVersion();
 }

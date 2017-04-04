@@ -30,6 +30,11 @@ public class MutableServerSettings implements ServerSettings {
     );
 
     /**
+     * Whether to add the Server header to each response.
+     */
+    private boolean broadcastServerVersion = true;
+
+    /**
      * Returns whether the server is allowed to try to apply compression if the client supports it.
      *
      * @return whether the server is allowed to try to apply compression
@@ -58,5 +63,15 @@ public class MutableServerSettings implements ServerSettings {
     @Override
     public List<TransferEncoding> getCompressionAlgorithms() {
         return this.compressionAlgorithms;
+    }
+
+    /**
+     * Returns whether the server may add its name and version to each response.
+     *
+     * @return whether to add the Server header
+     */
+    @Override
+    public boolean mayBroadcastServerVersion() {
+        return this.broadcastServerVersion;
     }
 }

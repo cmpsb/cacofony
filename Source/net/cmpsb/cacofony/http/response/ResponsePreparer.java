@@ -65,5 +65,14 @@ public class ResponsePreparer {
 
             response.setHeader("Date", dateLine);
         }
+
+        if (!headers.containsKey("Server") && this.settings.mayBroadcastServerVersion()) {
+            final String version = this.getClass().getPackage().getImplementationVersion();
+            if (version != null) {
+                response.setHeader("Server", "Cacofony/" + version);
+            } else {
+                response.setHeader("Server", "Cacofony/with love from your IDE");
+            }
+        }
     }
 }
