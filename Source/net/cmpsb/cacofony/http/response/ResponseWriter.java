@@ -7,10 +7,10 @@ import net.cmpsb.cacofony.http.request.Request;
 import net.cmpsb.cacofony.io.ChunkedOutputStream;
 import net.cmpsb.cacofony.server.ServerSettings;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -128,16 +128,34 @@ public class ResponseWriter {
     private OutputStream writePlainResponse(final Request request,
                                             final Response response,
                                             final OutputStream out) throws IOException {
-        final String length = String.valueOf(response.getContentLength());
-        response.getHeaders().put("Content-Length", Collections.singletonList(length));
+        final TransferEncoding aeEncoding = this.getAcceptableEncodings(request, "Accept-Encoding");
+        if (this.canCompress(response) && aeEncoding != null) {
+            final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            final OutputStream compressor = aeEncoding.construct(buffer);
+            response.write(compressor);
+            compressor.close();
 
-        this.writeHeaders(request, response, out);
+            response.setHeader("Content-Encoding", aeEncoding.getHttpName());
+            response.setHeader("Content-Length", String.valueOf(buffer.size()));
 
-        if (request.getMethod() != Method.HEAD) {
-            response.write(out);
+            this.writeHeaders(request, response, out);
+
+            if (request.getMethod() != Method.HEAD) {
+                out.write(buffer.toByteArray());
+            }
+
+            return out;
+        } else {
+            response.setHeader("Content-Length", String.valueOf(response.getContentLength()));
+
+            this.writeHeaders(request, response, out);
+
+            if (request.getMethod() != Method.HEAD) {
+                response.write(out);
+            }
+
+            return out;
         }
-
-        return out;
     }
 
     /**

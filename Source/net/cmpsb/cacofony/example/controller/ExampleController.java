@@ -29,6 +29,7 @@ public class ExampleController extends Controller {
           +   "<body><h1>Hello World!</h1></body>"
           + "</html>");
 
+        response.setCompressionAllowed(true);
         response.setContentType(MimeType.html());
         response.getContentType().getParameters().put("charset", "UTF-8");
 
