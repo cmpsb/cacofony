@@ -24,7 +24,7 @@ public class PathCompiler {
     /**
      * The default regex parameters should comply with.
      */
-    public static final String PARAMETER_VALUE_PATTERN = "[^:/?#\\[\\]@]+";
+    public static final String PARAMETER_VALUE_PATTERN = "[^/?#]+";
 
     /**
      * Compile the path into a regex pattern with named matches.
