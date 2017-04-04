@@ -166,7 +166,7 @@ public class ChunkedInputStream extends InputStream {
 
         // Return EOF if the stream has ended.
         if (this.eof) {
-            return 0;
+            return -1;
         }
 
         int leftToRead = length;

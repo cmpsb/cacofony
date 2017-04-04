@@ -191,11 +191,11 @@ public class ChunkedInputStreamTest {
 
         this.validateTrailingHeaders();
 
-        final int zero = in.read(data);
+        final int eof = in.read(data);
 
-        assertThat("Reading more returns 0 bytes.",
-                   zero,
-                   is(0));
+        assertThat("Reading more returns EOF.",
+                   eof,
+                   is(-1));
     }
 
     @Test(expected = SilentException.class)
