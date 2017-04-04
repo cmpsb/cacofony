@@ -2,6 +2,7 @@ package net.cmpsb.cacofony.http.response;
 
 import net.cmpsb.cacofony.http.encoding.TransferEncoding;
 import net.cmpsb.cacofony.http.request.HeaderValueParser;
+import net.cmpsb.cacofony.http.request.Method;
 import net.cmpsb.cacofony.http.request.Request;
 import net.cmpsb.cacofony.io.ChunkedOutputStream;
 import net.cmpsb.cacofony.server.ServerSettings;
@@ -106,10 +107,7 @@ public class ResponseWriter {
                               final Response response,
                               final OutputStream out) throws IOException {
         final long contentLength = response.getContentLength();
-        if (contentLength == 0) {
-            this.writeHeaders(request, response, out);
-            return out;
-        } else if (contentLength > 0) {
+        if (contentLength > 0) {
             return this.writePlainResponse(request, response, out);
         } else {
             return this.writeEncodedResponse(request, response, out);
@@ -134,7 +132,10 @@ public class ResponseWriter {
         response.getHeaders().put("Content-Length", Collections.singletonList(length));
 
         this.writeHeaders(request, response, out);
-        response.write(out);
+
+        if (request.getMethod() != Method.HEAD) {
+            response.write(out);
+        }
 
         return out;
     }
@@ -158,9 +159,13 @@ public class ResponseWriter {
 
         this.writeHeaders(request, response, out);
 
-        response.write(target);
+        if (request.getMethod() != Method.HEAD) {
+            response.write(target);
 
-        return target;
+            return target;
+        }
+
+        return out;
     }
 
     /**
