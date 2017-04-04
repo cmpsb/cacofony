@@ -91,7 +91,8 @@ public class RequestParser {
 
         // Error if the request line is too short.
         if (startLineParts.length < 3) {
-            throw new HttpException(ResponseCode.BAD_REQUEST, "Invalid request line.");
+            throw new HttpException(ResponseCode.BAD_REQUEST,
+                    "Invalid request line \"" + startLine + "\".");
         }
 
         // Parse the method. Error if the method is unknown.
@@ -99,7 +100,8 @@ public class RequestParser {
         try {
             method = Method.get(startLineParts[0]);
         } catch (final IllegalArgumentException ex) {
-            throw new HttpException(ResponseCode.BAD_REQUEST, "Invalid method.");
+            throw new HttpException(ResponseCode.BAD_REQUEST,
+                    "Invalid method \"" + startLineParts[0] + "\"");
         }
 
         // Get the path. Don't unescape it yet, that's for later.
@@ -111,7 +113,8 @@ public class RequestParser {
 
         if (!versionMatcher.matches()) {
             throw new HttpException(ResponseCode.HTTP_VERSION_NOT_SUPPORTED,
-                    "The version is in an unknown format.");
+                    "The version is in an unknown format: \"" + version
+                    + "\" does not match \"HTTP/x.x\".");
         }
 
         // Parse the numbers into integers.

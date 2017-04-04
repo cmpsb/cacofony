@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <title>User-Agent Inspector</title>
     <style>
-
-
         html, body {
             height: 100%;
             background-color: beige;
