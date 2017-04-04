@@ -162,6 +162,71 @@ public class ChunkedInputStream extends InputStream {
     public int read(final byte[] buffer, final int offset, final int length) throws IOException {
         this.ensureOpen();
 
+        this.checkParams(buffer, offset, length);
+
+        // Return EOF if the stream has ended.
+        if (this.eof) {
+            return 0;
+        }
+
+        int leftToRead = length;
+        int total = 0;
+
+        // Keep reading chunks until less bytes-to-read remain than there are in the current chunk.
+        while (leftToRead > this.bytesLeftInChunk) {
+            // Stop reading if this is EOF.
+            if (this.eof) {
+                return total;
+            }
+
+            int readFromChunk = 0;
+            while (readFromChunk < this.bytesLeftInChunk) {
+                // Read some of the bytes.
+                final int justRead =
+                        this.source.read(buffer, offset + total, this.bytesLeftInChunk);
+
+                if (justRead == -1) {
+                    throw new SilentException(
+                            "Reached EOF while still expecting bytes from a chunked transfer."
+                    );
+                }
+
+                readFromChunk += justRead;
+            }
+
+            // Update the totals and the number of bytes left to read.
+            total += readFromChunk;
+            leftToRead -= readFromChunk;
+
+            // Move on to the next chunk.
+            this.readChunk();
+        }
+
+        final int justRead = this.source.read(buffer, offset + total, leftToRead);
+
+        if (justRead < leftToRead) {
+            throw new SilentException(
+                    "Reached EOF while still expecting bytes from a chunked transfer."
+            );
+        }
+
+        // Update how many bytes are left for that chunk and the total amount of bytes read.
+        this.bytesLeftInChunk -= justRead;
+        total += justRead;
+
+        return total;
+    }
+
+    /**
+     * Checks the parameters passed to {@link #read(byte[], int, int)}.
+     * <p>
+     * This is in a separate function because Checkstyle complains about the cyclomatic complexity.
+     *
+     * @param buffer the buffer to check
+     * @param offset the offset to check
+     * @param length the length to check
+     */
+    private void checkParams(final byte[] buffer, final int offset, final int length) {
         // Make sure the buffer is valid.
         if (buffer == null) {
             throw new NullPointerException("The buffer is null.");
@@ -181,52 +246,6 @@ public class ChunkedInputStream extends InputStream {
         if (length > buffer.length - offset) {
             throw new IndexOutOfBoundsException("The length exceeds the array's bounds.");
         }
-
-        // Return EOF if the stream has ended.
-        if (this.eof) {
-            return 0;
-        }
-
-        int leftToRead = length;
-        int total = 0;
-
-        // Keep reading chunks until less bytes-to-read remain than there are in the current chunk.
-        while (leftToRead > this.bytesLeftInChunk) {
-            // Stop reading if this is EOF.
-            if (this.eof) {
-                return total;
-            }
-
-            // Read some of the bytes.
-            final int justRead = this.source.read(buffer, offset + total, this.bytesLeftInChunk);
-
-            if (justRead == -1) {
-                throw new SilentException(
-                        "Reached EOF while still expecting bytes from a chunked transfer."
-                );
-            }
-
-            // Update the totals and the number of bytes left to read.
-            total += justRead;
-            leftToRead -= justRead;
-
-            // Move on to the next chunk.
-            this.readChunk();
-        }
-
-        final int justRead = this.source.read(buffer, offset + total, leftToRead);
-
-        if (justRead < leftToRead) {
-            throw new SilentException(
-                    "Reached EOF while still expecting bytes from a chunked transfer."
-            );
-        }
-
-        // Update how many bytes are left for that chunk and the total amount of bytes read.
-        this.bytesLeftInChunk -= justRead;
-        total += justRead;
-
-        return total;
     }
 
     /**

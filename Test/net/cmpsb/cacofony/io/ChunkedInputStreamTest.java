@@ -67,6 +67,17 @@ public class ChunkedInputStreamTest {
         0, 1
     };
 
+    private final byte[] truncatedMultiChunk = {
+        '2',
+        '\r', '\n',
+        0, 1,
+        '\r', '\n',
+
+        '4',
+        '\r', '\n',
+        0, 1
+    };
+
     private final byte[] negativeChunk = {
         '-', 'A', 'A', 'A', '\r', '\n'
     };
@@ -195,6 +206,14 @@ public class ChunkedInputStreamTest {
         in.read(data);
     }
 
+    @Test(expected = SilentException.class)
+    public void testTruncatedMultiChunk() throws IOException {
+        final ChunkedInputStream in = this.getStream(this.truncatedMultiChunk);
+
+        final byte[] data = new byte[10];
+        in.read(data);
+    }
+
     @Test
     public void testSkipSingleChunk() throws IOException {
         final ChunkedInputStream in = this.getStream(this.singleChunkPacket);
@@ -252,6 +271,11 @@ public class ChunkedInputStreamTest {
         assertThat("At least 10 bytes have been skipped.",
                    skipped,
                    is(greaterThanOrEqualTo(10L)));
+
+        final long nextSkipped = in.skip(Long.MAX_VALUE);
+        assertThat("Any next skip skips 0 bytes.",
+                   nextSkipped,
+                   is(equalTo(0L)));
 
         final int nextRead = in.read();
         assertThat("The next read returns EOF.",
@@ -313,6 +337,14 @@ public class ChunkedInputStreamTest {
 
         final byte[] buffer = new byte[20];
         in.read(buffer, 0, 2020);
+    }
+
+    @Test(expected = IOException.class)
+    public void testReadFromClosedStream() throws IOException {
+        final ChunkedInputStream in = this.getStream(this.singleChunkPacket);
+        in.close();
+
+        in.read();
     }
 
     private ChunkedInputStream getStream(final byte[] packet) throws IOException {
