@@ -87,6 +87,13 @@ public class RequestParser {
     public MutableRequest parse(final HttpInputStream in) throws IOException {
         // Read the start line and split it into the three components.
         final String startLine = in.readLine();
+
+        // An empty start line probably means that the stream reached EOF before it could
+        // read a full line.
+        if (startLine.isEmpty()) {
+            throw new IOException("Client has closed the connection.");
+        }
+
         final String[] startLineParts = SPACE_PATTERN.split(startLine, 3);
 
         // Error if the request line is too short.

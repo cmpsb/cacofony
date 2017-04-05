@@ -11,20 +11,20 @@ import java.util.Map;
  *
  * @author Luc Everse
  */
-public interface Request {
+public abstract class Request {
     /**
      * Returns the client's major HTTP version.
      *
      * @return the client's major HTTP version
      */
-    int getMajorVersion();
+    public abstract int getMajorVersion();
 
     /**
      * Returns the client's minor HTTP version.
      *
      * @return the client's minor HTTP version
      */
-    int getMinorVersion();
+    public abstract int getMinorVersion();
 
     /**
      * Returns the HTTP method (verb) used for this request.
@@ -35,14 +35,14 @@ public interface Request {
      *
      * @return the HTTP method for this request
      */
-    Method getMethod();
+    public abstract Method getMethod();
 
     /**
      * Returns the actual HTTP method (verb) used for this request.
      *
      * @return the HTTP method for this request
      */
-    Method getRealMethod();
+    public abstract Method getRealMethod();
 
     /**
      * Returns the path given in the request line.
@@ -95,7 +95,7 @@ public interface Request {
      *
      * @return the raw request path
      */
-    String getRawPath();
+    public abstract String getRawPath();
 
     /**
      * Returns the processed request path.
@@ -104,7 +104,7 @@ public interface Request {
      *
      * @return the processed request path
      */
-    String getUri();
+    public abstract String getUri();
 
     /**
      * Returns the processed request path including the query string.
@@ -114,7 +114,7 @@ public interface Request {
      *
      * @return the processed request path with query string
      */
-    String getFullUri();
+    public abstract String getFullUri();
 
     /**
      * Returns the processed request path including the scheme and host.
@@ -124,7 +124,7 @@ public interface Request {
      *
      * @return the processed request path with scheme and host
      */
-    String getUrl();
+    public abstract String getUrl();
 
     /**
      * Returns the processed request path including the query string, scheme and host.
@@ -133,7 +133,7 @@ public interface Request {
      *
      * @return the processed request path with query string, scheme and host
      */
-    String getFullUrl();
+    public abstract String getFullUrl();
 
     /**
      * Returns the hostname as which the server is replying.
@@ -142,7 +142,7 @@ public interface Request {
      *
      * @return the current host
      */
-    String getHost();
+    public abstract String getHost();
 
     /**
      * Returns a parameter parsed from the URI.
@@ -151,7 +151,7 @@ public interface Request {
      *
      * @return the value for that parameter or {@code null} if it doesn't exist
      */
-    String getPathParameter(String param);
+    public abstract String getPathParameter(String param);
 
     /**
      * Returns a parameter parsed from the URI.
@@ -161,7 +161,7 @@ public interface Request {
      *
      * @return the value for that parameter or {@code def} if it doesn't exist
      */
-    String getPathParameter(String param, String def);
+    public abstract String getPathParameter(String param, String def);
 
     /**
      * Returns all headers with all values that were sent in the original request.
@@ -187,7 +187,7 @@ public interface Request {
      *
      * @return all headers in the request
      */
-    Map<String, List<String>> getHeaders();
+    public abstract Map<String, List<String>> getHeaders();
 
     /**
      * Gets all values for a single header.
@@ -198,7 +198,7 @@ public interface Request {
      *
      * @return all values or null if the header wasn't included in the request
      */
-    List<String> getHeaders(String key);
+    public abstract List<String> getHeaders(String key);
 
     /**
      * Gets the first value for a single header.
@@ -210,7 +210,30 @@ public interface Request {
      *
      * @return the first received value or null if the header wasn't included in the request
      */
-    String getHeader(String key);
+    public abstract String getHeader(String key);
+
+    /**
+     * Gets the first value for a single header or a default.
+     * <p>
+     * This function returns (if possible) the first entry in the list returned by
+     * {@link #getHeaders(String)}.
+     * <p>
+     * If the header is missing then the value of {@code def} is returned instead.
+     *
+     * @param key the name of the header to look for
+     * @param def the default value to return if the header is missing
+     *
+     * @return the first received value or {@code def} if the header wasn't included in the request
+     */
+    public String getHeader(final String key, final String def) {
+        final String header = this.getHeader(key);
+
+        if (header == null) {
+            return def;
+        }
+
+        return header;
+    }
 
     /**
      * Checks whether the request contains a certain header.
@@ -219,14 +242,14 @@ public interface Request {
      *
      * @return true if there are values for that header, false otherwise
      */
-    boolean hasHeader(String key);
+    public abstract boolean hasHeader(String key);
 
     /**
      * Returns the effective MIME type acceptable for this request.
      *
      * @return the effective MIME type acceptable for this request
      */
-    MimeType getContentType();
+    public abstract MimeType getContentType();
 
     /**
      * Returns the body of the message as an input stream.
@@ -236,7 +259,7 @@ public interface Request {
      *
      * @return the body as an input stream
      */
-    InputStream getBody();
+    public abstract InputStream getBody();
 
     /**
      * Returns the number of bytes in the request body.
@@ -246,5 +269,5 @@ public interface Request {
      *
      * @return the number of bytes in the request or {@code -1}
      */
-    long getContentLength();
+    public abstract long getContentLength();
 }

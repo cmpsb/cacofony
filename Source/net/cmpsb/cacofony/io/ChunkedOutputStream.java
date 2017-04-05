@@ -36,6 +36,11 @@ public class ChunkedOutputStream extends OutputStream {
     private int pointer = 0;
 
     /**
+     * Whether the stream has ended or not.
+     */
+    private boolean eos = false;
+
+    /**
      * Creates a new chunked output stream with a specific buffer size.
      * <p>
      * The {@code size} parameter specifies the maximum size a sent chunk may have. The stream will
@@ -166,8 +171,9 @@ public class ChunkedOutputStream extends OutputStream {
     }
 
     /**
-     * Flushes this output stream and, if any bytes are available,
-     * forces a new chunk to be generated.
+     * Flushes this output stream and forces a new chunk to be generated.
+     * <p>
+     * Note that this may "close" the stream if 0 bytes are flushed.
      *
      * @throws IOException if an I/O error occurs
      */
@@ -175,9 +181,11 @@ public class ChunkedOutputStream extends OutputStream {
     public void flush() throws IOException {
         this.ensureOpen();
 
-        if (this.pointer <= 0) {
+        if (this.eos) {
             return;
         }
+
+        this.eos = (this.pointer == 0);
 
         final String length = Integer.toHexString(this.pointer);
         this.target.write(length.getBytes(StandardCharsets.ISO_8859_1));
@@ -201,12 +209,10 @@ public class ChunkedOutputStream extends OutputStream {
     public void close() throws IOException {
         this.ensureOpen();
 
-        this.flush();
-
-        this.target.write('0');
-        this.target.write(NEWLINE);
-        this.target.write(NEWLINE);
-        this.target.flush();
+        // Keep flushing until a zero-length chunk has been sent.
+        while (!this.eos) {
+            this.flush();
+        }
 
         this.target.close();
 

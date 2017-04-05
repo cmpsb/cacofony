@@ -14,7 +14,7 @@ import java.util.Map;
  *
  * @author Luc Everse
  */
-public class MutableRequest implements Request {
+public class MutableRequest extends Request {
     /**
      * The request method.
      */

@@ -27,7 +27,7 @@ public enum TransferEncoding {
     /**
      * The response is gzipped.
      */
-    GZIP("gzip", GZIPOutputStream::new, GZIPInputStream::new, true),
+    GZIP("gzip", target -> new GZIPOutputStream(target, true), GZIPInputStream::new, true),
 
     /**
      * The response is zipped.
@@ -37,7 +37,7 @@ public enum TransferEncoding {
     /**
      * Any compression goes. Defaults to gzip.
      */
-    ANY_COMPRESSOR("*", GZIPOutputStream::new, GZIPInputStream::new, true);
+    ANY_COMPRESSOR("*", target -> new GZIPOutputStream(target, true), GZIPInputStream::new, true);
 
     /**
      * A static mapping of all known encodings and their names.

@@ -95,9 +95,9 @@ public class Router {
      *
      * @return a response
      *
-     * @throws Throwable any exception thrown by the route
+     * @throws Exception any exception thrown by the route
      */
-    public Response handle(final MutableRequest request) throws Throwable {
+    public Response handle(final MutableRequest request) throws Exception {
         final List<MimeType> acceptTypes = this.parseAccepts(request);
         Collections.sort(acceptTypes);
 
@@ -158,11 +158,11 @@ public class Router {
      *
      * @return a response or {@code null} if no matching route could be found
      *
-     * @throws Throwable any exception thrown by the route
+     * @throws Exception any exception thrown by the route
      */
     private Response tryMethod(final MutableRequest request,
                                final Method method,
-                               final List<MimeType> acceptTypes) throws Throwable {
+                               final List<MimeType> acceptTypes) throws Exception {
         final Map<MimeType, List<RoutingEntry>> byAccept = this.routes.get(method);
 
         // For each content type, try to find the route matching the given path.
@@ -192,11 +192,11 @@ public class Router {
      *
      * @return a response or {@code null} if no matching route could be found
      *
-     * @throws Throwable any exception thrown by the route
+     * @throws Exception any exception thrown by the route
      */
     private Response tryAccept(final MutableRequest request,
                                final List<RoutingEntry> possibleRoutes,
-                               final MimeType contentType) throws Throwable {
+                               final MimeType contentType) throws Exception {
         final String target = request.getRawPath();
 
         for (final RoutingEntry entry : possibleRoutes) {

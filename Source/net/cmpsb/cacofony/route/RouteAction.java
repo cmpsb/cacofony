@@ -17,7 +17,7 @@ public interface RouteAction {
      *
      * @return a response
      *
-     * @throws Throwable any exception
+     * @throws Exception any exception
      */
-    Response handle(Request request) throws Throwable;
+    Response handle(Request request) throws Exception;
 }
