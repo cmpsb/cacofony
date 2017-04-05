@@ -1,6 +1,7 @@
 package net.cmpsb.cacofony.example;
 
 import freemarker.template.Configuration;
+import net.cmpsb.cacofony.mime.MimeParser;
 import net.cmpsb.cacofony.server.Server;
 import net.cmpsb.cacofony.templating.TemplatingService;
 import net.cmpsb.cacofony.templating.freemarker.FreeMarkerTemplatingService;
@@ -47,6 +48,6 @@ public final class Main {
 
         cfg.setClassForTemplateLoading(Main.class, "/net/cmpsb/cacofony/example");
 
-        return new FreeMarkerTemplatingService(cfg);
+        return new FreeMarkerTemplatingService(cfg, new MimeParser());
     }
 }

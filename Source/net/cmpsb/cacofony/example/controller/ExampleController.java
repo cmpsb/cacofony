@@ -4,7 +4,6 @@ import net.cmpsb.cacofony.controller.Controller;
 import net.cmpsb.cacofony.http.request.Request;
 import net.cmpsb.cacofony.http.response.TextResponse;
 import net.cmpsb.cacofony.http.response.Response;
-import net.cmpsb.cacofony.mime.MimeType;
 import net.cmpsb.cacofony.route.Route;
 import net.cmpsb.cacofony.util.Ob;
 
@@ -29,10 +28,6 @@ public class ExampleController extends Controller {
           +   "<body><h1>Hello World!</h1></body>"
           + "</html>");
 
-        response.setCompressionAllowed(true);
-        response.setContentType(MimeType.html());
-        response.getContentType().getParameters().put("charset", "UTF-8");
-
         return response;
     }
 
@@ -46,15 +41,9 @@ public class ExampleController extends Controller {
     @Route(path = "/hello/{name}")
     @Route(path = "/hello/")
     public Response helloAction(final Request request) {
-        final Response response = this.render("hello.ftlh", Ob.map(
+        return this.render("hello.ftlh", Ob.map(
                 "name", request.getPathParameter("name", "you")
         ));
-
-        response.setCompressionAllowed(true);
-        response.setContentType(MimeType.html());
-        response.getContentType().getParameters().put("charset", "UTF-8");
-
-        return response;
     }
 
     /**
@@ -66,14 +55,8 @@ public class ExampleController extends Controller {
      */
     @Route(path = "/ua")
     public Response userAgentAction(final Request request) {
-        final Response response = this.render("ua.ftlh", Ob.map(
+        return this.render("ua.ftlh", Ob.map(
             "ua", request.getHeader("User-Agent")
         ));
-
-        response.setCompressionAllowed(true);
-        response.setContentType(MimeType.html());
-        response.getContentType().getParameters().put("charset", "UTF-8");
-
-        return response;
     }
 }

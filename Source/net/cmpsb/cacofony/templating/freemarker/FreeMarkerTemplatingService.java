@@ -4,6 +4,8 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import net.cmpsb.cacofony.http.exception.InternalServerException;
 import net.cmpsb.cacofony.http.response.Response;
+import net.cmpsb.cacofony.mime.MimeParser;
+import net.cmpsb.cacofony.mime.MimeType;
 import net.cmpsb.cacofony.templating.TemplatingService;
 
 import java.io.IOException;
@@ -19,12 +21,20 @@ public class FreeMarkerTemplatingService extends TemplatingService {
     private final Configuration configuration;
 
     /**
+     * The MIME parser to use.
+     */
+    private final MimeParser mimeParser;
+
+    /**
      * Creates a new FreeMarker templating service.
      *
      * @param configuration the FreeMarker configuration to use
+     * @param mimeParser    the MIME parser to use
      */
-    public FreeMarkerTemplatingService(final Configuration configuration) {
+    public FreeMarkerTemplatingService(final Configuration configuration,
+                                       final MimeParser mimeParser) {
         this.configuration = configuration;
+        this.mimeParser = mimeParser;
     }
 
     /**
@@ -39,10 +49,15 @@ public class FreeMarkerTemplatingService extends TemplatingService {
     @Override
     public Response render(final String name, final Map<String, ?> values) {
         try {
-            this.configuration.setRecognizeStandardFileExtensions(true);
             final Template template = this.configuration.getTemplate(name);
 
-            return new FreeMarkerResponse(template, values);
+            final Response response = new FreeMarkerResponse(template, values);
+
+            final MimeType type = this.mimeParser.parse(template.getOutputFormat().getMimeType());
+            type.getParameters().put("charset", template.getEncoding());
+            response.setContentType(type);
+
+            return response;
         } catch (final IOException ex) {
             throw new InternalServerException(ex);
         }
