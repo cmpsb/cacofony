@@ -1,5 +1,6 @@
 package net.cmpsb.cacofony.http.request;
 
+import net.cmpsb.cacofony.http.encoding.TransferEncoding;
 import net.cmpsb.cacofony.http.exception.BadRequestException;
 import net.cmpsb.cacofony.http.exception.NotImplementedException;
 import net.cmpsb.cacofony.http.exception.HttpException;
@@ -15,8 +16,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.InflaterInputStream;
 
 /**
  * A parser for HTTP requests.
@@ -156,7 +155,7 @@ public class RequestParser {
 
         // Build the stack of input streams to read the message body.
         final List<String> teHeaders = request.getHeaders("Transfer-Encoding");
-        if (teHeaders != null && teHeaders.size() > 0) {
+        if (teHeaders != null) {
             if (request.hasHeader("Content-Length")) {
                 throw new BadRequestException("Both Transfer-Encoding and Content-Length present.");
             }
@@ -168,7 +167,7 @@ public class RequestParser {
             final String contentLengthString = request.getHeader("Content-Length");
             final long contentLength;
 
-            // If the header is missing, reply an error.
+            // If the header is missing, assume that there is no content.
             if (contentLengthString == null) {
                 contentLength = 0;
             } else {
@@ -204,22 +203,19 @@ public class RequestParser {
 
         InputStream userStream = in;
 
-        for (final String encoding : encodings) {
-            if (encoding.equalsIgnoreCase("chunked") || encoding.equalsIgnoreCase("x-chunked")) {
+        for (final String rawEncoding : encodings) {
+            final TransferEncoding encoding = TransferEncoding.get(rawEncoding);
+
+            if (encoding == TransferEncoding.CHUNKED) {
                 userStream = new ChunkedInputStream(
-                    this.streamHelper.makeLineAware(userStream),
-                    request,
-                    this.headerParser
+                        this.streamHelper.makeLineAware(userStream),
+                        request,
+                        this.headerParser
                 );
-            } else if (encoding.equalsIgnoreCase("gzip") || encoding.equalsIgnoreCase("x-gzip")) {
-                userStream = new GZIPInputStream(userStream);
-            } else if (encoding.equalsIgnoreCase("deflate")) {
-                userStream = new InflaterInputStream(userStream);
-            } else if (encoding.equalsIgnoreCase("compress")
-                    || encoding.equalsIgnoreCase("x-compress")) {
-                throw new NotImplementedException("LZW has not been implemented.");
+            } else if (encoding != null) {
+                userStream = encoding.construct(userStream);
             } else {
-                throw new NotImplementedException("Transfer-Encoding.");
+                throw new NotImplementedException("Transfer encoding \"" + rawEncoding + "\"");
             }
         }
 

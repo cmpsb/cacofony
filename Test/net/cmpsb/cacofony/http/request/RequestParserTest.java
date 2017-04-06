@@ -1,5 +1,6 @@
 package net.cmpsb.cacofony.http.request;
 
+import net.cmpsb.cacofony.http.exception.BadRequestException;
 import net.cmpsb.cacofony.http.exception.HttpException;
 import net.cmpsb.cacofony.http.exception.NotImplementedException;
 import net.cmpsb.cacofony.io.HttpInputStream;
@@ -100,6 +101,58 @@ public class RequestParserTest {
         assertThat("The body length is correct.",
                 body,
                 is(equalTo("14616742")));
+    }
+
+    @Test
+    public void testBodylessRequest() throws IOException {
+        final String packet =
+            "GET / HTTP/1.1\r\n"
+          + "Host: cmpsb.net\r\n"
+          + "\r\n";
+
+        final HttpInputStream in = this.getStream(packet);
+        final MutableRequest request = this.parser.parse(in);
+
+        assertThat("The content length is 0.",
+                   request.getContentLength(),
+                   is(0L));
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void testEncodedStaticRequest() throws IOException {
+        final String packet =
+            "GET / HTTP/1.1\r\n"
+          + "Host: cmpsb.net\r\n"
+          + "Transfer-Encoding: chunked\r\n"
+          + "Content-Length: 22\r\n"
+          + "\r\n";
+
+        final HttpInputStream in = this.getStream(packet);
+        this.parser.parse(in);
+    }
+
+    @Test
+    public void testHttp09() throws IOException {
+        final String packet = "GET / HTTP/0.9\r\nHost: cmpsb.net\r\n\r\n";
+
+        final HttpInputStream in = this.getStream(packet);
+        final MutableRequest request = this.parser.parse(in);
+
+        assertThat("THe major version is correct.",
+                   request.getMajorVersion(),
+                   is(0));
+
+        assertThat("THe minor version is correct.",
+                   request.getMinorVersion(),
+                   is(9));
+    }
+
+    @Test(expected = IOException.class)
+    public void testEof() throws IOException {
+        final String packet = "";
+
+        final HttpInputStream in = this.getStream(packet);
+        final MutableRequest request = this.parser.parse(in);
     }
 
     @Test(expected = NotImplementedException.class)
