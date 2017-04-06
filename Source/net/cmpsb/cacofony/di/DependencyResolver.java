@@ -103,10 +103,66 @@ public abstract class DependencyResolver {
     public abstract <T> void name(Class<T> type, String name);
 
     /**
+     * Looks up a dependency by its type and registers an alias for it.
+     * <p>
+     * The alias type must be a superclass of {@code type}.
+     *
+     * @param type      the type to construct
+     * @param aliasType the alias type
+     *
+     * @param <S> the type to construct
+     * @param <T> the alias type
+     *
+     * @return the instance
+     */
+    public <S, T extends S> T get(final Class<T> type, final Class<S> aliasType) {
+        final T instance = this.get(type);
+        this.add(instance, aliasType);
+        return instance;
+    }
+
+    /**
      * Add a named object to the resolver and don't associate it with any type.
      *
      * @param name   the name of the dependency
      * @param object the dependency
      */
     public abstract void add(String name, Object object);
+
+    /**
+     * Returns whether a type (either directly or as an alias) is present in the resolver's cache.
+     *
+     * @param type the type to look for
+     *
+     * @return true if the type is present, otherwise false
+     */
+    public abstract boolean isKnown(Class<?> type);
+
+    /**
+     * Returns whether a named instance is present in the resolver's mapping.
+     *
+     * @param name the name of the instance to look for
+     *
+     * @return true if there's a type with that name, otherwise false
+     */
+    public abstract boolean isKnown(String name);
+
+    /**
+     * Removes the instance of that type (if there is any) from the resolver cache.
+     *
+     * @param type the type to forget
+     * @param <T>  the type to forget
+     *
+     * @return the instance that was at that spot or {@code null} if the resolver didn't know it
+     */
+    public abstract <T> T forget(Class<T> type);
+
+    /**
+     * Removes the instance with that name (if there is any) from the resolver's mapping.
+     *
+     * @param name the name to forget
+     *
+     * @return the instance with that name or {@code null} if the resolver didn't know it
+     */
+    public abstract Object forget(String name);
 }

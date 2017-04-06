@@ -144,6 +144,50 @@ public class DefaultDependencyResolver extends DependencyResolver {
     }
 
     /**
+     * Returns whether a type (either directly or as an alias) is present in the resolver's cache.
+     *
+     * @param type the type to look for
+     * @return true if the type is present, otherwise false
+     */
+    @Override
+    public boolean isKnown(final Class<?> type) {
+        return this.instances.containsKey(type);
+    }
+
+    /**
+     * Returns whether a named instance is present in the resolver's mapping.
+     *
+     * @param name the name of the instance to look for
+     * @return true if there's a type with that name, otherwise false
+     */
+    @Override
+    public boolean isKnown(final String name) {
+        return this.namedInstances.containsKey(name);
+    }
+
+    /**
+     * Removes the instance of that type (if there is any) from the resolver cache.
+     *
+     * @param type the type to forget
+     * @return the instance that was at that spot or {@code null} if the resolver didn't know it
+     */
+    @Override
+    public <T> T forget(final Class<T> type) {
+        return type.cast(this.instances.remove(type));
+    }
+
+    /**
+     * Removes the instance with that name (if there is any) from the resolver's mapping.
+     *
+     * @param name the name to forget
+     * @return the instance with that name or {@code null} if the resolver didn't know it
+     */
+    @Override
+    public Object forget(final String name) {
+        return this.namedInstances.remove(name);
+    }
+
+    /**
      * Try to instantiate an object of a given type.
      *
      * @param type      the class to instantiate

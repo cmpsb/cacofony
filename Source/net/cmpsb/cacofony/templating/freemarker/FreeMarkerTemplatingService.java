@@ -2,6 +2,7 @@ package net.cmpsb.cacofony.templating.freemarker;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import net.cmpsb.cacofony.di.Inject;
 import net.cmpsb.cacofony.http.exception.InternalServerException;
 import net.cmpsb.cacofony.http.response.Response;
 import net.cmpsb.cacofony.mime.MimeParser;
@@ -31,7 +32,8 @@ public class FreeMarkerTemplatingService extends TemplatingService {
      * @param configuration the FreeMarker configuration to use
      * @param mimeParser    the MIME parser to use
      */
-    public FreeMarkerTemplatingService(final Configuration configuration,
+    public FreeMarkerTemplatingService(@Inject("arg: configuration")
+                                       final Configuration configuration,
                                        final MimeParser mimeParser) {
         this.configuration = configuration;
         this.mimeParser = mimeParser;

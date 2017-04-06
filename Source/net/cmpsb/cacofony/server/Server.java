@@ -5,6 +5,8 @@ import net.cmpsb.cacofony.di.DefaultDependencyResolver;
 import net.cmpsb.cacofony.di.DependencyResolver;
 import net.cmpsb.cacofony.mime.FastMimeParser;
 import net.cmpsb.cacofony.mime.MimeParser;
+import net.cmpsb.cacofony.templating.DummyTemplatingService;
+import net.cmpsb.cacofony.templating.TemplatingService;
 import net.cmpsb.cacofony.util.Ob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,9 +42,9 @@ public class Server {
     private final DependencyResolver resolver;
 
     /**
-     * A loader for controllers.
+     * Whether the server is idle or running.
      */
-    private final ControllerLoader loader;
+    private boolean idle = true;
 
     /**
      * Creates a new server.
@@ -51,10 +53,6 @@ public class Server {
      */
     public Server(final DependencyResolver resolver) {
         this.resolver = resolver;
-
-        this.resolver.add(new FastMimeParser(), MimeParser.class);
-
-        this.loader = this.resolver.get(ControllerLoader.class);
     }
 
     /**
@@ -65,12 +63,24 @@ public class Server {
     }
 
     /**
+     * Returns the dependency resolver the server is using.
+     *
+     * @return the dependency resolver
+     */
+    public DependencyResolver getResolver() {
+        return this.resolver;
+    }
+
+    /**
      * Scans a package for controllers and services.
      *
      * @param pack the package to scan
      */
     public void scanPackage(final String pack) {
-        this.loader.loadAll(pack + ".controller");
+        this.ensureReady();
+
+        final ControllerLoader loader = this.resolver.get(ControllerLoader.class);
+        loader.loadAll(pack + ".controller");
     }
 
     /**
@@ -81,7 +91,61 @@ public class Server {
      * @param <T>      the service type
      */
     public <T> void register(final Class<T> type, final T instance) {
+        this.ensureIdle();
+
         this.resolver.add(instance, type);
+    }
+
+    /**
+     * Initializes the server.
+     * <p>
+     * This method fills in the missing dependencies and sets many settings to their defaults.
+     */
+    public void init() {
+        if (!this.resolver.isKnown(MimeParser.class)) {
+            this.resolver.get(FastMimeParser.class, MimeParser.class);
+        }
+
+        if (!this.resolver.isKnown(ServerSettings.class)) {
+            this.resolver.add(new MutableServerSettings(), ServerSettings.class);
+        }
+
+        if (!this.resolver.isKnown("resource/server.thread-pool")) {
+            final ExecutorService pool = Executors.newCachedThreadPool();
+            this.resolver.add("resource/server.thread-pool", pool);
+        }
+
+        if (!this.resolver.isKnown(TemplatingService.class)) {
+            this.resolver.add(new DummyTemplatingService(), TemplatingService.class);
+        }
+    }
+
+    /**
+     * Returns whether the server is ready for starting or not.
+     * <p>
+     * If this method returns {@code false}, then {@link #start()} will automatically call
+     * {@link #init}.
+     *
+     * @return true if all dependencies and settings are set, false otherwise
+     */
+    public boolean isReady() {
+        if (!this.resolver.isKnown(MimeParser.class)) {
+            return false;
+        }
+
+        if (!this.resolver.isKnown(ServerSettings.class)) {
+            return false;
+        }
+
+        if (!this.resolver.isKnown("resource/server.thread-pool")) {
+            return false;
+        }
+
+        if (!this.resolver.isKnown(TemplatingService.class)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -90,12 +154,9 @@ public class Server {
      * @throws IOException if an I/O exception occurs
      */
     public void start() throws IOException {
+        this.ensureReady();
+
         logger.debug("Bootstrapping server.");
-
-        final ExecutorService pool = Executors.newCachedThreadPool();
-
-        this.resolver.add("resource/server.thread-pool", pool);
-        this.resolver.add(new MutableServerSettings(), ServerSettings.class);
 
         for (final int port : this.httpPorts) {
             logger.debug("{}", port);
@@ -109,6 +170,7 @@ public class Server {
             runner.start();
         }
 
+        this.idle = false;
         logger.debug("Bootstrap finished, slumbering.");
     }
 
@@ -119,6 +181,8 @@ public class Server {
      * @param isEncrypted whether the connection will be encrypted through TLS
      */
     public void addPort(final int port, final boolean isEncrypted) {
+        this.ensureIdle();
+
         if (isEncrypted) {
             this.httpsPorts.add(port);
         } else {
@@ -137,5 +201,25 @@ public class Server {
      */
     public void addPort(final int port) {
         this.addPort(port, port != 80 && port != 8080);
+    }
+
+    /**
+     * Makes sure that the server is not running.
+     */
+    private void ensureIdle() {
+        if (!this.idle) {
+            throw new RunningServerException("This operation is not allowed on a running server.");
+        }
+    }
+
+    /**
+     * Makes sure that the server is not running and that all dependencies are there.
+     */
+    private void ensureReady() {
+        this.ensureIdle();
+
+        if (!this.isReady()) {
+            this.init();
+        }
     }
 }
