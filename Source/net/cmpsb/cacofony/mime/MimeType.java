@@ -65,7 +65,7 @@ public class MimeType implements Comparable<MimeType> {
      * The accept type's quality rank.
      * Lower is better.
      */
-    private double rank;
+    private double rank = 0;
 
     /**
      * Creates a new MIME type with explicit values.

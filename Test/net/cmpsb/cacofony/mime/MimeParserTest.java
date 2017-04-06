@@ -12,12 +12,14 @@ import static org.hamcrest.Matchers.is;
  *
  * @author Luc Everse
  */
-public class MimeParserTest {
-    private MimeParser parser;
+public abstract class MimeParserTest<P extends MimeParser> {
+    private P parser;
+
+    public abstract P getParser();
 
     @Before
     public void before() {
-        this.parser = new MimeParser();
+        this.parser = this.getParser();
     }
 
     @Test

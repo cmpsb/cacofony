@@ -3,6 +3,8 @@ package net.cmpsb.cacofony.server;
 import net.cmpsb.cacofony.controller.ControllerLoader;
 import net.cmpsb.cacofony.di.DefaultDependencyResolver;
 import net.cmpsb.cacofony.di.DependencyResolver;
+import net.cmpsb.cacofony.mime.FastMimeParser;
+import net.cmpsb.cacofony.mime.MimeParser;
 import net.cmpsb.cacofony.util.Ob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +52,8 @@ public class Server {
     public Server(final DependencyResolver resolver) {
         this.resolver = resolver;
 
+        this.resolver.add(new FastMimeParser(), MimeParser.class);
+
         this.loader = this.resolver.get(ControllerLoader.class);
     }
 
@@ -88,8 +92,6 @@ public class Server {
     public void start() throws IOException {
         logger.debug("Bootstrapping server.");
 
-        final List<Thread> listeners = new ArrayList<>();
-
         final ExecutorService pool = Executors.newCachedThreadPool();
 
         this.resolver.add("resource/server.thread-pool", pool);
@@ -104,7 +106,6 @@ public class Server {
             );
 
             final Thread runner = new Thread(listener);
-            listeners.add(runner);
             runner.start();
         }
 
