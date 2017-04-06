@@ -166,7 +166,7 @@ public class ResponseWriter {
     }
 
     /**
-     * Writes the respones out to the client following a requested list of transfer encodings.
+     * Writes the response out to the client following a requested list of transfer encodings.
      *
      * @param request  the request that triggered this response
      * @param response the response to write

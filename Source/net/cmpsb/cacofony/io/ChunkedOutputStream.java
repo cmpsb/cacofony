@@ -16,6 +16,11 @@ public class ChunkedOutputStream extends OutputStream {
     private static final byte[] NEWLINE = {'\r', '\n'};
 
     /**
+     * The terminating 0-length chunk.
+     */
+    private static final byte[] TERMINATOR = {'0', '\r', '\n', '\r', '\n'};
+
+    /**
      * The target output stream to write the chunks to.
      */
     private OutputStream target;
@@ -181,11 +186,9 @@ public class ChunkedOutputStream extends OutputStream {
     public void flush() throws IOException {
         this.ensureOpen();
 
-        if (this.eos) {
+        if (this.pointer <= 0) {
             return;
         }
-
-        this.eos = (this.pointer == 0);
 
         final String length = Integer.toHexString(this.pointer);
         this.target.write(length.getBytes(StandardCharsets.ISO_8859_1));
@@ -209,10 +212,9 @@ public class ChunkedOutputStream extends OutputStream {
     public void close() throws IOException {
         this.ensureOpen();
 
-        // Keep flushing until a zero-length chunk has been sent.
-        while (!this.eos) {
-            this.flush();
-        }
+        this.flush();
+
+        this.target.write(TERMINATOR);
 
         this.target.close();
 

@@ -11,6 +11,7 @@ import net.cmpsb.cacofony.http.response.Response;
 import net.cmpsb.cacofony.http.response.ResponsePreparer;
 import net.cmpsb.cacofony.http.response.ResponseWriter;
 import net.cmpsb.cacofony.io.HttpInputStream;
+import net.cmpsb.cacofony.io.ProtectedOutputStream;
 import net.cmpsb.cacofony.route.Router;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +64,7 @@ public class ConnectionHandler {
 
             MutableRequest request = null;
             Response response;
-            final OutputStream out = client.getOutputStream();
+            final ProtectedOutputStream out = new ProtectedOutputStream(client.getOutputStream());
             final HttpInputStream in = new HttpInputStream(client.getInputStream());
 
             while (true) {
@@ -88,7 +89,6 @@ public class ConnectionHandler {
                     response = this.exceptionHandler.handle(request, ex);
                     this.preparer.prepare(request, response);
                 } catch (final IOException ex) {
-                    out.close();
                     break;
                 } catch (final Exception ex) {
                     logger.error("Internal server error: ", ex);
@@ -97,14 +97,15 @@ public class ConnectionHandler {
                 }
 
                 final OutputStream stream = this.writer.write(request, response, out);
+                stream.close();
 
                 if (this.mustCloseConnection(request)) {
-                    stream.close();
                     break;
-                } else {
-                    stream.flush();
                 }
             }
+
+            out.allowClosing(true);
+            out.close();
 
             logger.debug("Remote {} disconnected.", client.getInetAddress());
         } catch (final IOException ex) {
