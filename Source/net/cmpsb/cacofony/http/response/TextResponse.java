@@ -1,6 +1,7 @@
 package net.cmpsb.cacofony.http.response;
 
 import net.cmpsb.cacofony.http.request.Request;
+import net.cmpsb.cacofony.mime.MimeType;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -41,6 +42,20 @@ public class TextResponse extends Response implements CharSequence {
     }
 
     /**
+     * Creates a new plain text response with a status code.
+     *
+     * @param status  the status code
+     * @param content the text to send
+     * @param charset the charset to encode the text with
+     */
+    public TextResponse(final ResponseCode status, final String content, final Charset charset) {
+        super(status);
+
+        this.content = content;
+        this.charset = charset;
+    }
+
+    /**
      * Creates a new plain text response.
      * <p>
      * The default charset is UTF-8.
@@ -52,12 +67,25 @@ public class TextResponse extends Response implements CharSequence {
     }
 
     /**
+     * Creates a new plain text response with a status code.
+     * <p>
+     * The default charset is UTF-8.
+     *
+     * @param status  the status code
+     * @param content the text to send
+     */
+    public TextResponse(final ResponseCode status, final String content) {
+        super(status);
+
+        this.content = content;
+    }
+
+    /**
      * Creates a new plain text response with an empty string as its content.
      * <p>
      * Use {@link #setContent(String)} or {@link #setContent(String, Charset)} to set the content.
      */
     public TextResponse() {
-
     }
 
     /**
@@ -123,6 +151,12 @@ public class TextResponse extends Response implements CharSequence {
      */
     @Override
     public void prepare(final Request request) {
+        if (this.getContentType() == null) {
+            final MimeType type = MimeType.text();
+            type.getParameters().put("charset", this.charset.name());
+            this.setContentType(type);
+        }
+
         this.bytes = this.content.getBytes(this.charset);
         this.content = null;
         this.charset = null;

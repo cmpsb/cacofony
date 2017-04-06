@@ -107,7 +107,7 @@ public class ResponseWriter {
                               final Response response,
                               final OutputStream out) throws IOException {
         final long contentLength = response.getContentLength();
-        if (contentLength > 0) {
+        if (contentLength >= 0) {
             return this.writePlainResponse(request, response, out);
         } else {
             return this.writeEncodedResponse(request, response, out);
@@ -128,6 +128,13 @@ public class ResponseWriter {
     private OutputStream writePlainResponse(final Request request,
                                             final Response response,
                                             final OutputStream out) throws IOException {
+        final Method method;
+        if (request == null) {
+            method = Method.GET;
+        } else {
+            method = request.getMethod();
+        }
+
         final TransferEncoding aeEncoding = this.getAcceptableEncodings(request, "Accept-Encoding");
         if (this.canCompress(response) && aeEncoding != null) {
             final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -140,7 +147,7 @@ public class ResponseWriter {
 
             this.writeHeaders(request, response, out);
 
-            if (request.getMethod() != Method.HEAD) {
+            if (method != Method.HEAD) {
                 out.write(buffer.toByteArray());
             }
 
@@ -150,7 +157,7 @@ public class ResponseWriter {
 
             this.writeHeaders(request, response, out);
 
-            if (request.getMethod() != Method.HEAD) {
+            if (method != Method.HEAD) {
                 response.write(out);
             }
 
@@ -246,6 +253,10 @@ public class ResponseWriter {
      * @return the first acceptable compression encoding or {@code null}
      */
     private TransferEncoding getAcceptableEncodings(final Request request, final String header) {
+        if (request == null) {
+            return null;
+        }
+
         return this.headerValueParser.parseCommaSeparated(request, header)
                 .stream()
                 .map(TransferEncoding::get)
