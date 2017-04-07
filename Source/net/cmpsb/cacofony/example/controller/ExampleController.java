@@ -5,13 +5,11 @@ import net.cmpsb.cacofony.http.request.Request;
 import net.cmpsb.cacofony.http.response.StreamedResponse;
 import net.cmpsb.cacofony.http.response.TextResponse;
 import net.cmpsb.cacofony.http.response.Response;
-import net.cmpsb.cacofony.io.LineAwareInputStream;
 import net.cmpsb.cacofony.mime.MimeType;
 import net.cmpsb.cacofony.route.Route;
 import net.cmpsb.cacofony.util.Ob;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;

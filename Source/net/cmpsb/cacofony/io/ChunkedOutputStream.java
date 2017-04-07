@@ -178,7 +178,7 @@ public class ChunkedOutputStream extends OutputStream {
     /**
      * Flushes this output stream and forces a new chunk to be generated.
      * <p>
-     * Note that this may "close" the stream if 0 bytes are flushed.
+     * 0-byte flushes are ignored; to end the stream, use {@link #close()}.
      *
      * @throws IOException if an I/O error occurs
      */
@@ -205,6 +205,13 @@ public class ChunkedOutputStream extends OutputStream {
      * <p>
      * The client will be notified of this fact by sending it a 0-length chunk.
      * No extra headers are appended.
+     * <p>
+     * Under normal circumstances in a request-response lifecycle, this method will flush all its
+     * buffers and close any underlying streams, but the client socket will stay open. Closing the
+     * socket is handled by the {@link net.cmpsb.cacofony.server.ConnectionHandler}. If you do want
+     * to close the entire socket, throw a
+     * {@link net.cmpsb.cacofony.http.exception.SilentException}. Do note however that this also
+     * causes any response data to be ignored.
      *
      * @throws IOException if an I/O error occurs
      */
