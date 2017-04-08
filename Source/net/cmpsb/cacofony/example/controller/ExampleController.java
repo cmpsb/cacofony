@@ -81,20 +81,40 @@ public class ExampleController extends Controller {
         final InputStream in = this.getClass().getResourceAsStream(filename);
         final BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
+        final String frameName = "/net/cmpsb/cacofony/example/plumbing.html";
+        final InputStream frameIn = this.getClass().getResourceAsStream(frameName);
+        final BufferedReader frameReader = new BufferedReader(new InputStreamReader(frameIn));
+
         final Response response = new StreamedResponse(out -> {
             while (true) {
-                out.write(reader.readLine().getBytes(StandardCharsets.UTF_8));
+                final String line = frameReader.readLine();
+                if (line == null) {
+                    break;
+                }
+
+                out.write(line.getBytes(StandardCharsets.UTF_8));
+            }
+            out.flush();
+
+            while (true) {
+                final String line = reader.readLine();
+
+                if (line == null) {
+                    break;
+                }
+
+                out.write(line.getBytes(StandardCharsets.UTF_8));
                 out.write('\n');
                 out.flush();
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(2000);
                 } catch (InterruptedException e) {
                     // Do nothing.
                 }
             }
         });
 
-        response.setContentType(MimeType.text());
+        response.setContentType(MimeType.html());
 
         return response;
     }
