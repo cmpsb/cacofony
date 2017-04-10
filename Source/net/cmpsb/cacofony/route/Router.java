@@ -210,6 +210,12 @@ public class Router {
             if (targetMatcher.matches()) {
                 final Map<String, String> params = entry.getPath().parseParameters(targetMatcher);
 
+                try {
+                    request.setPath(target, targetMatcher.group("QUERY"));
+                } catch (final Exception ex) {
+                    // Pass.
+                }
+
                 request.setPathParameters(params);
                 request.setContentType(contentType);
 

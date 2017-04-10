@@ -3,6 +3,8 @@ package net.cmpsb.cacofony.http.request;
 import net.cmpsb.cacofony.mime.MimeType;
 
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +30,27 @@ public class MutableRequest extends Request {
     /**
      * The raw (unescaped, un-parsed) request path.
      */
-    private String rawPath = null;
+    private String path = "";
+
+    /**
+     * The unescaped path.
+     */
+    private String unescapedPath = "";
+
+    /**
+     * The request's query string.
+     */
+    private String queryString = "";
+
+    /**
+     * The unescaped query string.
+     */
+    private String unescapedQueryString = "";
+
+    /**
+     * The request scheme.
+     */
+    private String scheme = "";
 
     /**
      * The major HTTP version requested.
@@ -79,9 +101,10 @@ public class MutableRequest extends Request {
                           final int versionMinor) {
         this.method = method;
         this.realMethod = method;
-        this.rawPath = path;
         this.versionMajor = versionMajor;
         this.versionMinor = versionMinor;
+
+        this.setPath(path, "");
     }
 
     /**
@@ -147,7 +170,21 @@ public class MutableRequest extends Request {
      */
     @Override
     public String getRawPath() {
-        return this.rawPath;
+        return this.path + this.queryString;
+    }
+
+    /**
+     * Sets the path.
+     *
+     * @param path the path
+     * @param queryString the query string, including the leading question mark
+     */
+    public void setPath(final String path, final String queryString) {
+        this.path = path;
+        this.unescapedPath = this.decodeUriComponent(path);
+
+        this.queryString = queryString;
+        this.unescapedQueryString = this.decodeUriComponent(queryString);
     }
 
     /**
@@ -155,7 +192,7 @@ public class MutableRequest extends Request {
      */
     @Override
     public String getUri() {
-        return null;
+        return this.path;
     }
 
     /**
@@ -163,7 +200,7 @@ public class MutableRequest extends Request {
      */
     @Override
     public String getFullUri() {
-        return null;
+        return this.path + this.unescapedQueryString;
     }
 
     /**
@@ -171,7 +208,7 @@ public class MutableRequest extends Request {
      */
     @Override
     public String getUrl() {
-        return null;
+        return this.scheme + "://" + this.getHost() + this.unescapedPath;
     }
 
     /**
@@ -179,7 +216,7 @@ public class MutableRequest extends Request {
      */
     @Override
     public String getFullUrl() {
-        return null;
+        return this.getUrl() + this.unescapedQueryString;
     }
 
     /**
@@ -188,6 +225,23 @@ public class MutableRequest extends Request {
     @Override
     public String getHost() {
         return this.getHeader("Host");
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getScheme() {
+        return this.scheme;
+    }
+
+    /**
+     * Sets the request scheme.
+     *
+     * @param scheme the scheme
+     */
+    public void setScheme(final String scheme) {
+        this.scheme = scheme;
     }
 
     /**
@@ -304,5 +358,21 @@ public class MutableRequest extends Request {
      */
     public void setContentLength(final long contentLength) {
         this.contentLength = contentLength;
+    }
+
+    /**
+     * Decodes a URI part from the RFC encoding.
+     *
+     * @param str the string to decode
+     *
+     * @return a decoded string
+     */
+    private String decodeUriComponent(final String str) {
+        try {
+            return URLDecoder.decode(str, "UTF-8");
+        } catch (final UnsupportedEncodingException ex) {
+            // Not gonna happen.
+            throw new RuntimeException(ex);
+        }
     }
 }

@@ -145,6 +145,17 @@ public abstract class Request {
     public abstract String getHost();
 
     /**
+     * Returns the URL scheme used for this request.
+     * <p>
+     * This value may not be the actual scheme used; for requests over anything lower than HTTP/2
+     * the scheme is inferred through the use of encryption: encrypted requests return
+     * {@code https}, while plain text requests return {@code http}.
+     *
+     * @return the URL scheme
+     */
+    public abstract String getScheme();
+
+    /**
      * Returns a parameter parsed from the URI.
      *
      * @param param the parameter to look for

@@ -57,8 +57,9 @@ public class ConnectionHandler {
      * Handles an active connection.
      *
      * @param client the client to serve
+     * @param scheme the request scheme
      */
-    public void handle(final Socket client) {
+    public void handle(final Socket client, final String scheme) {
         try {
             logger.debug("Remote {} connected.", client.getInetAddress());
 
@@ -70,6 +71,7 @@ public class ConnectionHandler {
             while (true) {
                 try {
                     request = this.parser.parse(in);
+                    request.setScheme(scheme);
 
                     final long start = System.nanoTime();
 
