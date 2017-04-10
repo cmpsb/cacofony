@@ -34,6 +34,7 @@ public final class Main {
         server.register(TemplatingService.class, service);
 
         server.scanPackage("net.cmpsb.cacofony.example");
+        server.addStaticFiles("/static", "D:\\Dust\\Cacofony\\");
         server.start();
     }
 

@@ -4,7 +4,12 @@ import net.cmpsb.cacofony.controller.ControllerLoader;
 import net.cmpsb.cacofony.di.DefaultDependencyResolver;
 import net.cmpsb.cacofony.di.DependencyResolver;
 import net.cmpsb.cacofony.mime.FastMimeParser;
+import net.cmpsb.cacofony.mime.MimeDb;
+import net.cmpsb.cacofony.mime.MimeDbLoader;
 import net.cmpsb.cacofony.mime.MimeParser;
+import net.cmpsb.cacofony.route.Router;
+import net.cmpsb.cacofony.route.RoutingEntry;
+import net.cmpsb.cacofony.route.StaticFileRouteFactory;
 import net.cmpsb.cacofony.templating.DummyTemplatingService;
 import net.cmpsb.cacofony.templating.TemplatingService;
 import net.cmpsb.cacofony.util.Ob;
@@ -47,6 +52,11 @@ public class Server {
     private boolean idle = true;
 
     /**
+     * The static file route factory to use.
+     */
+    private StaticFileRouteFactory staticFileRouteFactory = null;
+
+    /**
      * Creates a new server.
      *
      * @param resolver the dependency resolver to use
@@ -84,6 +94,21 @@ public class Server {
     }
 
     /**
+     * Register a prefix for serving static files from disk.
+     *
+     * @param prefix the URL prefix static files should be behind
+     * @param dir    the local directory the static files are in
+     */
+    public void addStaticFiles(final String prefix, final String dir) {
+        this.ensureReady();
+
+        final Router router = this.resolver.get(Router.class);
+
+        final RoutingEntry entry = this.staticFileRouteFactory.build(prefix, dir);
+        router.addRoute(entry);
+    }
+
+    /**
      * Registers an external service.
      *
      * @param type     the service type
@@ -118,6 +143,17 @@ public class Server {
         if (!this.resolver.isKnown(TemplatingService.class)) {
             this.resolver.add(new DummyTemplatingService(), TemplatingService.class);
         }
+
+        if (!this.resolver.isKnown(MimeDb.class)) {
+            final MimeDb db = new MimeDb();
+            final MimeDbLoader loader = this.resolver.get(MimeDbLoader.class);
+            loader.load(this.getClass().getResourceAsStream("/net/cmpsb/cacofony/mime.types"), db);
+            this.resolver.add(db);
+        }
+
+        if (this.staticFileRouteFactory == null) {
+            this.staticFileRouteFactory = this.resolver.get(StaticFileRouteFactory.class);
+        }
     }
 
     /**
@@ -142,6 +178,14 @@ public class Server {
         }
 
         if (!this.resolver.isKnown(TemplatingService.class)) {
+            return false;
+        }
+
+        if (this.staticFileRouteFactory == null) {
+            return false;
+        }
+
+        if (!this.resolver.isKnown(MimeDb.class)) {
             return false;
         }
 

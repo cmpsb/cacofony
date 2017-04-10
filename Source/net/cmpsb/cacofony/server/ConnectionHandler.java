@@ -85,7 +85,7 @@ public class ConnectionHandler {
                     client.close();
                     return;
                 } catch (final HttpException ex) {
-                    logger.warn("HTTP exception: {}", ex.getMessage());
+                    logger.warn("HTTP exception: ", ex);
                     response = this.exceptionHandler.handle(request, ex);
                     this.preparer.prepare(request, response);
                 } catch (final IOException ex) {

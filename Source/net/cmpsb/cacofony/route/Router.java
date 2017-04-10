@@ -120,7 +120,11 @@ public class Router {
             }
         }
 
-        throw new NotFoundException("That page or route doesn't exist or cannot be shown.");
+        throw new NotFoundException(
+                "The page or route at "
+              + request.getRawPath()
+              + " doesn't exist or cannot be shown."
+        );
     }
 
     /**

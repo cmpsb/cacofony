@@ -59,7 +59,7 @@ public class MimeType implements Comparable<MimeType> {
     /**
      * Any parameters.
      */
-    private final Map<String, String> parameters = new HashMap<>();
+    private final Map<String, String> parameters;
 
     /**
      * The accept type's quality rank.
@@ -76,6 +76,21 @@ public class MimeType implements Comparable<MimeType> {
     public MimeType(final String mainType, final String subType) {
         this.mainType = mainType;
         this.subType = subType;
+        this.parameters = new HashMap<>();
+    }
+
+    /**
+     * Creates a new MIME type as a copy of another.
+     * <p>
+     * Everything, including rank and parameters, is copied.
+     *
+     * @param original the type to copy
+     */
+    public MimeType(final MimeType original) {
+        this.mainType = original.mainType;
+        this.subType = original.subType;
+        this.parameters = new HashMap<>(original.parameters);
+        this.rank = original.rank;
     }
 
     /**
