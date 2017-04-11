@@ -45,6 +45,15 @@ public class MutableServerSettings implements ServerSettings {
     }
 
     /**
+     * Sets whether the server may compress responses.
+     *
+     * @param enabled true to allow the server to compress responses, false otherwise
+     */
+    public void setCompressionEnabled(final boolean enabled) {
+        this.compressionEnabled = enabled;
+    }
+
+    /**
      * Returns whether the server is allowed to try to apply compression to responses that don't
      * explicitly allow it.
      *
@@ -53,6 +62,15 @@ public class MutableServerSettings implements ServerSettings {
     @Override
     public boolean canCompressByDefault() {
         return this.compressByDefault;
+    }
+
+    /**
+     * Sets whether the server may try to compress responses that don't care about compression.
+     *
+     * @param compress whether to compress any response that explicitly allows compression
+     */
+    public void setCompressByDefault(final boolean compress) {
+        this.compressByDefault = compress;
     }
 
     /**
@@ -66,6 +84,15 @@ public class MutableServerSettings implements ServerSettings {
     }
 
     /**
+     * Sets the list of compression algorithms the server may accept and send.
+     *
+     * @param algorithms the list of algorithms
+     */
+    public void setCompressionAlgorithms(final List<TransferEncoding> algorithms) {
+        this.compressionAlgorithms = algorithms;
+    }
+
+    /**
      * Returns whether the server may add its name and version to each response.
      *
      * @return whether to add the Server header
@@ -73,5 +100,14 @@ public class MutableServerSettings implements ServerSettings {
     @Override
     public boolean mayBroadcastServerVersion() {
         return this.broadcastServerVersion;
+    }
+
+    /**
+     * Sets whether the server is allowed to add its own name and version to each response.
+     *
+     * @param broadcast true to allow the server to add a Server header, otherwise false
+     */
+    public void setBroadcastServerVersion(final boolean broadcast) {
+        this.broadcastServerVersion = broadcast;
     }
 }
