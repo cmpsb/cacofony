@@ -111,7 +111,8 @@ public class RoutingEntry implements Comparable<RoutingEntry> {
         return Objects.equals(this.path, otherEntry.path)
             && Objects.equals(this.name, otherEntry.name)
             && Objects.equals(this.action, otherEntry.action)
-            && Objects.equals(this.methods, otherEntry.methods);
+            && Objects.equals(this.methods, otherEntry.methods)
+            && Objects.equals(this.contentTypes, otherEntry.contentTypes);
     }
 
     /**
@@ -121,7 +122,7 @@ public class RoutingEntry implements Comparable<RoutingEntry> {
      */
     @Override
     public final int hashCode() {
-        return Objects.hash(this.path, this.name, this.action, this.methods);
+        return Objects.hash(this.path, this.name, this.action, this.methods, this.contentTypes);
     }
 
     /**

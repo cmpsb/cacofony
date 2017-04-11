@@ -38,17 +38,32 @@ public class RangeParser {
     }
 
     /**
+     * Parser a request's ranges into a comprehensive set.
+     *
+     * @param request the request
+     * @param size    the total size of the response
+     *
+     * @return a list of byte ranges
+     *
+     * @deprecated use {@link #parse(List, long)} instead
+     */
+    @Deprecated
+    public List<Range> parse(final Request request, final long size) {
+        final List<String> values = this.parser.parseCommaSeparated(request, "Range");
+
+        return this.parse(values, size);
+    }
+
+    /**
      * Parses a request's ranges into a comprehensive set.
      *
-     * @param request the request to parse
+     * @param rValues the values to parse
      * @param size    the total size of the response to range
      *
      * @return a list of byte ranges
      */
-    public List<Range> parse(final Request request, final long size) {
+    public List<Range> parse(final List<String> rValues, final long size) {
         final List<Range> ranges = new ArrayList<>();
-
-        final List<String> rValues = this.parser.parseCommaSeparated(request, "Range");
 
         if (rValues.size() > MAX_RANGES) {
             throw new BadRequestException("Too many ranges.");
