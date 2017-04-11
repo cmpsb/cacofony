@@ -119,10 +119,24 @@ public abstract class Response {
     }
 
     /**
-     * @return the request's headers
+     * Returns the response's headers.
+     *
+     * @return the response's headers
      */
     public Map<String, List<String>> getHeaders() {
         return this.headers;
+    }
+
+    /**
+     * Adopts the headers from another map.
+     *
+     *
+     * @param otherHeaders the other headers
+     */
+    public void adoptHeaders(final Map<String, List<String>> otherHeaders) {
+        for (final String key : otherHeaders.keySet()) {
+            this.addHeader(key, otherHeaders.get(key));
+        }
     }
 
     /**

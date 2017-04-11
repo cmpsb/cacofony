@@ -1,8 +1,8 @@
-package net.cmpsb.cacofony.http.response;
+package net.cmpsb.cacofony.http.response.file;
 
-import net.cmpsb.cacofony.http.exception.BadRequestException;
-import net.cmpsb.cacofony.http.request.HeaderValueParser;
 import net.cmpsb.cacofony.http.request.Request;
+import net.cmpsb.cacofony.http.response.Response;
+import net.cmpsb.cacofony.http.response.ResponseCode;
 import net.cmpsb.cacofony.mime.MimeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +15,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -33,11 +33,6 @@ import java.util.stream.Collectors;
  */
 public class FileResponse extends Response {
     private static final Logger logger = LoggerFactory.getLogger(FileResponse.class);
-
-    /**
-     * The maximum amount of range segments the server is willing to process.
-     */
-    private static final int MAX_RANGES = 16;
 
     /**
      * The internal buffer used to transfer bytes to the client.
@@ -62,7 +57,7 @@ public class FileResponse extends Response {
     /**
      * The ranges to send. If empty, then the whole file is sent.
      */
-    private final List<Range> ranges = new LinkedList<>();
+    private List<Range> ranges = Collections.emptyList();
 
     /**
      * The boundary string between ranges.
@@ -126,6 +121,7 @@ public class FileResponse extends Response {
      * @return an ETag
      */
     private String generateEtag() {
+        // It's too large as a decimal value, so binary I guess?
         final long basis = 0b1100101111110010100111001110010010000100001000100010001100100101L;
         final long prime = 1099511628211L;
 
@@ -136,7 +132,7 @@ public class FileResponse extends Response {
             hash *= prime;
         }
 
-        return Long.toString(hash, 32);
+        return Long.toString(Math.abs(hash), 32);
     }
 
     /**
@@ -165,6 +161,15 @@ public class FileResponse extends Response {
     }
 
     /**
+     * Sets the ranges the response should send.
+     *
+     * @param ranges the ranges
+     */
+    public void setRanges(final List<Range> ranges) {
+        this.ranges = ranges;
+    }
+
+    /**
      * Prepares the response for transfer.
      *
      * @param request the request that triggered this response
@@ -176,17 +181,16 @@ public class FileResponse extends Response {
             this.setHeader("ETag", this.etag);
         }
 
-        this.buildRanges(request);
+        if (this.ranges.size() == 1) {
+            final Range range = this.ranges.get(0);
+            this.setHeader("Content-Range", "bytes " + range + "/" + this.size);
+        } else if (this.ranges.size() > 1) {
+            this.boundary = this.generateBoundary();
 
-        if (!this.ranges.isEmpty()) {
             final MimeType multipartType = new MimeType("multipart", "byteranges");
-            this.boundary = new Random()
-                    .longs(4)
-                    .map(Math::abs)
-                    .mapToObj(n -> Long.toString(n, 32))
-                    .collect(Collectors.joining());
             multipartType.getParameters().put("boundary", this.boundary);
             super.setContentType(multipartType);
+
             this.setStatus(ResponseCode.PARTIAL_CONTENT);
         }
 
@@ -194,81 +198,16 @@ public class FileResponse extends Response {
     }
 
     /**
-     * Parses a request's ranges into a comprehensive set.
+     * Generates a random boundary string.
      *
-     * @param request the request to parse
+     * @return a boundary string
      */
-    private void buildRanges(final Request request) {
-        // Don't build a range if the request doesn't allow it.
-        if (!request.hasHeader("Range")
-        || (request.hasHeader("If-Range") && !request.getHeader("If-Range").equals(this.etag))) {
-            return;
-        }
-
-        final HeaderValueParser parser = new HeaderValueParser();
-        final List<String> rValues = parser.parseCommaSeparated(request, "Range");
-
-        if (rValues.size() > MAX_RANGES) {
-            throw new BadRequestException("Too many ranges.");
-        }
-
-        String unit = "_";
-        for (final String value : rValues) {
-            final String rangeStr;
-
-            // Scan for a possible new unit.
-            final int equalsIndex = value.indexOf('=');
-            if (equalsIndex != -1) {
-                unit = value.substring(0, equalsIndex);
-                rangeStr = value.substring(equalsIndex + 1);
-            } else {
-                rangeStr = value;
-            }
-
-            // Skip this range if the current unit is unknown.
-            if (!unit.equals("bytes")) {
-                continue;
-            }
-
-            this.ranges.add(this.parseRange(rangeStr));
-        }
-
-        logger.debug("HOLD ONTO YER HATS, RANGES BE INCOMING");
-        this.ranges.forEach(r -> logger.debug("{}", r));
-    }
-
-    /**
-     * Parses a string into a Range.
-     *
-     * @param rangeStr the string to parse
-     *
-     * @return a range matching that string
-     */
-    private Range parseRange(final String rangeStr) {
-        final int hyphenIndex = rangeStr.indexOf('-');
-
-        // If the hyphen is at the start, construct a range loading the last n bytes.
-        if (hyphenIndex == 0) {
-            final String lengthStr = rangeStr.substring(1);
-            final long length = Long.parseLong(lengthStr);
-
-            return new Range(this.size - length, this.size - 1);
-        }
-
-        // Split the string.
-        final String startStr = rangeStr.substring(0, hyphenIndex);
-        final long start = Long.parseLong(startStr);
-
-        final String endStr = rangeStr.substring(hyphenIndex + 1);
-
-        // If the hyphen is at the end, offset the range.
-        if (endStr.isEmpty()) {
-            return new Range(start, this.size - 1);
-        }
-
-        // Otherwise copy the completely specified range.
-        final long end = Long.parseLong(endStr);
-        return new Range(start, end);
+    private String generateBoundary() {
+        return new Random()
+                .longs(4)
+                .map(Math::abs)
+                .mapToObj(n -> Long.toString(n, 32))
+                .collect(Collectors.joining());
     }
 
     /**
@@ -279,12 +218,11 @@ public class FileResponse extends Response {
      */
     @Override
     public void write(final OutputStream out) throws IOException {
-
-        final RandomAccessFile raf = new RandomAccessFile(this.file, "r");
-
         // If this request is not ranged, reply with the whole file.
         if (this.ranges.isEmpty()) {
             this.writeFull(out);
+        } else if (this.ranges.size() == 1) {
+            this.writeSingleRange(out);
         } else {
             this.writeRanged(out);
         }
@@ -319,6 +257,37 @@ public class FileResponse extends Response {
     }
 
     /**
+     * Writes the only range if the response is single-ranged.
+     *
+     * @param out the client's output stream
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private void writeSingleRange(final OutputStream out) throws IOException {
+        try (RandomAccessFile raf = new RandomAccessFile(this.file, "r")) {
+            final byte[] buffer = new byte[this.bufferSize];
+            final Range range = this.ranges.get(0);
+
+            raf.seek(range.getStart());
+
+            int bytesRead;
+            long length = range.getLength();
+            while (length > 0) {
+                final int toRead = Math.min((int) length, this.bufferSize);
+                bytesRead = raf.read(buffer, 0, toRead);
+
+                if (bytesRead == -1) {
+                    throw new IOException("EOF before end of range.");
+                }
+
+                out.write(buffer, 0, bytesRead);
+
+                length -= bytesRead;
+            }
+        }
+    }
+
+    /**
      * Writes some ranges of bytes from the file to the client.
      *
      * @param out the client's output stream
@@ -340,18 +309,15 @@ public class FileResponse extends Response {
 
             for (final Range range : this.ranges) {
                 final String header = commonHeaderStart
-                        + range.start
-                        + '-'
-                        + range.end
+                        + range
                         + '/'
                         + commonHeaderEnd;
 
                 out.write(header.getBytes(StandardCharsets.ISO_8859_1));
 
-                raf.seek(range.start);
+                raf.seek(range.getStart());
 
-                long length = range.end - range.start + 1;
-
+                long length = range.getLength();
                 while (length > 0) {
                     final int toRead = Math.min((int) length, this.bufferSize);
                     int bytesRead = raf.read(buffer, 0, toRead);
@@ -388,50 +354,5 @@ public class FileResponse extends Response {
         }
 
         return this.ranges.stream().mapToLong(Range::getLength).sum();
-    }
-
-    /**
-     * A range in a Range header.
-     */
-    private class Range {
-        /**
-         * The first byte of the range, inclusive.
-         */
-        private long start;
-
-        /**
-         * The last byte of the range, inclusive.
-         */
-        private long end;
-
-        /**
-         * Creates a new inclusive range.
-         *
-         * @param start the first byte of the range
-         * @param end   the last byte of the range
-         */
-        Range(final long start, final long end) {
-            this.start = start;
-            this.end = end;
-        }
-
-        /**
-         * Calculates the length of the range in bytes.
-         *
-         * @return the length of the range in bytes
-         */
-        public long getLength() {
-            return this.end - this.start + 1;
-        }
-
-        /**
-         * Generates a string representing this range.
-         *
-         * @return a string representing this range
-         */
-        @Override
-        public String toString() {
-            return this.start + "-" + this.end;
-        }
     }
 }

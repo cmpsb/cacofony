@@ -157,7 +157,12 @@ public class TextResponse extends Response implements CharSequence {
             this.setContentType(type);
         }
 
-        this.bytes = this.content.getBytes(this.charset);
+        if (this.content != null) {
+            this.bytes = this.content.getBytes(this.charset);
+        } else {
+            this.bytes = new byte[] {};
+        }
+
         this.content = null;
         this.charset = null;
 

@@ -5,8 +5,9 @@ import net.cmpsb.cacofony.http.request.HeaderValueParser;
 import net.cmpsb.cacofony.http.request.Method;
 import net.cmpsb.cacofony.http.request.Request;
 import net.cmpsb.cacofony.http.response.EmptyResponse;
-import net.cmpsb.cacofony.http.response.FileResponse;
+import net.cmpsb.cacofony.http.response.file.FileResponse;
 import net.cmpsb.cacofony.http.response.ResponseCode;
+import net.cmpsb.cacofony.http.response.file.RangeParser;
 import net.cmpsb.cacofony.mime.MimeDb;
 import net.cmpsb.cacofony.mime.MimeParser;
 import net.cmpsb.cacofony.mime.MimeType;
@@ -19,7 +20,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.RandomAccessFile;
 import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.Collections;
@@ -54,21 +54,29 @@ public class StaticFileRouteFactory {
     private final HeaderValueParser valueParser;
 
     /**
+     * The range parser to use.
+     */
+    private final RangeParser rangeParser;
+
+    /**
      * Creates a new factory for routes serving static files.
      *
      * @param compiler    the path compiler to use
      * @param parser      the MIME parser to use
      * @param mimeDb      the MIME DB to use
      * @param valueParser the header value parser to use
+     * @param rangeParser the range parser to use
      */
     public StaticFileRouteFactory(final PathCompiler compiler,
                                   final MimeParser parser,
                                   final MimeDb mimeDb,
-                                  final HeaderValueParser valueParser) {
+                                  final HeaderValueParser valueParser,
+                                  final RangeParser rangeParser) {
         this.compiler = compiler;
         this.parser = parser;
         this.mimeDb = mimeDb;
         this.valueParser = valueParser;
+        this.rangeParser = rangeParser;
     }
 
     /**
@@ -105,11 +113,6 @@ public class StaticFileRouteFactory {
             try {
                 final String path = localDir + '/' + request.getPathParameter("file");
                 final File file = new File(path);
-                final RandomAccessFile raf = new RandomAccessFile(file, "r");
-
-                final InputStream in = new FileInputStream(raf.getFD());
-                final MimeType type = this.guessType(file, path);
-                in.close();
 
                 final FileResponse response = new FileResponse(new File(path));
 
@@ -117,7 +120,8 @@ public class StaticFileRouteFactory {
                     return new EmptyResponse(ResponseCode.NOT_MODIFIED);
                 }
 
-                response.setContentType(type);
+                response.setRanges(this.rangeParser.parse(request, response.getContentLength()));
+                response.setContentType(this.guessType(file, path));
 
                 return response;
             } catch (final FileNotFoundException ex) {
@@ -133,15 +137,16 @@ public class StaticFileRouteFactory {
      * @param name the name of the file
      *
      * @return the file's MIME type
-     *
-     * @throws IOException if the file cannot be read
      */
-    private MimeType guessType(final File file, final String name) throws IOException {
-        logger.debug(name);
+    private MimeType guessType(final File file, final String name) {
+        String fileType = null;
 
-        final InputStream in = new FileInputStream(file);
-
-        String fileType = URLConnection.guessContentTypeFromStream(in);
+        try (InputStream in = new FileInputStream(file)) {
+            fileType = URLConnection.guessContentTypeFromStream(in);
+        } catch (final IOException ex) {
+            logger.warn("I/O exception while guessing the content type of \"{}\".", name, ex);
+            // Ignore and move on to the next method.
+        }
 
         if (fileType == null) {
             fileType = URLConnection.guessContentTypeFromName(name);

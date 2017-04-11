@@ -87,13 +87,11 @@ public class ConnectionHandler {
                     client.close();
                     return;
                 } catch (final HttpException ex) {
-                    logger.warn("HTTP exception: ", ex);
                     response = this.exceptionHandler.handle(request, ex);
                     this.preparer.prepare(request, response);
                 } catch (final IOException ex) {
                     break;
                 } catch (final Exception ex) {
-                    logger.error("Internal server error: ", ex);
                     response = this.exceptionHandler.handle(request, ex);
                     this.preparer.prepare(request, response);
                 }
@@ -112,6 +110,9 @@ public class ConnectionHandler {
             logger.debug("Remote {} disconnected.", client.getInetAddress());
         } catch (final IOException ex) {
             logger.error("I/O exception while serving a client: ", ex);
+        } catch (final Exception ex) {
+            logger.error("Fatal exception: ", ex);
+            throw ex;
         }
     }
 
