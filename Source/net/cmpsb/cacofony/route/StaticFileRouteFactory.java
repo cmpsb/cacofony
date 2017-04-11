@@ -4,7 +4,6 @@ import net.cmpsb.cacofony.http.exception.NotFoundException;
 import net.cmpsb.cacofony.http.request.HeaderValueParser;
 import net.cmpsb.cacofony.http.request.Method;
 import net.cmpsb.cacofony.http.request.Request;
-import net.cmpsb.cacofony.http.response.EmptyResponse;
 import net.cmpsb.cacofony.http.response.file.FileResponse;
 import net.cmpsb.cacofony.http.response.ResponseCode;
 import net.cmpsb.cacofony.http.response.file.RangeParser;

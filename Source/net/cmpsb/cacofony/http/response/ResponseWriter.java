@@ -128,6 +128,7 @@ public class ResponseWriter {
     private OutputStream writePlainResponse(final Request request,
                                             final Response response,
                                             final OutputStream out) throws IOException {
+        final boolean maySendMetadata = this.maySendMetadata(request, response);
         final boolean maySendBody = this.maySendBody(request, response);
 
         final TransferEncoding aeEncoding = this.getAcceptableEncodings(request, "Accept-Encoding");
@@ -139,7 +140,7 @@ public class ResponseWriter {
 
             response.setHeader("Content-Encoding", aeEncoding.getHttpName());
 
-            if (maySendBody) {
+            if (maySendMetadata) {
                 response.setHeader("Content-Length", String.valueOf(buffer.size()));
             }
 
@@ -151,7 +152,7 @@ public class ResponseWriter {
 
             return out;
         } else {
-            if (maySendBody) {
+            if (maySendMetadata) {
                 response.setHeader("Content-Length", String.valueOf(response.getContentLength()));
             }
 
@@ -276,10 +277,21 @@ public class ResponseWriter {
      */
     private boolean maySendBody(final Request request, final Response response) {
         return !(request != null && request.getMethod() == Method.HEAD)
-            && !(response.getStatus().getCode() >= 100 && response.getStatus().getCode() < 200)
+            && this.maySendMetadata(request, response);
+    }
+
+    /**
+     * Returns whether the writer may send entity metadata.
+     *
+     * @param request  the request that triggered the response
+     * @param response the response to send
+     *
+     * @return true if entity metadata may be sent, otherwise false
+     */
+    private boolean maySendMetadata(final Request request, final Response response) {
+        return !(response.getStatus().getCode() >= 100 && response.getStatus().getCode() < 200)
             && response.getStatus() != ResponseCode.NO_CONTENT
             && response.getStatus() != ResponseCode.NOT_MODIFIED;
-
     }
 
 }

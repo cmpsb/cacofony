@@ -63,57 +63,10 @@ public class ConnectionHandler {
         try {
             logger.debug("Remote {} connected.", client.getInetAddress());
 
-            MutableRequest request = null;
-            Response response;
             final ProtectedOutputStream out = new ProtectedOutputStream(client.getOutputStream());
             final HttpInputStream in = new HttpInputStream(client.getInputStream());
 
-            while (true) {
-                try {
-                    request = this.parser.parse(in);
-                    request.setScheme(scheme);
-
-                    final long start = System.nanoTime();
-
-                    response = this.router.handle(request);
-
-                    final long time = System.nanoTime() - start;
-                    final double satisfactionIndex = 600_000_000.0 / time * 100.0;
-                    response.setHeader("X-Satisfaction-Index", satisfactionIndex + "%");
-
-                    this.preparer.prepare(request, response);
-                } catch (final SilentException ex) {
-                    logger.warn("Server closed connection. {}", ex.getMessage());
-                    client.close();
-                    return;
-                } catch (final HttpException ex) {
-                    response = this.exceptionHandler.handle(request, ex);
-                    this.preparer.prepare(request, response);
-                } catch (final IOException ex) {
-                    break;
-                } catch (final Exception ex) {
-                    response = this.exceptionHandler.handle(request, ex);
-                    this.preparer.prepare(request, response);
-                }
-
-                if (request != null) {
-                    logger.info("{} \"{} {} HTTP/{}.{}\" {} {}",
-                            client.getInetAddress().getHostAddress(),
-                            request.getMethod(),
-                            request.getRawPath(),
-                            request.getMajorVersion(),
-                            request.getMinorVersion(),
-                            response.getStatus().getCode(),
-                            response.getContentLength());
-                }
-
-                final OutputStream stream = this.writer.write(request, response, out);
-                stream.close();
-
-                if (this.mustCloseConnection(request)) {
-                    break;
-                }
-            }
+            this.waitForRequest(client, out, in, scheme);
 
             out.allowClosing(true);
             out.close();
@@ -125,10 +78,72 @@ public class ConnectionHandler {
             } else {
                 logger.error("I/O exception while serving a client: ", ex);
             }
-        } catch (final Exception ex) {
+        } catch (final RuntimeException ex) {
             logger.error("Fatal exception: ", ex);
             throw ex;
         }
+    }
+
+    /**
+     * The main request-response loop.
+     *
+     * @param client the client
+     * @param out    the client's target stream
+     * @param in     the client's source stream
+     * @param scheme the URI scheme
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private void waitForRequest(final Socket client,
+                                final OutputStream out,
+                                final HttpInputStream in,
+                                final String scheme) throws IOException {
+        MutableRequest request;
+
+        do {
+            request = null;
+            Response response;
+
+            try {
+                request = this.parser.parse(in);
+                request.setScheme(scheme);
+
+                final long start = System.nanoTime();
+
+                response = this.router.handle(request);
+
+                final long time = System.nanoTime() - start;
+                final double satisfactionIndex = 600_000_000.0 / time * 100.0;
+                response.setHeader("X-Satisfaction-Index", satisfactionIndex + "%");
+
+                this.preparer.prepare(request, response);
+            } catch (final SilentException ex) {
+                logger.warn("Server closed connection. {}", ex.getMessage());
+                return;
+            } catch (final HttpException ex) {
+                response = this.exceptionHandler.handle(request, ex);
+                this.preparer.prepare(request, response);
+            } catch (final IOException ex) {
+                break;
+            } catch (final Exception ex) {
+                response = this.exceptionHandler.handle(request, ex);
+                this.preparer.prepare(request, response);
+            }
+
+            if (request != null) {
+                logger.info("{} \"{} {} HTTP/{}.{}\" {} {}",
+                        client.getInetAddress().getHostAddress(),
+                        request.getMethod(),
+                        request.getRawPath(),
+                        request.getMajorVersion(),
+                        request.getMinorVersion(),
+                        response.getStatus().getCode(),
+                        response.getContentLength());
+            }
+
+            final OutputStream stream = this.writer.write(request, response, out);
+            stream.close();
+        } while (!this.mustCloseConnection(request));
     }
 
     /**
@@ -139,6 +154,10 @@ public class ConnectionHandler {
      * @return true if the connection must close, false otherwise
      */
     private boolean mustCloseConnection(final Request request) {
+        if (request == null) {
+            return true;
+        }
+
         int major = request.getMajorVersion();
         int minor = request.getMinorVersion();
         final String connection = request.getHeader("Connection", "__Cacofony_unspecified__");
