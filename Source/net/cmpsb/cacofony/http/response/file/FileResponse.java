@@ -132,7 +132,7 @@ public class FileResponse extends Response {
             hash *= prime;
         }
 
-        return Long.toString(Math.abs(hash), 32);
+        return '"' + Long.toString(Math.abs(hash), 32) + '"';
     }
 
     /**
@@ -184,6 +184,8 @@ public class FileResponse extends Response {
         if (this.ranges.size() == 1) {
             final Range range = this.ranges.get(0);
             this.setHeader("Content-Range", "bytes " + range + "/" + this.size);
+
+            this.setStatus(ResponseCode.PARTIAL_CONTENT);
         } else if (this.ranges.size() > 1) {
             this.boundary = this.generateBoundary();
 

@@ -96,6 +96,17 @@ public class ConnectionHandler {
                     this.preparer.prepare(request, response);
                 }
 
+                if (request != null) {
+                    logger.info("{} \"{} {} HTTP/{}.{}\" {} {}",
+                            client.getInetAddress().getHostAddress(),
+                            request.getMethod(),
+                            request.getRawPath(),
+                            request.getMajorVersion(),
+                            request.getMinorVersion(),
+                            response.getStatus().getCode(),
+                            response.getContentLength());
+                }
+
                 final OutputStream stream = this.writer.write(request, response, out);
                 stream.close();
 
@@ -109,7 +120,11 @@ public class ConnectionHandler {
 
             logger.debug("Remote {} disconnected.", client.getInetAddress());
         } catch (final IOException ex) {
-            logger.error("I/O exception while serving a client: ", ex);
+            if (ex.getMessage() != null && ex.getMessage().contains("Connection reset by peer")) {
+                logger.debug("Client closed connection.");
+            } else {
+                logger.error("I/O exception while serving a client: ", ex);
+            }
         } catch (final Exception ex) {
             logger.error("Fatal exception: ", ex);
             throw ex;

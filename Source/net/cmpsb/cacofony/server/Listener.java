@@ -59,7 +59,17 @@ public class Listener implements Runnable {
                 final Socket client = this.socket.accept();
                 client.setSoTimeout(4444);
 
-                this.executor.submit(() -> this.handler.handle(client, "http"));
+                this.executor.submit(() -> {
+                    try {
+                        this.handler.handle(client, "http");
+                    } finally {
+                        try {
+                            client.close();
+                        } catch (IOException e) {
+                            logger.error("I/O exception while closing client socket: ", e);
+                        }
+                    }
+                });
             } catch (final IOException e) {
                 logger.error("I/O exception while accepting a client: ", e);
             }

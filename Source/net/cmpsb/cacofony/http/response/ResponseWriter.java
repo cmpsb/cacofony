@@ -128,12 +128,7 @@ public class ResponseWriter {
     private OutputStream writePlainResponse(final Request request,
                                             final Response response,
                                             final OutputStream out) throws IOException {
-        final Method method;
-        if (request == null) {
-            method = Method.GET;
-        } else {
-            method = request.getMethod();
-        }
+        final boolean maySendBody = this.maySendBody(request, response);
 
         final TransferEncoding aeEncoding = this.getAcceptableEncodings(request, "Accept-Encoding");
         if (this.canCompress(response) && aeEncoding != null) {
@@ -143,21 +138,26 @@ public class ResponseWriter {
             compressor.close();
 
             response.setHeader("Content-Encoding", aeEncoding.getHttpName());
-            response.setHeader("Content-Length", String.valueOf(buffer.size()));
+
+            if (maySendBody) {
+                response.setHeader("Content-Length", String.valueOf(buffer.size()));
+            }
 
             this.writeHeaders(request, response, out);
 
-            if (method != Method.HEAD) {
+            if (maySendBody) {
                 out.write(buffer.toByteArray());
             }
 
             return out;
         } else {
-            response.setHeader("Content-Length", String.valueOf(response.getContentLength()));
+            if (maySendBody) {
+                response.setHeader("Content-Length", String.valueOf(response.getContentLength()));
+            }
 
             this.writeHeaders(request, response, out);
 
-            if (method != Method.HEAD) {
+            if (maySendBody) {
                 response.write(out);
             }
 
@@ -184,7 +184,7 @@ public class ResponseWriter {
 
         this.writeHeaders(request, response, out);
 
-        if (request.getMethod() != Method.HEAD) {
+        if (this.maySendBody(request, response)) {
             response.write(target);
 
             return target;
@@ -266,5 +266,20 @@ public class ResponseWriter {
                 .orElse(null);
     }
 
+    /**
+     * Returns whether the writer may write the response body.
+     *
+     * @param request  the request that triggered the response
+     * @param response the response to send
+     *
+     * @return true if the response body may be sent, otherwise false
+     */
+    private boolean maySendBody(final Request request, final Response response) {
+        return !(request != null && request.getMethod() == Method.HEAD)
+            && !(response.getStatus().getCode() >= 100 && response.getStatus().getCode() < 200)
+            && response.getStatus() != ResponseCode.NO_CONTENT
+            && response.getStatus() != ResponseCode.NOT_MODIFIED;
+
+    }
 
 }

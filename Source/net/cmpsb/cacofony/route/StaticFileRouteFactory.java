@@ -116,12 +116,12 @@ public class StaticFileRouteFactory {
 
                 final FileResponse response = new FileResponse(new File(path));
 
-                if (this.can304(request, response)) {
-                    return new EmptyResponse(ResponseCode.NOT_MODIFIED);
-                }
-
                 response.setRanges(this.rangeParser.parse(request, response.getContentLength()));
                 response.setContentType(this.guessType(file, path));
+
+                if (this.can304(request, response)) {
+                    response.setStatus(ResponseCode.NOT_MODIFIED);
+                }
 
                 return response;
             } catch (final FileNotFoundException ex) {
