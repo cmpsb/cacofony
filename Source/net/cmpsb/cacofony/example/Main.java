@@ -9,6 +9,8 @@ import net.cmpsb.cacofony.util.Ob;
 import java.io.IOException;
 
 /**
+ * The entry point to the example server.
+ *
  * @author Luc Everse
  */
 public final class Main {

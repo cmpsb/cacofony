@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * A writer for responses.
+ *
  * @author Luc Everse
  */
 public class ResponseWriter {

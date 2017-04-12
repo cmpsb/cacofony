@@ -24,10 +24,12 @@ import java.util.stream.Collectors;
  * A response that serves a file by reading it from disk.
  * <p>
  * An ETag value is included with each file sent. This tag is based on the 64-bit FNV-1a hash
- * of the file's modification date.
+ * of the file's modification date. This datetime is in milliseconds since the UNIX epoch.
  * <p>
  * The response type also supports ranged requests, which causes the system to only respond with
- * fragments instead of the full file. No extra controller support is necessary.
+ * fragments instead of the full file. The response does not parse these by itself, use a
+ * {@link RangeParser} and pass its output to this response's {@link #setRanges(List)}.
+ * Further handling is fully automatic.
  *
  * @author Luc Everse
  */

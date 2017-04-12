@@ -10,7 +10,18 @@ import java.nio.charset.StandardCharsets;
 import java.util.stream.IntStream;
 
 /**
- *
+ * A response containing text.
+ * <p>
+ * The default content type is {@code text/plain}.
+ * <p>
+ * The default character set is UTF-8, but can be changed through the constructors
+ * {@link #TextResponse(String, Charset)} and {@link #TextResponse(ResponseCode, String, Charset)},
+ * or through {@link #setContent(String, Charset)}.
+ * When preparing, the response will set the {@code charset} parameter for its content type, so by
+ * default the sent content type will be {@code text/plain; charset=UTF-8}.
+ * <p>
+ * This response also implements {@link CharSequence}, meaning that you can use this response type
+ * as a parameter to many string operations. Why you would do this, though, is beyond me.
  *
  * @author Luc Everse
  */
@@ -195,7 +206,7 @@ public class TextResponse extends Response implements CharSequence {
      * index zero, the next at index one, and so on, as for array
      * indexing.
      * <p>
-     * <p>If the <code>char</code> value specified by the index is a
+     * If the <code>char</code> value specified by the index is a
      * <a href="{@docRoot}/java/lang/Character.html#unicode">surrogate</a>, the surrogate
      * value is returned.
      *

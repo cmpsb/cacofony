@@ -13,6 +13,10 @@ import java.util.Map;
 
 /**
  * A base response object.
+ * <p>
+ * This is the object you send to the client. Different implementations have different behavior,
+ * including how it handles some of the fields here. You should always carefully read the
+ * implementation docs as well.
  *
  * @author Luc Everse
  */
@@ -141,11 +145,11 @@ public abstract class Response {
 
     /**
      * Returns whether compression is allowed for this response.
-     * <p>
+     *
      * <ol>
      *     <li>{@code true}: the server will attempt to apply compression where possible</li>
      *     <li>{@code false}: the server will not compress the data (though it may chunk it)</li>
-     *     <li>{@code null}: the server will decide whether to compress the data by looking at
+     *     <li>{@code null}: the server will decide whether to compress the data by inspecting
      *     {@link net.cmpsb.cacofony.server.ServerSettings#canCompressByDefault()}</li>
      * </ol>
      * <p>
@@ -161,10 +165,14 @@ public abstract class Response {
 
     /**
      * Returns whether compression is allowed for this response with the current server settings.
+     * <p>
+     * See {@link #isCompressionAllowed()} for the full semantics.
      *
      * @param isAllowedServerWide whether compression is allowed on the entire server
      *
      * @return true if compression is allowed, false otherwise
+     *
+     * @see #isCompressionAllowed()
      */
     public boolean isCompressionAllowed(final boolean isAllowedServerWide) {
         if (this.compressionAllowed == null) {
@@ -176,9 +184,13 @@ public abstract class Response {
 
     /**
      * Sets whether the response allows compression.
+     * <p>
+     * See {@link #isCompressionAllowed()} for the full semantics.
      *
      * @param compressionAllowed true to allow compression, false to disable it,
      *                           null to let the server decide
+     *
+     * @see #isCompressionAllowed()
      */
     public void setCompressionAllowed(final Boolean compressionAllowed) {
         this.compressionAllowed = compressionAllowed;
