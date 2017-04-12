@@ -36,7 +36,7 @@ public class PathCompiler {
      */
     public CompiledPath compile(final String path,
                                 final Map<String, String> requirements) {
-        final StringBuilder patternBuilder = new StringBuilder();
+        final StringBuilder patternBuilder = new StringBuilder("(?<PATH>");
 
         // All arguments present in the path.
         final List<String> parameters = new ArrayList<>();
@@ -97,7 +97,7 @@ public class PathCompiler {
         }
 
         // Ignore the query string and fragment identifier.
-        patternBuilder.append("(?<QUERY>\\?[^#]*)?(?<FRAGMENT>#.*)?");
+        patternBuilder.append(")(?<QUERY>\\?[^#]*)?");
 
         final String regex = patternBuilder.toString();
 

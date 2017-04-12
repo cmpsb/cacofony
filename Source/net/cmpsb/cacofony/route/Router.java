@@ -7,6 +7,8 @@ import net.cmpsb.cacofony.http.request.Request;
 import net.cmpsb.cacofony.mime.MimeParser;
 import net.cmpsb.cacofony.mime.MimeType;
 import net.cmpsb.cacofony.http.response.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +26,8 @@ import java.util.regex.Pattern;
  * @author Luc Everse
  */
 public class Router {
+    private static final Logger logger = LoggerFactory.getLogger(Router.class);
+
     /**
      * The MIME type parser to use.
      */
@@ -210,11 +214,22 @@ public class Router {
             if (targetMatcher.matches()) {
                 final Map<String, String> params = entry.getPath().parseParameters(targetMatcher);
 
+                String path = target;
+                String queryString = "";
                 try {
-                    request.setPath(target, targetMatcher.group("QUERY"));
-                } catch (final Exception ex) {
-                    // Pass.
+                    queryString = targetMatcher.group("QUERY");
+                    path = targetMatcher.group("PATH");
+                } catch (final IllegalArgumentException ex) {
+                    logger.warn("Custom path regex for route {} does not include a "
+                              + "PATH and/or QUERY group!",
+                            entry.getName(), ex);
                 }
+
+                if (queryString == null) {
+                    queryString = "";
+                }
+
+                request.setPath(path, queryString);
 
                 request.setPathParameters(params);
                 request.setContentType(contentType);
