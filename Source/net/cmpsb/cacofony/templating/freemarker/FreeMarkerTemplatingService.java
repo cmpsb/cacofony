@@ -53,7 +53,7 @@ public class FreeMarkerTemplatingService extends TemplatingService {
         try {
             final Template template = this.configuration.getTemplate(name);
 
-            final Response response = new FreeMarkerResponse(template, values);
+            final Response response = new PrerenderedFreeMarkerResponse(template, values);
 
             final MimeType type = this.mimeParser.parse(template.getOutputFormat().getMimeType());
             type.getParameters().put("charset", template.getEncoding());

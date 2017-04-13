@@ -32,20 +32,29 @@ public class Listener implements Runnable {
     /**
      * The connection handler to use.
      */
-    @Inject private ConnectionHandler handler;
+    private final ConnectionHandler handler;
+
+    /**
+     * The connection scheme this listener uses.
+     */
+    private final String scheme;
 
     /**
      * Creates a new listener.
      *
      * @param socket   the socket to listen on
      * @param executor the thread pool for incoming requests
+     * @param handler  the connection handler to use
+     * @param scheme   the connection scheme this listener handles
      */
-    public Listener(@Inject("arg:socket")
-                    final ServerSocket socket,
-                    @Inject("name:resource/server.thread-pool")
-                    final ExecutorService executor) {
+    public Listener(@Inject("arg:socket") final ServerSocket socket,
+                    @Inject("name:resource/server.thread-pool") final ExecutorService executor,
+                    final ConnectionHandler handler,
+                    @Inject("arg: scheme") final String scheme) {
         this.socket = socket;
         this.executor = executor;
+        this.handler = handler;
+        this.scheme = scheme;
     }
 
     /**
@@ -61,7 +70,7 @@ public class Listener implements Runnable {
 
                 this.executor.submit(() -> {
                     try {
-                        this.handler.handle(client, "http");
+                        this.handler.handle(client, this.scheme);
                     } finally {
                         try {
                             client.close();

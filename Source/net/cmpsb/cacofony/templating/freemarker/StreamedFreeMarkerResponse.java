@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * @author Luc Everse
  */
-public class FreeMarkerResponse extends Response {
+public class StreamedFreeMarkerResponse extends Response {
     /**
      * The FreeMarker template to render.
      */
@@ -32,7 +32,7 @@ public class FreeMarkerResponse extends Response {
      * @param template the template to render
      * @param values   the data model to apply
      */
-    public FreeMarkerResponse(final Template template, final Map<String, ?> values) {
+    public StreamedFreeMarkerResponse(final Template template, final Map<String, ?> values) {
         this.template = template;
         this.values = values;
         this.setContentType(MimeType.html());

@@ -12,17 +12,13 @@ import net.cmpsb.cacofony.route.RoutingEntry;
 import net.cmpsb.cacofony.route.StaticFileRouteFactory;
 import net.cmpsb.cacofony.templating.DummyTemplatingService;
 import net.cmpsb.cacofony.templating.TemplatingService;
-import net.cmpsb.cacofony.util.Ob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLServerSocketFactory;
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.Set;
 
 /**
  * The main server.
@@ -33,14 +29,9 @@ public class Server {
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
     /**
-     * The ports the server should listen on for HTTP connections.
+     * The server's settings.
      */
-    private final List<Integer> httpPorts = new ArrayList<>();
-
-    /**
-     * The ports the server should listen on for HTTPS connections.
-     */
-    private final List<Integer> httpsPorts = new ArrayList<>();
+    private final ServerSettings settings;
 
     /**
      * The dependency resolver to use.
@@ -53,24 +44,32 @@ public class Server {
     private boolean idle = true;
 
     /**
-     * The static file route factory to use.
+     * Creates a new server.
+     *
+     * @param resolver the dependency resolver to use
+     * @param settings the server's settings
      */
-    private StaticFileRouteFactory staticFileRouteFactory = null;
+    public Server(final DependencyResolver resolver, final ServerSettings settings) {
+        this.resolver = resolver;
+        this.settings = settings;
+
+        this.init();
+    }
 
     /**
      * Creates a new server.
      *
-     * @param resolver the dependency resolver to use
+     * @param settings the server's settings
      */
-    public Server(final DependencyResolver resolver) {
-        this.resolver = resolver;
+    public Server(final ServerSettings settings) {
+        this(new DefaultDependencyResolver(), settings);
     }
 
     /**
-     * Creates a new server with the default dependency resolver.
+     * Creates a new server with the default dependency resolver and settings.
      */
     public Server() {
-        this(new DefaultDependencyResolver());
+        this(new MutableServerSettings());
     }
 
     /**
@@ -88,7 +87,7 @@ public class Server {
      * @param pack the package to scan
      */
     public void scanPackage(final String pack) {
-        this.ensureReady();
+        this.ensureIdle();
 
         final ControllerLoader loader = this.resolver.get(ControllerLoader.class);
         loader.loadAll(pack + ".controller");
@@ -101,16 +100,22 @@ public class Server {
      * @param dir    the local directory the static files are in
      */
     public void addStaticFiles(final String prefix, final String dir) {
-        this.ensureReady();
+        this.ensureIdle();
+
+        final StaticFileRouteFactory factory = this.resolver.get(StaticFileRouteFactory.class);
 
         final Router router = this.resolver.get(Router.class);
 
-        final RoutingEntry entry = this.staticFileRouteFactory.build(prefix, Paths.get(dir));
+        final RoutingEntry entry = factory.build(prefix, Paths.get(dir));
         router.addRoute(entry);
     }
 
     /**
      * Registers an external service.
+     * <p>
+     * If the service is meant to be a server dependency (such as internal parsers, factories,
+     * etc.), please register them with the resolver <em>before</em> constructing the server
+     * object. Otherwise the server may not pick up your override.
      *
      * @param type     the service type
      * @param instance the service instance
@@ -127,22 +132,28 @@ public class Server {
      * <p>
      * This method fills in the missing dependencies and sets many settings to their defaults.
      */
-    public void init() {
+    private void init() {
+        // Add the default 80 and 443 ports if none are set.
+        final Set<Port> ports = this.settings.getPorts();
+        if (ports.isEmpty()) {
+            ports.add(new Port(80, false));
+            ports.add(new Port(443, true));
+        }
+
+        if (!this.resolver.isKnown(ServerSettings.class)) {
+            this.resolver.add(this.settings, ServerSettings.class);
+        }
+
         if (!this.resolver.isKnown(MimeParser.class)) {
             this.resolver.get(FastMimeParser.class, MimeParser.class);
         }
 
-        if (!this.resolver.isKnown(ServerSettings.class)) {
-            this.resolver.add(new MutableServerSettings(), ServerSettings.class);
-        }
-
-        if (!this.resolver.isKnown("resource/server.thread-pool")) {
-            final ExecutorService pool = Executors.newCachedThreadPool();
-            this.resolver.add("resource/server.thread-pool", pool);
-        }
-
         if (!this.resolver.isKnown(TemplatingService.class)) {
             this.resolver.add(new DummyTemplatingService(), TemplatingService.class);
+        }
+
+        if (!this.resolver.isKnown(ListenerFactory.class)) {
+            this.resolver.get(DefaultListenerFactory.class, ListenerFactory.class);
         }
 
         if (!this.resolver.isKnown(MimeDb.class)) {
@@ -153,45 +164,10 @@ public class Server {
             this.resolver.add(db);
         }
 
-        if (this.staticFileRouteFactory == null) {
-            this.staticFileRouteFactory = this.resolver.get(StaticFileRouteFactory.class);
+        if (!this.resolver.isKnown(SSLServerSocketFactory.class)) {
+            this.resolver.add((SSLServerSocketFactory) SSLServerSocketFactory.getDefault(),
+                              SSLServerSocketFactory.class);
         }
-    }
-
-    /**
-     * Returns whether the server is ready for starting or not.
-     * <p>
-     * If this method returns {@code false}, then {@link #start()} will automatically call
-     * {@link #init}.
-     *
-     * @return true if all dependencies and settings are set, false otherwise
-     */
-    public boolean isReady() {
-        if (!this.resolver.isKnown(MimeParser.class)) {
-            return false;
-        }
-
-        if (!this.resolver.isKnown(ServerSettings.class)) {
-            return false;
-        }
-
-        if (!this.resolver.isKnown("resource/server.thread-pool")) {
-            return false;
-        }
-
-        if (!this.resolver.isKnown(TemplatingService.class)) {
-            return false;
-        }
-
-        if (this.staticFileRouteFactory == null) {
-            return false;
-        }
-
-        if (!this.resolver.isKnown(MimeDb.class)) {
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -200,53 +176,17 @@ public class Server {
      * @throws IOException if an I/O exception occurs
      */
     public void start() throws IOException {
-        this.ensureReady();
+        this.ensureIdle();
 
         logger.debug("Bootstrapping server.");
 
-        for (final int port : this.httpPorts) {
-            logger.debug("{}", port);
-            final ServerSocket socket = new ServerSocket(port);
-            final Listener listener = this.resolver.get(
-                    Ob.map("socket", socket),
-                    Listener.class
-            );
-
-            final Thread runner = new Thread(listener);
-            runner.start();
+        final ListenerFactory factory = this.resolver.get(ListenerFactory.class);
+        for (final Port port : this.settings.getPorts()) {
+            factory.boot(port);
         }
 
         this.idle = false;
         logger.debug("Bootstrap finished, slumbering.");
-    }
-
-    /**
-     * Adds a port to the server.
-     *
-     * @param port        the port number
-     * @param isEncrypted whether the connection will be encrypted through TLS
-     */
-    public void addPort(final int port, final boolean isEncrypted) {
-        this.ensureIdle();
-
-        if (isEncrypted) {
-            this.httpsPorts.add(port);
-        } else {
-            this.httpPorts.add(port);
-        }
-    }
-
-    /**
-     * Adds a port to the server.
-     * <p>
-     * The ports 80 and 8080 are automatically registered as HTTP ports, all other ports
-     * are assumed to be HTTPS ports.
-     * To control this behavior, use {@link #addPort(int, boolean)}.
-     *
-     * @param port the port to add
-     */
-    public void addPort(final int port) {
-        this.addPort(port, port != 80 && port != 8080);
     }
 
     /**
@@ -255,17 +195,6 @@ public class Server {
     private void ensureIdle() {
         if (!this.idle) {
             throw new RunningServerException("This operation is not allowed on a running server.");
-        }
-    }
-
-    /**
-     * Makes sure that the server is not running and that all dependencies are there.
-     */
-    private void ensureReady() {
-        this.ensureIdle();
-
-        if (!this.isReady()) {
-            this.init();
         }
     }
 }

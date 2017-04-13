@@ -1,10 +1,9 @@
 package net.cmpsb.cacofony.example;
 
 import freemarker.template.Configuration;
+import net.cmpsb.cacofony.server.MutableServerSettings;
 import net.cmpsb.cacofony.server.Server;
-import net.cmpsb.cacofony.templating.TemplatingService;
-import net.cmpsb.cacofony.templating.freemarker.FreeMarkerTemplatingService;
-import net.cmpsb.cacofony.util.Ob;
+import net.cmpsb.cacofony.server.ServerHelper;
 
 import java.io.IOException;
 
@@ -29,35 +28,18 @@ public final class Main {
      * @throws IOException if an I/O error occurs
      */
     public static void main(final String[] args) throws IOException {
-        final Server server = new Server();
-        server.addPort(8080);
+        final MutableServerSettings settings = new MutableServerSettings();
+        settings.addInsecurePort(8080);
 
-        final FreeMarkerTemplatingService service = getFreeMarker(server);
-        server.register(TemplatingService.class, service);
+        final Server server = new Server(settings);
+        final ServerHelper helper = new ServerHelper(server);
+
+        final Configuration cfg = new Configuration(Configuration.VERSION_2_3_26);
+        cfg.setClassForTemplateLoading(Main.class, "/net/cmpsb/cacofony/example");
+        helper.enableFreeMarker(cfg);
 
         server.scanPackage("net.cmpsb.cacofony.example");
         server.addStaticFiles("/static", "D:\\Dust\\Cacofony\\");
         server.start();
-    }
-
-    /**
-     * Creates a FreeMarker templating service.
-     *
-     * @param server the server the service is for
-     *
-     * @return a FreeMarker templating service
-     */
-    private static FreeMarkerTemplatingService getFreeMarker(final Server server) {
-        if (!server.isReady()) {
-            server.init();
-        }
-
-        final Configuration cfg = new Configuration(Configuration.VERSION_2_3_26);
-
-        cfg.setClassForTemplateLoading(Main.class, "/net/cmpsb/cacofony/example");
-
-        return server.getResolver().get(Ob.map(
-                "configuration", cfg
-        ), FreeMarkerTemplatingService.class);
     }
 }

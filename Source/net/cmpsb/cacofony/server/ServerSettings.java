@@ -3,6 +3,7 @@ package net.cmpsb.cacofony.server;
 import net.cmpsb.cacofony.http.encoding.TransferEncoding;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Luc Everse
@@ -33,4 +34,11 @@ public interface ServerSettings {
      * @return whether to add the Server header
      */
     boolean mayBroadcastServerVersion();
+
+    /**
+     * Returns the ports the server should listen on.
+     *
+     * @return the ports the server should listen on
+     */
+    Set<Port> getPorts();
 }

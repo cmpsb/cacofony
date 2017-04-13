@@ -3,7 +3,9 @@ package net.cmpsb.cacofony.server;
 import net.cmpsb.cacofony.http.encoding.TransferEncoding;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A class containing all server settings.
@@ -33,6 +35,11 @@ public class MutableServerSettings implements ServerSettings {
      * Whether to add the Server header to each response.
      */
     private boolean broadcastServerVersion = true;
+
+    /**
+     * The ports the server should listen on.
+     */
+    private final Set<Port> ports = new HashSet<>();
 
     /**
      * Returns whether the server is allowed to try to apply compression if the client supports it.
@@ -109,5 +116,33 @@ public class MutableServerSettings implements ServerSettings {
      */
     public void setBroadcastServerVersion(final boolean broadcast) {
         this.broadcastServerVersion = broadcast;
+    }
+
+    /**
+     * Returns the ports the server should listen on.
+     *
+     * @return the ports the server should listen on
+     */
+    @Override
+    public Set<Port> getPorts() {
+        return this.ports;
+    }
+
+    /**
+     * Adds a new HTTPS port to the list of ports to listen on.
+     *
+     * @param port the port to add
+     */
+    public void addSecurePort(final int port) {
+        this.ports.add(new Port(port, true));
+    }
+
+    /**
+     * Adds a new HTTP port to the list of ports to listen on.
+     *
+     * @param port   the port to add
+     */
+    public void addInsecurePort(final int port) {
+        this.ports.add(new Port(port, false));
     }
 }
