@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 
 /**
@@ -49,12 +50,15 @@ public class MimeGuesser {
     /**
      * Guesses the MIME type for a file by looking at the file extension and, if it doesn't match,
      * the file header.
+     * <p>
+     * If you're inspecting files received from a third party, <em>do not use this function.</em>
+     * Use {@link #guessRemote(Path)} instead.
      *
      * @param file the file to guess the type for
      *
      * @return the file's MIME type
      */
-    public MimeType guess(final Path file) {
+    public MimeType guessLocal(final Path file) {
         final String name = file.toString();
 
         final MimeType dbType = this.mimeDb.getForName(name);
@@ -62,10 +66,37 @@ public class MimeGuesser {
             return dbType;
         }
 
-        final MimeType magicType = this.inspectHeader(file);
+        final MimeType magicType = this.guessRemote(file);
 
         if (magicType != null) {
             return magicType;
+        }
+
+        return MimeType.octetStream();
+    }
+
+    /**
+     * Guesses the MIME type for a local resource by looking at the file extension and, if it
+     * doesn't match, the file header.
+     *
+     * @param jar  the jar the resource should be in
+     * @param path the path to the resource
+     *
+     * @return the file's MIME type
+     */
+    public MimeType guessLocal(final Class<?> jar, final String path) {
+        final MimeType dbType = this.mimeDb.getForName(path);
+        if (dbType != null) {
+            return dbType;
+        }
+
+        try (InputStream in = jar.getResourceAsStream(path)) {
+            final MimeType magicType = this.guessRemote(in);
+            if (magicType != null) {
+                return magicType;
+            }
+        } catch (final IOException ex) {
+            logger.warn("Unable to inspect the resource {}#{}: ", jar.getCanonicalName(), path, ex);
         }
 
         return MimeType.octetStream();
@@ -78,7 +109,7 @@ public class MimeGuesser {
      *
      * @return the MIME type or {@code null}
      */
-    public MimeType inspectHeader(final Path file) {
+    public MimeType guessRemote(final Path file) {
         try {
             final ContentInfo info = this.mimeInfo.findMatch(file.toFile());
 
@@ -90,6 +121,30 @@ public class MimeGuesser {
 
         } catch (final IOException ex) {
             logger.warn("I/O exception while inspecting the file header: ", ex);
+            return null;
+        }
+    }
+
+    /**
+     * Uses simplemagic to guess the stream's content type.
+     * <p>
+     * Note: this may read at random points and "damage" the stream pointer.
+     *
+     * @param in the stream to examine
+     *
+     * @return the MIME type or {@code null}
+     */
+    public MimeType guessRemote(final InputStream in) {
+        try {
+            final ContentInfo info = this.mimeInfo.findMatch(in);
+
+            if (info == null) {
+                return null;
+            }
+
+            return this.parser.parse(info.getMimeType());
+        } catch (final IOException ex) {
+            logger.warn("I/O exception while inspecting the resource header: ", ex);
             return null;
         }
     }

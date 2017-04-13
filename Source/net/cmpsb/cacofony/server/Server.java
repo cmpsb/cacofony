@@ -7,6 +7,7 @@ import net.cmpsb.cacofony.mime.FastMimeParser;
 import net.cmpsb.cacofony.mime.MimeDb;
 import net.cmpsb.cacofony.mime.MimeDbLoader;
 import net.cmpsb.cacofony.mime.MimeParser;
+import net.cmpsb.cacofony.route.ResourceFileRouteFactory;
 import net.cmpsb.cacofony.route.Router;
 import net.cmpsb.cacofony.route.RoutingEntry;
 import net.cmpsb.cacofony.route.StaticFileRouteFactory;
@@ -52,6 +53,8 @@ public class Server {
     public Server(final DependencyResolver resolver, final ServerSettings settings) {
         this.resolver = resolver;
         this.settings = settings;
+
+        this.resolver.add(settings, ServerSettings.class);
 
         this.init();
     }
@@ -111,6 +114,24 @@ public class Server {
     }
 
     /**
+     * Registers a prefix for serving files from a jar.
+     *
+     * @param prefix the URL prefix all static files should be behind
+     * @param jar    the jar the resources should be in
+     * @param dir    the directory inside the jar the resources should be in
+     */
+    public void addStaticResources(final String prefix, final Class<?> jar, final String dir) {
+        this.ensureIdle();
+
+        final ResourceFileRouteFactory factory = this.resolver.get(ResourceFileRouteFactory.class);
+
+        final Router router = this.resolver.get(Router.class);
+
+        final RoutingEntry entry = factory.build(prefix, jar, dir);
+        router.addRoute(entry);
+    }
+
+    /**
      * Registers an external service.
      * <p>
      * If the service is meant to be a server dependency (such as internal parsers, factories,
@@ -140,8 +161,9 @@ public class Server {
             ports.add(new Port(443, true));
         }
 
-        if (!this.resolver.isKnown(ServerSettings.class)) {
-            this.resolver.add(this.settings, ServerSettings.class);
+        if (!this.resolver.isKnown(SSLServerSocketFactory.class)) {
+            this.resolver.add((SSLServerSocketFactory) SSLServerSocketFactory.getDefault(),
+                    SSLServerSocketFactory.class);
         }
 
         if (!this.resolver.isKnown(MimeParser.class)) {
@@ -162,11 +184,6 @@ public class Server {
             loader.load(this.getClass().getResourceAsStream("/net/cmpsb/cacofony/mime.types"),
                         db::register);
             this.resolver.add(db);
-        }
-
-        if (!this.resolver.isKnown(SSLServerSocketFactory.class)) {
-            this.resolver.add((SSLServerSocketFactory) SSLServerSocketFactory.getDefault(),
-                              SSLServerSocketFactory.class);
         }
     }
 

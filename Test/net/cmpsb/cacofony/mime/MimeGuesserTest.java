@@ -42,7 +42,7 @@ public class MimeGuesserTest {
             writer.write("<!DOCTYPE html><html></html>");
         }
 
-        final MimeType type = this.guesser.guess(path);
+        final MimeType type = this.guesser.guessLocal(path);
 
         assertThat("The file is correctly read text/html.",
                    type,
@@ -54,7 +54,7 @@ public class MimeGuesserTest {
     @Test
     public void testLazyExtension() throws IOException {
         final Path path = Paths.get("J:\\test.txt");
-        final MimeType type = this.guesser.guess(path);
+        final MimeType type = this.guesser.guessLocal(path);
 
         assertThat("The file was lazily guessed as text/plain.",
                    type,
@@ -69,7 +69,7 @@ public class MimeGuesserTest {
             writer.write("$IC#%(O*OIH#CPOBU #GK#H\"T<SH>");
         }
 
-        final MimeType type = this.guesser.guess(path);
+        final MimeType type = this.guesser.guessLocal(path);
 
         assertThat("The guesser gave up and returned application/octet-stream.",
                    type,

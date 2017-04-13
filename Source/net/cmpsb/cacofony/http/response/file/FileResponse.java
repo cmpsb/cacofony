@@ -1,7 +1,6 @@
 package net.cmpsb.cacofony.http.response.file;
 
 import net.cmpsb.cacofony.http.request.Request;
-import net.cmpsb.cacofony.http.response.Response;
 import net.cmpsb.cacofony.http.response.ResponseCode;
 import net.cmpsb.cacofony.mime.MimeType;
 import org.slf4j.Logger;
@@ -33,7 +32,7 @@ import java.util.stream.Collectors;
  *
  * @author Luc Everse
  */
-public class FileResponse extends Response {
+public class FileResponse extends CachableResponse {
     private static final Logger logger = LoggerFactory.getLogger(FileResponse.class);
 
     /**
@@ -45,11 +44,6 @@ public class FileResponse extends Response {
      * The file's size in bytes.
      */
     private long size = 0;
-
-    /**
-     * The date the file was last modified.
-     */
-    private long lastModified = Long.MAX_VALUE;
 
     /**
      * The stream to read the file from.
@@ -74,11 +68,6 @@ public class FileResponse extends Response {
     private MimeType actualContentType;
 
     /**
-     * The file's ETag.
-     */
-    private final String etag;
-
-    /**
      * Creates a new response sending a file.
      *
      * @param file the file to send
@@ -86,11 +75,10 @@ public class FileResponse extends Response {
      * @throws FileNotFoundException if the file does not exist
      */
     public FileResponse(final File file) throws FileNotFoundException {
+        super(file.lastModified());
+
         this.file = file;
         this.size = file.length();
-        this.lastModified = file.lastModified();
-
-        this.etag = this.generateEtag();
     }
 
     /**
@@ -104,46 +92,6 @@ public class FileResponse extends Response {
         super.setContentType(type);
 
         this.actualContentType = type;
-    }
-
-    /**
-     * Calculates and returns the response's ETag.
-     * <p>
-     * The ETag is based on the SHA-256 of the file's modification date.
-     *
-     * @return the etag
-     */
-    public String getEtag() {
-        return this.etag;
-    }
-
-    /**
-     * Generates an ETag based on the file's modification date.
-     *
-     * @return an ETag
-     */
-    private String generateEtag() {
-        // It's too large as a decimal value, so binary I guess?
-        final long basis = 0b1100101111110010100111001110010010000100001000100010001100100101L;
-        final long prime = 1099511628211L;
-
-        long hash = basis;
-        for (int i = 0; i < Long.BYTES; ++i) {
-            final long b = (this.lastModified >> (i * 8)) & 0xFF;
-            hash ^= b;
-            hash *= prime;
-        }
-
-        return '"' + Long.toString(Math.abs(hash), 32) + '"';
-    }
-
-    /**
-     * Returns the datetime the file was last modified.
-     *
-     * @return the last modification date
-     */
-    public long getLastModified() {
-        return this.lastModified;
     }
 
     /**
@@ -178,11 +126,6 @@ public class FileResponse extends Response {
      */
     @Override
     public void prepare(final Request request) {
-        // Calculate the ETag based on the modification date.
-        if (this.lastModified != Long.MAX_VALUE) {
-            this.setHeader("ETag", this.etag);
-        }
-
         if (this.ranges.size() == 1) {
             final Range range = this.ranges.get(0);
             this.setHeader("Content-Range", "bytes " + range + "/" + this.size);

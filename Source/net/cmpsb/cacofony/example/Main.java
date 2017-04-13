@@ -40,6 +40,7 @@ public final class Main {
 
         server.scanPackage("net.cmpsb.cacofony.example");
         server.addStaticFiles("/static", "D:\\Dust\\Cacofony\\");
+        server.addStaticResources("/res", Main.class, "/net/cmpsb/cacofony/example/htdocs");
         server.start();
     }
 }
