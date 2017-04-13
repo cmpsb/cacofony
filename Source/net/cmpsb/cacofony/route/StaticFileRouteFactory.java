@@ -7,25 +7,27 @@ import net.cmpsb.cacofony.http.request.Request;
 import net.cmpsb.cacofony.http.response.file.FileResponse;
 import net.cmpsb.cacofony.http.response.ResponseCode;
 import net.cmpsb.cacofony.http.response.file.RangeParser;
-import net.cmpsb.cacofony.mime.MimeDb;
-import net.cmpsb.cacofony.mime.MimeParser;
+import net.cmpsb.cacofony.mime.MimeGuesser;
 import net.cmpsb.cacofony.mime.MimeType;
 import net.cmpsb.cacofony.util.Ob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 /**
- *
+ * A factory for static file-serving routes.
  *
  * @author Luc Everse
  */
@@ -38,16 +40,6 @@ public class StaticFileRouteFactory {
     private final PathCompiler compiler;
 
     /**
-     * The MIME parser to use.
-     */
-    private final MimeParser parser;
-
-    /**
-     * The MIME DB to use.
-     */
-    private final MimeDb mimeDb;
-
-    /**
      * The header value parser to use.
      */
     private final HeaderValueParser valueParser;
@@ -58,24 +50,26 @@ public class StaticFileRouteFactory {
     private final RangeParser rangeParser;
 
     /**
+     * The MIME guesser to use.
+     */
+    private final MimeGuesser mimeGuesser;
+
+    /**
      * Creates a new factory for routes serving static files.
      *
      * @param compiler    the path compiler to use
-     * @param parser      the MIME parser to use
-     * @param mimeDb      the MIME DB to use
      * @param valueParser the header value parser to use
      * @param rangeParser the range parser to use
+     * @param mimeGuesser the MIME guesser to use
      */
     public StaticFileRouteFactory(final PathCompiler compiler,
-                                  final MimeParser parser,
-                                  final MimeDb mimeDb,
                                   final HeaderValueParser valueParser,
-                                  final RangeParser rangeParser) {
+                                  final RangeParser rangeParser,
+                                  final MimeGuesser mimeGuesser) {
         this.compiler = compiler;
-        this.parser = parser;
-        this.mimeDb = mimeDb;
         this.valueParser = valueParser;
         this.rangeParser = rangeParser;
+        this.mimeGuesser = mimeGuesser;
     }
 
     /**
@@ -86,13 +80,20 @@ public class StaticFileRouteFactory {
      *
      * @return a routing entry serving files
      */
-    public RoutingEntry build(final String prefix, final String dir) {
+    public RoutingEntry build(final String prefix, final Path dir) {
+        final Path absDir;
+        try {
+            absDir = dir.toRealPath();
+        } catch (final IOException ex) {
+            throw new RuntimeException("Unable to get the canonical path for " + dir + ": ", ex);
+        }
+
         final String name = "static_file_route_" + prefix;
 
         final String parameterizedPath = prefix + "/{file}";
         final CompiledPath path = this.compiler.compile(parameterizedPath, Ob.map("file", ".+"));
 
-        final RouteAction action = this.createAction(dir);
+        final RouteAction action = this.createAction(absDir);
 
         final List<Method> methods = Arrays.asList(Method.GET, Method.HEAD);
         final List<MimeType> mimeTypes = Collections.singletonList(MimeType.any());
@@ -103,59 +104,42 @@ public class StaticFileRouteFactory {
     /**
      * Generates a routing action that should serve a file.
      *
-     * @param localDir     the local directory the files should be in
+     * @param localDir the local directory the files should be in
      *
      * @return an action capable of serving a file
      */
-    private RouteAction createAction(final String localDir) {
+    private RouteAction createAction(final Path localDir) {
         return request -> {
             try {
-                final String path = localDir + '/' + request.getPathParameter("file");
-                final File file = new File(path);
+                final Path file = localDir.resolve(request.getPathParameter("file"));
 
-                final FileResponse response = new FileResponse(new File(path));
+                // If the request attempts to traverse the directory tree or if the file just
+                // doesn't exist reply Not Found.
+                if (!file.startsWith(localDir) || !Files.exists(file)) {
+                    throw new NotFoundException();
+                }
 
-                response.setRanges(this.rangeParser.parse(request, response.getContentLength()));
-                response.setContentType(this.guessType(file, path));
+                final FileResponse response = new FileResponse(file.toFile());
 
+                // Set the request/response ranges, if any.
+                final List<String> ranges = this.valueParser.parseCommaSeparated(request, "Range");
+                response.setRanges(this.rangeParser.parse(ranges, response.getContentLength()));
+
+                // Guess and set the content type too.
+                response.setContentType(this.mimeGuesser.guess(file));
+
+                // If the client indicates it may have cached the file and it actually did,
+                // reply Not Modified.
                 if (this.can304(request, response)) {
                     response.setStatus(ResponseCode.NOT_MODIFIED);
                 }
 
                 return response;
             } catch (final FileNotFoundException ex) {
+                // If anything happens to the file during this process reply a 404 too.
                 throw new NotFoundException(ex);
             }
         };
-    }
-
-    /**
-     * Guesses the MIME type for a file.
-     *
-     * @param file the file to guess the type for
-     * @param name the name of the file
-     *
-     * @return the file's MIME type
-     */
-    private MimeType guessType(final File file, final String name) {
-        String fileType = null;
-
-        try (InputStream in = new FileInputStream(file)) {
-            fileType = URLConnection.guessContentTypeFromStream(in);
-        } catch (final IOException ex) {
-            logger.warn("I/O exception while guessing the content type of \"{}\".", name, ex);
-            // Ignore and move on to the next method.
-        }
-
-        if (fileType == null) {
-            fileType = URLConnection.guessContentTypeFromName(name);
-        }
-
-        if (fileType == null) {
-            return this.mimeDb.getForName(name);
-        }
-
-        return this.parser.parse(fileType);
     }
 
     /**
@@ -167,8 +151,53 @@ public class StaticFileRouteFactory {
      * @return true if the response can be an HTTP 304, otherwise false
      */
     private boolean can304(final Request request, final FileResponse response) {
+        // Check the If-None-Match header.
         final List<String> etags = this.valueParser.parseCommaSeparated(request, "If-None-Match");
 
-        return etags.contains(response.getEtag());
+        if (etags.contains(response.getEtag())) {
+            return true;
+        }
+
+        // Otherwise try the If-Modified-Since header.
+        final ZonedDateTime modifiedSince = this.tryParseModifiedSince(request);
+        if (modifiedSince != null) {
+            // java.time is hardcore.
+            final Instant modificationInstant = Instant.ofEpochMilli(response.getLastModified());
+            final ZonedDateTime modificationDate =
+                    ZonedDateTime.ofInstant(modificationInstant, ZoneOffset.UTC);
+
+            if (modifiedSince.isAfter(modificationDate)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Tries to parse a date from the If-Modified-Since header.
+     *
+     * @param request the request the header is in
+     *
+     * @return a datetime or {@code null}
+     */
+    private ZonedDateTime tryParseModifiedSince(final Request request) {
+        final String modifiedSince = request.getHeader("If-Modified-Since");
+
+        if (modifiedSince == null) {
+            return null;
+        }
+
+        ZonedDateTime dateTime;
+        try {
+            dateTime = ZonedDateTime.parse(modifiedSince, DateTimeFormatter.RFC_1123_DATE_TIME);
+            return dateTime;
+        } catch (final DateTimeParseException ex) {
+            // Pass, try the next format.
+        }
+
+        // Or not.
+        logger.warn("Unparsable If-Modified-Since: {}.", modifiedSince);
+        return null;
     }
 }

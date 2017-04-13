@@ -36,8 +36,6 @@ public class PathCompilerTest {
         final Matcher fullMatcher = compiled.getPattern().matcher("/about");
         final Matcher trailingSlashMatcher = compiled.getPattern().matcher("/about/");
         final Matcher queryMatcher = compiled.getPattern().matcher("/about/?foo=bar");
-        final Matcher fragmentMatcher = compiled.getPattern().matcher("/about#why-us");
-        final Matcher combinedMatcher = compiled.getPattern().matcher("/about?bar=foo#why-us");
 
         assertThat("The pattern compiled with no parameters.",
                    compiled.getParameters().size(),
@@ -53,14 +51,6 @@ public class PathCompilerTest {
 
         assertThat("The path with a query string attached matches.",
                    queryMatcher.matches(),
-                   is(true));
-
-        assertThat("The path with a fragment identifier matches.",
-                   fragmentMatcher.matches(),
-                   is(true));
-
-        assertThat("A combined path matches.",
-                   combinedMatcher.matches(),
                    is(true));
     }
 

@@ -5,7 +5,7 @@ package net.cmpsb.cacofony.route;
  *
  * @author Luc Everse
  */
-public final class Path {
+public final class RequestPath {
     /**
      * The default requirement regex for a route parameter.
      */
@@ -19,7 +19,7 @@ public final class Path {
     /**
      * Do not instantiate.
      */
-    private Path() {
-        throw new AssertionError("Do not instantiate the Path helper class.");
+    private RequestPath() {
+        throw new AssertionError("Do not instantiate the RequestPath helper class.");
     }
 }

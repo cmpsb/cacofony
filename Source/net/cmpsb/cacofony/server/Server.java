@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -104,7 +105,7 @@ public class Server {
 
         final Router router = this.resolver.get(Router.class);
 
-        final RoutingEntry entry = this.staticFileRouteFactory.build(prefix, dir);
+        final RoutingEntry entry = this.staticFileRouteFactory.build(prefix, Paths.get(dir));
         router.addRoute(entry);
     }
 
@@ -147,7 +148,8 @@ public class Server {
         if (!this.resolver.isKnown(MimeDb.class)) {
             final MimeDb db = new MimeDb();
             final MimeDbLoader loader = this.resolver.get(MimeDbLoader.class);
-            loader.load(this.getClass().getResourceAsStream("/net/cmpsb/cacofony/mime.types"), db);
+            loader.load(this.getClass().getResourceAsStream("/net/cmpsb/cacofony/mime.types"),
+                        db::register);
             this.resolver.add(db);
         }
 

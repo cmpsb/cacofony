@@ -4,6 +4,7 @@ package net.cmpsb.cacofony.mime;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
 /**
@@ -27,10 +28,10 @@ public class MimeDbLoader {
     /**
      * Loads a database from an input stream.
      *
-     * @param in the input stream to read the database from
-     * @param db the container to store the mappings in
+     * @param in          the input stream to read the database from
+     * @param registrator the function to call to store a type
      */
-    public void load(final InputStream in, final MimeDb db) {
+    public void load(final InputStream in, final BiConsumer<String, MimeType> registrator) {
         final BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
         final Pattern splitter = Pattern.compile("\\s+");
@@ -43,7 +44,7 @@ public class MimeDbLoader {
                 .forEach(l -> {
                     final MimeType type = this.parser.parse(l[0]);
                     for (int i = 1; i < l.length; ++i) {
-                        db.register(l[i], type);
+                        registrator.accept(l[i], type);
                     }
                 });
     }
