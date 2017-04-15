@@ -1,6 +1,8 @@
 package net.cmpsb.cacofony.example.controller;
 
 import net.cmpsb.cacofony.controller.Controller;
+import net.cmpsb.cacofony.http.request.FormParser;
+import net.cmpsb.cacofony.http.request.Method;
 import net.cmpsb.cacofony.http.request.Request;
 import net.cmpsb.cacofony.http.response.StreamedResponse;
 import net.cmpsb.cacofony.http.response.TextResponse;
@@ -10,9 +12,12 @@ import net.cmpsb.cacofony.route.Route;
 import net.cmpsb.cacofony.util.Ob;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Luc Everse
@@ -124,5 +129,36 @@ public class ExampleController extends Controller {
         response.setContentType(MimeType.html());
 
         return response;
+    }
+
+    /**
+     * Displays a form.
+     *
+     * @param request the request
+     *
+     * @return the response
+     */
+    @Route(path = "/form", methods = {Method.GET})
+    public Response formAction(final Request request) {
+        return this.render("form.ftlh");
+    }
+
+    @Route(path = "/form", methods = {Method.POST})
+    public Response formPostAction(final Request request) throws IOException {
+        final String bodyStr = request.readFullBody(Integer.MAX_VALUE, StandardCharsets.UTF_8);
+
+        final FormParser parser = new FormParser();
+        final Map<String, List<String>> form = parser.parse(bodyStr);
+
+        final StringBuilder builder = new StringBuilder();
+        for (final String key : form.keySet()) {
+            builder.append(key).append(":\n");
+
+            for (final String value : form.get(key)) {
+                builder.append("      ").append(value).append("\n");
+            }
+        }
+
+        return new TextResponse(builder.toString());
     }
 }

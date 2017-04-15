@@ -72,7 +72,7 @@ public class HttpInputStream extends LineAwareInputStream {
      */
     @Override
     public int available() throws IOException {
-        return this.available + this.source.available();
+        return this.available - this.pointer + this.source.available();
     }
 
     /**
@@ -216,16 +216,12 @@ public class HttpInputStream extends LineAwareInputStream {
             System.arraycopy(this.buffer, this.pointer, buffer, offset, length);
             this.pointer += length;
 
-            // If the buffer has been exhausted, refresh it.
-            if (this.pointer == this.available) {
-                this.load();
-            }
-
             return length;
         }
 
         // Read the entire internal buffer into the output buffer.
         System.arraycopy(this.buffer, this.pointer, buffer, offset, bytesInBuffer);
+        this.pointer = this.available;
 
         // Read the remaining from the source stream.
         int bytesLeftToRead = length - bytesInBuffer;
@@ -233,15 +229,17 @@ public class HttpInputStream extends LineAwareInputStream {
         final int numReadDirectly = this.source.read(buffer, remainingOffset, bytesLeftToRead);
 
         if (numReadDirectly >= 0) {
-            // Refresh the internal buffer.
-            this.load();
-
             // Return the total number of bytes read.
             return numReadDirectly + bytesInBuffer;
         } else {
             // The buffer has ended, return the bytes copied from the buffer.
             this.available = -1;
-            return bytesInBuffer;
+
+            if (bytesInBuffer > 0) {
+                return bytesInBuffer;
+            }
+
+            return -1;
         }
     }
 

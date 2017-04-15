@@ -1,8 +1,13 @@
 package net.cmpsb.cacofony.http.request;
 
+import net.cmpsb.cacofony.http.exception.HttpException;
+import net.cmpsb.cacofony.http.response.ResponseCode;
 import net.cmpsb.cacofony.mime.MimeType;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
@@ -12,6 +17,11 @@ import java.util.Map;
  * @author Luc Everse
  */
 public abstract class Request {
+    /**
+     * The size in bytes of the buffer used to transfer the body into a temporary byte array.
+     */
+    private static final int BODY_BUFFER_SIZE = 8192;
+
     /**
      * Returns the client's major HTTP version.
      *
@@ -340,4 +350,84 @@ public abstract class Request {
      * @return the number of bytes in the request or {@code -1}
      */
     public abstract long getContentLength();
+
+    /**
+     * Reads the full request body into a string.
+     *
+     * @param maxSize the maximum length of the string, in bytes
+     * @param charset the character set used to decode the string
+     *
+     * @return a string containing the request body
+     *
+     * @throws IOException if an I/O error occurs
+     * @throws HttpException if the request is too large
+     */
+    public String readFullBody(final int maxSize, final Charset charset) throws IOException {
+        final long contentLength = this.getContentLength();
+
+        if (contentLength > maxSize || contentLength > Integer.MAX_VALUE) {
+            throw new HttpException(ResponseCode.PAYLOAD_TOO_LARGE, maxSize + " bytes max.");
+        }
+
+        if (contentLength == 0) {
+            return this.readFullChunkedBody(maxSize, charset);
+        }
+
+        return this.readFullStaticBody((int) contentLength, charset);
+    }
+
+    /**
+     * Reads the full request body into a string.
+     *
+     * @param contentLength the reported content length
+     * @param charset       the character set to encode the body with
+     *
+     * @return a string containing the request body
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private String readFullStaticBody(final int contentLength,
+                                      final Charset charset) throws IOException {
+        int bytesLeft = contentLength;
+        int position = 0;
+        final byte[] buffer = new byte[bytesLeft];
+
+        final InputStream body = this.getBody();
+        while (bytesLeft > 0) {
+            final int size = body.read(buffer, position, bytesLeft);
+
+            bytesLeft -= size;
+            position += size;
+        }
+
+        return new String(buffer, charset);
+    }
+
+    /**
+     * Reads the full request body from a chunked transfer into a string.
+     *
+     * @param maxSize the maximum size of the resulting string
+     * @param charset the character set to encode the body with
+     *
+     * @return a string containing the request body
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private String readFullChunkedBody(final int maxSize,
+                                       final Charset charset) throws IOException {
+        final InputStream source = this.getBody();
+        final ByteArrayOutputStream target = new ByteArrayOutputStream();
+        final byte[] buffer = new byte[BODY_BUFFER_SIZE];
+
+        while (target.size() < maxSize) {
+            final int size = source.read(buffer);
+            if (size == -1) {
+                break;
+            }
+
+            target.write(buffer, 0, size);
+        }
+
+        return target.toString(charset.displayName());
+    }
 }
