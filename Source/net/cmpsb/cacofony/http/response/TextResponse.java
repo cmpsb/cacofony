@@ -20,12 +20,15 @@ import java.util.stream.IntStream;
  * When preparing, the response will set the {@code charset} parameter for its content type, so by
  * default the sent content type will be {@code text/plain; charset=UTF-8}.
  * <p>
+ * To make usage easier the response uses a {@link StringBuilder} internally and exposes a subset
+ * of its interface. The functionality is thus equivalent.
+ * <p>
  * This response also implements {@link CharSequence}, meaning that you can use this response type
  * as a parameter to many string operations. Why you would do this, though, is beyond me.
  *
  * @author Luc Everse
  */
-public class TextResponse extends Response implements CharSequence {
+public class TextResponse extends Response implements CharSequence, Appendable {
     /**
      * The content to send.
      */
@@ -34,7 +37,7 @@ public class TextResponse extends Response implements CharSequence {
     /**
      * The content of the response.
      */
-    private String content = "";
+    private StringBuilder content;
 
     /**
      * The character set of the response.
@@ -48,7 +51,7 @@ public class TextResponse extends Response implements CharSequence {
      * @param charset the charset to encode the text with
      */
     public TextResponse(final String content, final Charset charset) {
-        this.content = content;
+        this.content = new StringBuilder(content);
         this.charset = charset;
     }
 
@@ -62,7 +65,7 @@ public class TextResponse extends Response implements CharSequence {
     public TextResponse(final ResponseCode status, final String content, final Charset charset) {
         super(status);
 
-        this.content = content;
+        this.content = new StringBuilder(content);
         this.charset = charset;
     }
 
@@ -74,7 +77,7 @@ public class TextResponse extends Response implements CharSequence {
      * @param content the text to send
      */
     public TextResponse(final String content) {
-        this.content = content;
+        this.content = new StringBuilder(content);
     }
 
     /**
@@ -88,7 +91,7 @@ public class TextResponse extends Response implements CharSequence {
     public TextResponse(final ResponseCode status, final String content) {
         super(status);
 
-        this.content = content;
+        this.content = new StringBuilder(content);
     }
 
     /**
@@ -97,6 +100,7 @@ public class TextResponse extends Response implements CharSequence {
      * Use {@link #setContent(String)} or {@link #setContent(String, Charset)} to set the content.
      */
     public TextResponse() {
+        this.content = new StringBuilder();
     }
 
     /**
@@ -106,7 +110,7 @@ public class TextResponse extends Response implements CharSequence {
      * @param charset the charset to encode the text with
      */
     public void setContent(final String data, final Charset charset) {
-        this.content = data;
+        this.content = new StringBuilder(data);
         this.charset = charset;
     }
 
@@ -116,7 +120,7 @@ public class TextResponse extends Response implements CharSequence {
      * @param data the text to send
      */
     public void setContent(final String data) {
-        this.content = data;
+        this.content = new StringBuilder(data);
     }
 
     /**
@@ -125,7 +129,7 @@ public class TextResponse extends Response implements CharSequence {
      * @return the content
      */
     public String getContent() {
-        return this.content;
+        return this.content.toString();
     }
 
     /**
@@ -168,12 +172,8 @@ public class TextResponse extends Response implements CharSequence {
             this.setContentType(type);
         }
 
-        if (this.content != null) {
-            this.bytes = this.content.getBytes(this.charset);
-        } else {
-            this.bytes = new byte[] {};
-        }
 
+        this.bytes = this.content.toString().getBytes(this.charset);
         this.content = null;
         this.charset = null;
 
@@ -190,6 +190,7 @@ public class TextResponse extends Response implements CharSequence {
     public int length() {
         return this.content.length();
     }
+
     /**
      * Returns {@code true} if, and only if, {@link #length()} is {@code 0}.
      *
@@ -197,7 +198,7 @@ public class TextResponse extends Response implements CharSequence {
      * {@code false}
      */
     public boolean isEmpty() {
-        return this.content.isEmpty();
+        return this.content.toString().isEmpty();
     }
 
     /**
@@ -284,6 +285,59 @@ public class TextResponse extends Response implements CharSequence {
      */
     @Override
     public String toString() {
-        return this.content;
+        return this.content.toString();
+    }
+
+    /**
+     * Appends another sequence to this sequence.
+     *
+     * @param charSequence the sequence to append
+     *
+     * @return this response
+     */
+    @Override
+    public TextResponse append(final CharSequence charSequence) {
+        this.content.append(charSequence);
+        return this;
+    }
+
+    /**
+     * Appends a subsequence of the given {@code charSequence} to this sequence.
+     *
+     * @param charSequence the sequence to append
+     * @param start        the start index of the subsequence to append
+     * @param end          the end index of the subsequence to append
+     *
+     * @return this response
+     */
+    @Override
+    public TextResponse append(final CharSequence charSequence, final int start, final int end) {
+        this.content.append(charSequence, start, end);
+        return this;
+    }
+
+    /**
+     * Appends the character to this sequence.
+     *
+     * @param character the character to append
+     *
+     * @return this response
+     */
+    @Override
+    public TextResponse append(final char character) {
+        this.content.append(character);
+        return this;
+    }
+
+    /**
+     * Appends the the string representation of the given object to this sequence.
+     *
+     * @param obj the object to append
+     *
+     * @return this response
+     */
+    public TextResponse append(final Object obj) {
+        this.content.append(obj);
+        return this;
     }
 }

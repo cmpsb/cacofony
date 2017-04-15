@@ -150,15 +150,16 @@ public class ExampleController extends Controller {
         final FormParser parser = new FormParser();
         final Map<String, List<String>> form = parser.parse(bodyStr);
 
-        final StringBuilder builder = new StringBuilder();
+        final TextResponse response = new TextResponse();
+
         for (final String key : form.keySet()) {
-            builder.append(key).append(":\n");
+            response.append(key).append(":\n");
 
             for (final String value : form.get(key)) {
-                builder.append("      ").append(value).append("\n");
+                response.append("      ").append(value).append("\n");
             }
         }
 
-        return new TextResponse(builder.toString());
+        return response;
     }
 }
