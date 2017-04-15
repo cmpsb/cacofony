@@ -28,12 +28,19 @@ public class ExampleController extends Controller {
     @Route(path = "/", types = {"text/plain"})
     @Route(path = "/helloworld")
     public Response indexAction(final Request request) {
-        final TextResponse response = new TextResponse();
-        response.setContent(
-            "<html>"
-          +   "<head><meta charset='UTF-8'><title>Hello World</title></head>"
-          +   "<body><h1>Hello World!</h1></body>"
-          + "</html>");
+        final boolean flip = request.hasQueryParameter("flip");
+
+        final StringBuilder builder = new StringBuilder("<!DOCTYPE html><html><head>");
+
+        if (flip) {
+            builder.append("<style>html {transform: rotate(180deg);}</style>");
+        }
+
+        builder.append("<meta charset='UTF-8'><title>Hello World</title></head>"
+                + "<body><h1>Hello World!</h1></body>"
+                + "</html>");
+
+        final TextResponse response = new TextResponse(builder.toString());
         response.setContentType(MimeType.html());
 
         return response;

@@ -3,6 +3,7 @@ package net.cmpsb.cacofony.route;
 import net.cmpsb.cacofony.http.exception.NotFoundException;
 import net.cmpsb.cacofony.http.request.Method;
 import net.cmpsb.cacofony.http.request.MutableRequest;
+import net.cmpsb.cacofony.http.request.QueryStringParser;
 import net.cmpsb.cacofony.http.request.Request;
 import net.cmpsb.cacofony.mime.MimeParser;
 import net.cmpsb.cacofony.mime.MimeType;
@@ -34,6 +35,11 @@ public class Router {
     private final MimeParser mimeParser;
 
     /**
+     * The query string parser to use.
+     */
+    private final QueryStringParser queryStringParser;
+
+    /**
      * A mapping towards routing entries.
      * The first level filters by method, the second level by accept encoding.
      * A single routing entry may appear multiple times in this "tree".
@@ -54,9 +60,11 @@ public class Router {
      * Creates a new request handler.
      *
      * @param mimeParser the MIME type parser to use
+     * @param queryStringParser the query string parser to use
      */
-    public Router(final MimeParser mimeParser) {
+    public Router(final MimeParser mimeParser, final QueryStringParser queryStringParser) {
         this.mimeParser = mimeParser;
+        this.queryStringParser = queryStringParser;
 
         // Build the routing table.
         this.routes = new HashMap<>();
@@ -230,6 +238,9 @@ public class Router {
                 }
 
                 request.setPath(path, queryString);
+
+                final Map<String, String> queryParams = this.queryStringParser.parse(queryString);
+                request.setQueryParameters(queryParams);
 
                 request.setPathParameters(params);
                 request.setContentType(contentType);

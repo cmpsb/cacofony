@@ -156,7 +156,18 @@ public abstract class Request {
     public abstract String getScheme();
 
     /**
+     * Returns whether a path parameter is present or not.
+     *
+     * @param param the name of the parameter to look for
+     *
+     * @return {@code true} if the parameter is present, otherwise {@code false}
+     */
+    public abstract boolean hasPathParameter(String param);
+
+    /**
      * Returns a parameter parsed from the URI.
+     * <p>
+     * The value is unescaped.
      *
      * @param param the parameter to look for
      *
@@ -168,11 +179,59 @@ public abstract class Request {
      * Returns a parameter parsed from the URI.
      *
      * @param param the parameter to look for
-     * @param def   the default to return if the paramater doesn't exist
+     * @param def   the default to return if the parameter doesn't exist
      *
      * @return the value for that parameter or {@code def} if it doesn't exist
      */
-    public abstract String getPathParameter(String param, String def);
+    public String getPathParameter(final String param, final String def) {
+        final String value = this.getPathParameter(param);
+
+        if (value == null) {
+            return def;
+        }
+
+        return value;
+    }
+
+    /**
+     * Returns true if a query parameter is present in the request.
+     *
+     * @param name the name of the parameter to look for
+     *
+     * @return {@code true} if the parameter is present, otherwise {@code false}
+     */
+    public abstract boolean hasQueryParameter(String name);
+
+    /**
+     * Returns a parameter parsed from the query string.
+     * <p>
+     * The key and value are unescaped.
+     *
+     * @param param the parameter to look for
+     *
+     * @return the value for that parameter or {@code null} if it doesn't exist
+     */
+    public abstract String getQueryParameter(String param);
+
+    /**
+     * Returns a parameter parsed from the query string.
+     * <p>
+     * The key and value are unescaped.
+     *
+     * @param param the parameter to look for
+     * @param def   the default to return if the parameter doesn't exist
+     *
+     * @return the value for that parameter or {@code def} if it doesn't exist
+     */
+    public String getQueryParameter(final String param, final String def) {
+        final String value = this.getQueryParameter(param);
+
+        if (value == null) {
+            return def;
+        }
+
+        return value;
+    }
 
     /**
      * Returns all headers with all values that were sent in the original request.

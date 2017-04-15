@@ -3,6 +3,7 @@ package net.cmpsb.cacofony.route;
 import net.cmpsb.cacofony.http.exception.NotFoundException;
 import net.cmpsb.cacofony.http.request.Method;
 import net.cmpsb.cacofony.http.request.MutableRequest;
+import net.cmpsb.cacofony.http.request.QueryStringParser;
 import net.cmpsb.cacofony.http.response.EmptyResponse;
 import net.cmpsb.cacofony.http.response.Response;
 import net.cmpsb.cacofony.http.response.TextResponse;
@@ -35,7 +36,7 @@ public class RouterTest {
     @Before
     public void before() {
         this.parser = new StrictMimeParser();
-        this.router = new Router(this.parser);
+        this.router = new Router(this.parser, new QueryStringParser());
     }
 
     @Test(expected = NotFoundException.class)

@@ -39,7 +39,7 @@ public final class Main {
         helper.enableFreeMarker(cfg);
 
         server.scanPackage("net.cmpsb.cacofony.example");
-        server.addStaticFiles("/static", "D:\\Dust\\Cacofony\\");
+//        server.addStaticFiles("/static", "D:\\Dust\\Cacofony\\");
         server.addStaticResources("/res", Main.class, "/net/cmpsb/cacofony/example/htdocs");
         server.start();
     }

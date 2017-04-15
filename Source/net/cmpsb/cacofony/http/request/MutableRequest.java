@@ -1,5 +1,6 @@
 package net.cmpsb.cacofony.http.request;
 
+import net.cmpsb.cacofony.http.exception.BadRequestException;
 import net.cmpsb.cacofony.mime.MimeType;
 
 import java.io.InputStream;
@@ -81,6 +82,11 @@ public class MutableRequest extends Request {
      * The parameters parsed from the request path.
      */
     private Map<String, String> pathParameters = new HashMap<>();
+
+    /**
+     * The query string parameters from the request path.
+     */
+    private Map<String, String> queryParameters = new HashMap<>();
 
     /**
      * The acceptable content type.
@@ -224,7 +230,13 @@ public class MutableRequest extends Request {
      */
     @Override
     public String getHost() {
-        return this.getHeader("Host");
+        final List<String> values = this.getHeaders("host");
+
+        if (values.size() != 1) {
+            throw new BadRequestException("None or multiple Host headers present.");
+        }
+
+        return values.get(0);
     }
 
     /**
@@ -233,6 +245,17 @@ public class MutableRequest extends Request {
     @Override
     public String getScheme() {
         return this.scheme;
+    }
+
+    /**
+     * Returns whether a path parameter is present or not.
+     *
+     * @param param the name of the parameter to look for
+     * @return {@code true} if the parameter is present, otherwise {@code false}
+     */
+    @Override
+    public boolean hasPathParameter(final String param) {
+        return false;
     }
 
     /**
@@ -256,14 +279,8 @@ public class MutableRequest extends Request {
      * {@inheritDoc}
      */
     @Override
-    public String getPathParameter(final String param, final String def) {
-        final String value = this.getPathParameter(param);
-
-        if (value == null) {
-            return def;
-        }
-
-        return value;
+    public boolean hasQueryParameter(final String name) {
+        return this.queryParameters.containsKey(name);
     }
 
     /**
@@ -273,6 +290,23 @@ public class MutableRequest extends Request {
      */
     public void setPathParameters(final Map<String, String> pathParameters) {
         this.pathParameters = pathParameters;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getQueryParameter(final String param) {
+        return this.queryParameters.get(param);
+    }
+
+    /**
+     * Sets the query parameters.
+     *
+     * @param queryParameters the query parameters
+     */
+    public void setQueryParameters(final Map<String, String> queryParameters) {
+        this.queryParameters = queryParameters;
     }
 
     /**
