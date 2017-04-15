@@ -159,8 +159,7 @@ public class TextResponse extends Response implements CharSequence, Appendable {
     /**
      * Serializes the content as a set of bytes to send.
      * <p>
-     * Afterwards, the content field is invalidated and {@link #getContent()}
-     * will return {@code null}.
+     * Afterwards, the content field is invalidated and any changes will result in exceptions.
      *
      * @param request the request that triggered this response
      */
