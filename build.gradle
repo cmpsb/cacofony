@@ -1,8 +1,11 @@
 apply plugin: 'java'
 apply plugin: 'jacoco'
 apply plugin: 'checkstyle'
+apply plugin: 'maven'
 
 version = "0.0.1"
+group = "net.cmpsb.cacofony"
+
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
@@ -91,5 +94,14 @@ test {
 jacocoTestReport {
     reports {
         xml.enabled true
+    }
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "file:///srv/dl/")
+            pom.artifactId = 'cacofony'
+        }
     }
 }

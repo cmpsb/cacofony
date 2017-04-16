@@ -17,21 +17,13 @@ build:all:
     - jdk8
   script:
     - ./gradlew build
-  artifacts:
-    paths:
-      - Build/reports
-      - Build/libs/Server.jar
-    expire_in: 1 week
 
 pages:
   stage: deploy
-  dependencies:
-    - 'build:all'
+  only:
+    - tags
+  tags:
+    - dl
   script:
-    - ./gradlew javadoc
-    - mkdir -p public/
-    - cp -r Build/{reports,docs/javadoc} public/
-  artifacts:
-    paths:
-    - public
-    expire_in: 1 week
+    - ./gradlew uploadArchives
+
