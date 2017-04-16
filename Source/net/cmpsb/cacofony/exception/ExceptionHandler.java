@@ -45,7 +45,7 @@ public class ExceptionHandler {
      *
      * @return a response, preferably with status 500 Internal Server Error
      */
-    public Response handle(final Request request, final Exception ex) {
+    public Response handle(final Request request, final Throwable ex) {
         logger.error("Internal server error: ", ex);
 
         final Response response = new TextResponse("Internal Server Error");

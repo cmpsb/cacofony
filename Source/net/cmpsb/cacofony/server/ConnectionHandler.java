@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
 
 /**
@@ -110,7 +111,12 @@ public class ConnectionHandler {
 
                 final long start = System.nanoTime();
 
-                response = this.router.handle(request);
+                try {
+                    response = this.router.handle(request);
+                } catch (final InvocationTargetException ex) {
+                    // "Unpack" an exception raised through reflection calls.
+                    throw ex.getCause();
+                }
 
                 final long time = System.nanoTime() - start;
                 final double satisfactionIndex = 600_000_000.0 / time * 100.0;
@@ -125,7 +131,7 @@ public class ConnectionHandler {
                 this.preparer.prepare(request, response);
             } catch (final IOException ex) {
                 break;
-            } catch (final Exception ex) {
+            } catch (final Throwable ex) {
                 response = this.exceptionHandler.handle(request, ex);
                 this.preparer.prepare(request, response);
             }
