@@ -64,7 +64,7 @@ public class ResourceResponse extends CachableResponse {
                 break;
             }
 
-            out.write(buffer);
+            out.write(buffer, 0, read);
         }
     }
 
