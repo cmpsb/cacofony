@@ -3,6 +3,8 @@ package net.cmpsb.cacofony.server;
 import net.cmpsb.cacofony.controller.ControllerLoader;
 import net.cmpsb.cacofony.di.DefaultDependencyResolver;
 import net.cmpsb.cacofony.di.DependencyResolver;
+import net.cmpsb.cacofony.exception.DefaultExceptionHandler;
+import net.cmpsb.cacofony.exception.ExceptionHandler;
 import net.cmpsb.cacofony.mime.FastMimeParser;
 import net.cmpsb.cacofony.mime.MimeDb;
 import net.cmpsb.cacofony.mime.MimeDbLoader;
@@ -159,6 +161,10 @@ public class Server {
         if (ports.isEmpty()) {
             ports.add(new Port(80, false));
             ports.add(new Port(443, true));
+        }
+
+        if (!this.resolver.isKnown(ExceptionHandler.class)) {
+            this.resolver.add(new DefaultExceptionHandler(), ExceptionHandler.class);
         }
 
         if (!this.resolver.isKnown(SSLServerSocketFactory.class)) {
