@@ -3,6 +3,8 @@ package net.cmpsb.cacofony.server;
 import net.cmpsb.cacofony.controller.ControllerLoader;
 import net.cmpsb.cacofony.di.DefaultDependencyResolver;
 import net.cmpsb.cacofony.di.DependencyResolver;
+import net.cmpsb.cacofony.exception.DefaultExceptionHandler;
+import net.cmpsb.cacofony.exception.ExceptionHandler;
 import net.cmpsb.cacofony.mime.FastMimeParser;
 import net.cmpsb.cacofony.mime.MimeDb;
 import net.cmpsb.cacofony.mime.MimeDbLoader;
@@ -154,11 +156,19 @@ public class Server {
      * This method fills in the missing dependencies and sets many settings to their defaults.
      */
     private void init() {
+        logger.debug("Init started.");
+
         // Add the default 80 and 443 ports if none are set.
         final Set<Port> ports = this.settings.getPorts();
         if (ports.isEmpty()) {
             ports.add(new Port(80, false));
             ports.add(new Port(443, true));
+        }
+
+        this.resolver.add(ServerProperties.load());
+
+        if (!this.resolver.isKnown(ExceptionHandler.class)) {
+            this.resolver.add(new DefaultExceptionHandler(), ExceptionHandler.class);
         }
 
         if (!this.resolver.isKnown(SSLServerSocketFactory.class)) {
@@ -185,6 +195,8 @@ public class Server {
                         db::register);
             this.resolver.add(db);
         }
+
+        logger.debug("Init finished.");
     }
 
     /**

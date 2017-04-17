@@ -153,7 +153,7 @@ public class ChunkedOutputStream extends OutputStream {
 
         // Otherwise copy what's possible.
         System.arraycopy(data, offset, this.buffer, this.pointer, bytesLeftInBuffer);
-        this.pointer += this.buffer.length;
+        this.pointer = this.buffer.length;
         this.flush();
 
         // Keep generating chunks while the data can't fit in the internal buffer.

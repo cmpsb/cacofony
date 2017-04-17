@@ -1,6 +1,7 @@
 package net.cmpsb.cacofony.http.response;
 
 import net.cmpsb.cacofony.server.MutableServerSettings;
+import net.cmpsb.cacofony.server.ServerProperties;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,7 +23,8 @@ public class ResponsePreparerTest {
     @Before
     public void before() {
         this.settings = new MutableServerSettings();
-        this.preparer = new ResponsePreparer(this.settings);
+        final ServerProperties properties = new ServerProperties();
+        this.preparer = new ResponsePreparer(this.settings, properties);
     }
 
     @Test

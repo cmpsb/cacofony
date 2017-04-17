@@ -1,6 +1,7 @@
 package net.cmpsb.cacofony.controller;
 
 import net.cmpsb.cacofony.di.Inject;
+import net.cmpsb.cacofony.di.Service;
 import net.cmpsb.cacofony.http.response.Response;
 import net.cmpsb.cacofony.templating.TemplatingService;
 
@@ -9,7 +10,7 @@ import java.util.Map;
 /**
  * @author Luc Everse
  */
-public abstract class Controller {
+public abstract class Controller extends Service {
     /**
      * The templating service to use.
      */

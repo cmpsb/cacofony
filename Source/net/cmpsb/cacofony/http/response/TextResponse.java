@@ -95,6 +95,16 @@ public class TextResponse extends Response implements CharSequence, Appendable {
     }
 
     /**
+     * Creates a new plain text response with a status code.
+     *
+     * @param code the status code
+     */
+    public TextResponse(final ResponseCode code) {
+        super(code);
+        this.content = new StringBuilder();
+    }
+
+    /**
      * Creates a new plain text response with an empty string as its content.
      * <p>
      * Use {@link #setContent(String)} or {@link #setContent(String, Charset)} to set the content.
