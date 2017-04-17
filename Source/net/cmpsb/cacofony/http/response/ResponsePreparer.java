@@ -77,7 +77,6 @@ public class ResponsePreparer {
 
         if (!headers.containsKey("Server") && this.settings.mayBroadcastServerVersion()) {
             final String version = this.properties.getProperty("net.cmpsb.cacofony.version");
-            System.out.println(version);
             if (version != null) {
                 response.setHeader("Server", "Cacofony/" + version);
             } else {
