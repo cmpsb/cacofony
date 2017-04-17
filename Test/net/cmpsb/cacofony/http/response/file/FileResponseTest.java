@@ -5,6 +5,7 @@ import net.cmpsb.cacofony.http.response.ResponsePreparer;
 import net.cmpsb.cacofony.http.response.ResponseWriter;
 import net.cmpsb.cacofony.mime.MimeType;
 import net.cmpsb.cacofony.server.MutableServerSettings;
+import net.cmpsb.cacofony.server.ServerProperties;
 import net.cmpsb.cacofony.server.ServerSettings;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +36,8 @@ public class FileResponseTest {
     @Before
     public void before() {
         final ServerSettings settings = new MutableServerSettings();
-        this.preparer = new ResponsePreparer(settings);
+        final ServerProperties properties = new ServerProperties();
+        this.preparer = new ResponsePreparer(settings, properties);
 
         this.writer = new ResponseWriter(settings, new HeaderValueParser());
     }

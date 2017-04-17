@@ -156,12 +156,16 @@ public class Server {
      * This method fills in the missing dependencies and sets many settings to their defaults.
      */
     private void init() {
+        logger.debug("Init started.");
+
         // Add the default 80 and 443 ports if none are set.
         final Set<Port> ports = this.settings.getPorts();
         if (ports.isEmpty()) {
             ports.add(new Port(80, false));
             ports.add(new Port(443, true));
         }
+
+        this.resolver.add(ServerProperties.load());
 
         if (!this.resolver.isKnown(ExceptionHandler.class)) {
             this.resolver.add(new DefaultExceptionHandler(), ExceptionHandler.class);
@@ -191,6 +195,8 @@ public class Server {
                         db::register);
             this.resolver.add(db);
         }
+
+        logger.debug("Init finished.");
     }
 
     /**

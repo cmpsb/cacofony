@@ -5,6 +5,7 @@ import net.cmpsb.cacofony.http.request.Method;
 import net.cmpsb.cacofony.http.request.MutableRequest;
 import net.cmpsb.cacofony.http.request.Request;
 import net.cmpsb.cacofony.server.MutableServerSettings;
+import net.cmpsb.cacofony.server.ServerProperties;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,7 +37,8 @@ public class ResponseWriterTest {
         this.valueParser = new HeaderValueParser();
         this.writer = new ResponseWriter(this.settings, this.valueParser);
 
-        this.preparer = new ResponsePreparer(this.settings);
+        final ServerProperties properties = new ServerProperties();
+        this.preparer = new ResponsePreparer(this.settings, properties);
     }
 
     @Test

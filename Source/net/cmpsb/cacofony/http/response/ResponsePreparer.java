@@ -2,6 +2,7 @@ package net.cmpsb.cacofony.http.response;
 
 import net.cmpsb.cacofony.http.request.Request;
 import net.cmpsb.cacofony.mime.MimeType;
+import net.cmpsb.cacofony.server.ServerProperties;
 import net.cmpsb.cacofony.server.ServerSettings;
 
 import java.time.ZoneId;
@@ -25,12 +26,20 @@ public class ResponsePreparer {
     private final ServerSettings settings;
 
     /**
+     * The static server properties.
+     */
+    private final ServerProperties properties;
+
+    /**
      * Creates a new response parser.
      *
-     * @param settings the server configuration
+     * @param settings   the server configuration
+     * @param properties the static server properties
      */
-    public ResponsePreparer(final ServerSettings settings) {
+    public ResponsePreparer(final ServerSettings settings,
+                            final ServerProperties properties) {
         this.settings = settings;
+        this.properties = properties;
     }
 
     /**
@@ -67,7 +76,8 @@ public class ResponsePreparer {
         }
 
         if (!headers.containsKey("Server") && this.settings.mayBroadcastServerVersion()) {
-            final String version = this.getClass().getPackage().getImplementationVersion();
+            final String version = this.properties.getProperty("net.cmpsb.cacofony.version");
+            System.out.println(version);
             if (version != null) {
                 response.setHeader("Server", "Cacofony/" + version);
             } else {
