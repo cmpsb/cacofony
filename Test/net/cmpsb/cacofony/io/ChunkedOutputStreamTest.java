@@ -115,6 +115,36 @@ public class ChunkedOutputStreamTest {
                    is(equalTo(expected)));
     }
 
+    @Test
+    public void testWriteBulkIntoNearlyFull() throws IOException {
+        final ChunkedOutputStream out = new ChunkedOutputStream(this.target, 16);
+        out.write(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
+        out.write(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+                              1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
+        out.close();
+
+        final byte[] expected = {
+            '1', '0', '\r', '\n',
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3, 4,
+            '\r', '\n',
+
+            '1', '0', '\r', '\n',
+            5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6, 7, 8,
+            '\r', '\n',
+
+            '4', '\r', '\n',
+            9, 10, 11, 12,
+            '\r', '\n',
+
+            '0', '\r', '\n',
+            '\r', '\n'
+        };
+
+        assertThat("The output is as expected.",
+                   this.target.toByteArray(),
+                   is(equalTo(expected)));
+    }
+
     @Test(expected = NullPointerException.class)
     public void testInvalidWriteBuffer() throws IOException {
         final ChunkedOutputStream out = new ChunkedOutputStream(this.target);
