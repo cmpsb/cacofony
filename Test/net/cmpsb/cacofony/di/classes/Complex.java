@@ -10,12 +10,11 @@ public class Complex {
     private final SimpleImplicit other;
     private final int count;
 
-    @Inject("argument: field-dep")
+    @Inject
     private final String fieldDep = null;
 
-    public Complex(@Inject final NullaryConstructor one,
-                   @Inject("name: test.multi") final SimpleImplicit other,
-                   @Inject("argument: count") final Integer count) {
+    public Complex(final NullaryConstructor one, final SimpleImplicit other,
+                   final Integer count) {
         this.one = one;
         this.other = other;
         this.count = count;

@@ -3,7 +3,6 @@ package net.cmpsb.cacofony.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -32,8 +31,8 @@ public class ServerProperties extends Properties {
         try (InputStream in = ServerProperties.class.getResourceAsStream(METADATA_PATH)) {
             properties.loadFromXML(in);
             logger.info("Cacofony v{}", properties.getProperty("net.cmpsb.cacofony.version"));
-        } catch (final IOException ex) {
-            logger.error("I/O exception while loading server metadata: ", ex);
+        } catch (final Exception ex) {
+            logger.error("Exception while loading server metadata: ", ex);
         }
 
         return properties;

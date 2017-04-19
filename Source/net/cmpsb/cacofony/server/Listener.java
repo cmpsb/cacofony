@@ -1,7 +1,5 @@
 package net.cmpsb.cacofony.server;
 
-import net.cmpsb.cacofony.di.Inject;
-import net.cmpsb.cacofony.di.MultiInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +13,6 @@ import java.util.concurrent.ExecutorService;
  *
  * @author Luc Everse
  */
-@MultiInstance
 public class Listener implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(Listener.class);
 
@@ -47,10 +44,10 @@ public class Listener implements Runnable {
      * @param handler  the connection handler to use
      * @param scheme   the connection scheme this listener handles
      */
-    public Listener(@Inject("arg:socket") final ServerSocket socket,
-                    @Inject("name:resource/server.thread-pool") final ExecutorService executor,
+    public Listener(final ServerSocket socket,
+                    final ExecutorService executor,
                     final ConnectionHandler handler,
-                    @Inject("arg: scheme") final String scheme) {
+                    final String scheme) {
         this.socket = socket;
         this.executor = executor;
         this.handler = handler;

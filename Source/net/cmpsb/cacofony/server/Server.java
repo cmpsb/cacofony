@@ -18,6 +18,7 @@ import net.cmpsb.cacofony.templating.TemplatingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLServerSocketFactory;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -56,7 +57,7 @@ public class Server {
         this.resolver = resolver;
         this.settings = settings;
 
-        this.resolver.add(settings, ServerSettings.class);
+        this.resolver.add(ServerSettings.class, settings);
 
         this.init();
     }
@@ -135,19 +136,30 @@ public class Server {
 
     /**
      * Registers an external service.
-     * <p>
-     * If the service is meant to be a server dependency (such as internal parsers, factories,
-     * etc.), please register them with the resolver <em>before</em> constructing the server
-     * object. Otherwise the server may not pick up your override.
      *
      * @param type     the service type
      * @param instance the service instance
-     * @param <T>      the service type
+     * @param <S>      the service type
+     * @param <T>      the instance type
      */
-    public <T> void register(final Class<T> type, final T instance) {
+    public <S, T extends S> void register(final Class<S> type, final T instance) {
         this.ensureIdle();
 
-        this.resolver.add(instance, type);
+        this.resolver.add(type, instance);
+    }
+
+    /**
+     * Registers an external service.
+     *
+     * @param iface  the service type
+     * @param impl   the instance type
+     * @param <S>    the service type
+     * @param <T>    the instance type
+     */
+    public <S, T extends S> void register(final Class<S> iface, final Class<T> impl) {
+        this.ensureIdle();
+
+        this.resolver.implement(iface, impl);
     }
 
     /**
@@ -165,36 +177,21 @@ public class Server {
             ports.add(new Port(443, true));
         }
 
-        this.resolver.add(ServerProperties.load());
+        this.resolver.addDefaultSupplied(ServerProperties.class, ServerProperties::load);
+        this.resolver.implementDefault(ExceptionHandler.class, DefaultExceptionHandler.class);
+        this.resolver.addDefaultSupplied(ServerSocketFactory.class,
+                                         SSLServerSocketFactory::getDefault);
+        this.resolver.implementDefault(MimeParser.class, FastMimeParser.class);
+        this.resolver.implementDefault(TemplatingService.class, DummyTemplatingService.class);
+        this.resolver.implementDefault(ListenerFactory.class, DefaultListenerFactory.class);
 
-        if (!this.resolver.isKnown(ExceptionHandler.class)) {
-            this.resolver.add(new DefaultExceptionHandler(), ExceptionHandler.class);
-        }
-
-        if (!this.resolver.isKnown(SSLServerSocketFactory.class)) {
-            this.resolver.add((SSLServerSocketFactory) SSLServerSocketFactory.getDefault(),
-                    SSLServerSocketFactory.class);
-        }
-
-        if (!this.resolver.isKnown(MimeParser.class)) {
-            this.resolver.get(FastMimeParser.class, MimeParser.class);
-        }
-
-        if (!this.resolver.isKnown(TemplatingService.class)) {
-            this.resolver.add(new DummyTemplatingService(), TemplatingService.class);
-        }
-
-        if (!this.resolver.isKnown(ListenerFactory.class)) {
-            this.resolver.get(DefaultListenerFactory.class, ListenerFactory.class);
-        }
-
-        if (!this.resolver.isKnown(MimeDb.class)) {
+        this.resolver.addDefaultSupplied(MimeDb.class, () -> {
             final MimeDb db = new MimeDb();
             final MimeDbLoader loader = this.resolver.get(MimeDbLoader.class);
             loader.load(this.getClass().getResourceAsStream("/net/cmpsb/cacofony/mime.types"),
                         db::register);
-            this.resolver.add(db);
-        }
+            return db;
+        });
 
         logger.debug("Init finished.");
     }
