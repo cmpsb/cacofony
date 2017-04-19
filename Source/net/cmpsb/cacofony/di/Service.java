@@ -26,19 +26,6 @@ public abstract class Service {
     }
 
     /**
-     * Looks up a service by its name.
-     *
-     * @param name the service's name
-     * @param type the class or interface of the service
-     * @param <T>  the class or interface of the service
-     *
-     * @return an instance of that service
-     */
-    public <T> T get(final String name, final Class<T> type) {
-        return this.resolver.get(name, type);
-    }
-
-    /**
      * Looks up a service by its interface.
      *
      * @param type the class or interface of the service

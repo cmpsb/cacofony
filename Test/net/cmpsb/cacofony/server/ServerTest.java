@@ -3,7 +3,7 @@ package net.cmpsb.cacofony.server;
 import net.cmpsb.cacofony.di.DefaultDependencyResolver;
 import net.cmpsb.cacofony.di.DependencyResolver;
 import net.cmpsb.cacofony.mime.FastMimeParser;
-import net.cmpsb.cacofony.mime.MimeDb;
+import net.cmpsb.cacofony.mime.MimeParser;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,8 +31,7 @@ public class ServerTest {
         this.resolver = new DefaultDependencyResolver();
         this.settings = new MutableServerSettings();
 
-        this.resolver.add(new MimeDb());
-        this.resolver.add(new FastMimeParser());
+        this.resolver.implement(MimeParser.class, FastMimeParser.class);
 
         this.expectedPorts = new HashSet<>();
 
@@ -40,7 +39,7 @@ public class ServerTest {
         this.expectedPorts.add(new Port(443, true));
 
         this.factory = new VerifyingListenerFactory(this.expectedPorts);
-        this.resolver.add(this.factory, ListenerFactory.class);
+        this.resolver.add(ListenerFactory.class, this.factory);
     }
 
     @Test

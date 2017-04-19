@@ -3,7 +3,6 @@ package net.cmpsb.cacofony.server;
 import freemarker.template.Configuration;
 import net.cmpsb.cacofony.templating.TemplatingService;
 import net.cmpsb.cacofony.templating.freemarker.FreeMarkerTemplatingService;
-import net.cmpsb.cacofony.util.Ob;
 
 /**
  * A helper class with many useful utilities for preparing a server.
@@ -31,10 +30,7 @@ public class ServerHelper {
      * @param config the FreeMarker configuration to install
      */
     public void enableFreeMarker(final Configuration config) {
-        final FreeMarkerTemplatingService service = this.server.getResolver().get(Ob.map(
-                "configuration", config
-        ), FreeMarkerTemplatingService.class);
-
-        this.server.register(TemplatingService.class, service);
+        this.server.register(Configuration.class, config);
+        this.server.register(TemplatingService.class, FreeMarkerTemplatingService.class);
     }
 }

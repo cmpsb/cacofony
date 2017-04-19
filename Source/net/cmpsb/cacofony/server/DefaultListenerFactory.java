@@ -1,7 +1,6 @@
 package net.cmpsb.cacofony.server;
 
-import javax.net.ssl.SSLServerSocket;
-import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ServerSocketFactory;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.concurrent.ExecutorService;
@@ -16,7 +15,7 @@ public class DefaultListenerFactory implements ListenerFactory {
     /**
      * The server socket factory to use.
      */
-    private final SSLServerSocketFactory factory;
+    private final ServerSocketFactory factory;
 
     /**
      * The connection handler to use.
@@ -34,7 +33,7 @@ public class DefaultListenerFactory implements ListenerFactory {
      * @param factory  the SSL server socket factory
      * @param handler  the connection handler to direct the listeners to
      */
-    public DefaultListenerFactory(final SSLServerSocketFactory factory,
+    public DefaultListenerFactory(final ServerSocketFactory factory,
                                   final ConnectionHandler handler) {
         this.factory = factory;
         this.handler = handler;
@@ -78,8 +77,7 @@ public class DefaultListenerFactory implements ListenerFactory {
      * @throws IOException if an I/O error occurs
      */
     private void bootSecure(final Port port) throws IOException {
-        final SSLServerSocket socket =
-                (SSLServerSocket) this.factory.createServerSocket(port.getPort());
+        final ServerSocket socket = this.factory.createServerSocket(port.getPort());
 
         final Listener listener = new Listener(socket, this.executor, this.handler, "https");
 
