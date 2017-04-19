@@ -365,11 +365,15 @@ public abstract class Request {
     public String readFullBody(final int maxSize, final Charset charset) throws IOException {
         final long contentLength = this.getContentLength();
 
+        if (contentLength == 0) {
+            return "";
+        }
+
         if (contentLength > maxSize || contentLength > Integer.MAX_VALUE) {
             throw new HttpException(ResponseCode.PAYLOAD_TOO_LARGE, maxSize + " bytes max.");
         }
 
-        if (contentLength == 0) {
+        if (contentLength == -1) {
             return this.readFullChunkedBody(maxSize, charset);
         }
 
@@ -390,7 +394,7 @@ public abstract class Request {
                                       final Charset charset) throws IOException {
         int bytesLeft = contentLength;
         int position = 0;
-        final byte[] buffer = new byte[bytesLeft];
+        final byte[] buffer = new byte[contentLength];
 
         final InputStream body = this.getBody();
         while (bytesLeft > 0) {
@@ -423,6 +427,10 @@ public abstract class Request {
             final int size = source.read(buffer);
             if (size == -1) {
                 break;
+            }
+
+            if (target.size() + size > maxSize) {
+                throw new HttpException(ResponseCode.PAYLOAD_TOO_LARGE, maxSize + " bytes max.");
             }
 
             target.write(buffer, 0, size);
