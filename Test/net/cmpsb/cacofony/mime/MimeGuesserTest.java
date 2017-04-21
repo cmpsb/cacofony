@@ -1,6 +1,7 @@
 package net.cmpsb.cacofony.mime;
 
 import com.j256.simplemagic.ContentInfoUtil;
+import net.cmpsb.cacofony.server.Server;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -30,6 +31,7 @@ public class MimeGuesserTest {
         mimeDb.register("txt", MimeType.text());
         mimeDb.register("html", MimeType.html());
         mimeDb.register("bin", MimeType.octetStream());
+        mimeDb.register("json", new MimeType("application", "json"));
 
         this.guesser = new MimeGuesser(mimeParser, mimeDb, new ContentInfoUtil());
     }
@@ -76,5 +78,35 @@ public class MimeGuesserTest {
                    is(equalTo(MimeType.octetStream())));
 
         Files.delete(path);
+    }
+
+    @Test
+    public void testLocalResource() throws IOException {
+        final String location = "/net/cmpsb/cacofony/test/json.json";
+        final MimeType type = this.guesser.guessLocal(Server.class, location);
+
+        assertThat("The type is correct.",
+                   type,
+                   is(equalTo(new MimeType("application", "json"))));
+    }
+
+    @Test
+    public void testLocalResourceWithoutExtension() throws IOException {
+        final String location = "/net/cmpsb/cacofony/test/i";
+        final MimeType type = this.guesser.guessLocal(Server.class, location);
+
+        assertThat("The type is correct.",
+                   type,
+                   is(equalTo(new MimeType("image", "x-ms-bmp"))));
+    }
+
+    @Test
+    public void testLocalResourceUnknown() throws IOException {
+        final String location = "/net/cmpsb/cacofony/test/nmn";
+        final MimeType type = this.guesser.guessLocal(Server.class, location);
+
+        assertThat("The type is application/octet-stream.",
+                   type,
+                   is(equalTo(MimeType.octetStream())));
     }
 }
