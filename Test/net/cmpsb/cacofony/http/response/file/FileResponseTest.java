@@ -1,5 +1,6 @@
 package net.cmpsb.cacofony.http.response.file;
 
+import net.cmpsb.cacofony.http.cookie.CookieWriter;
 import net.cmpsb.cacofony.http.request.HeaderValueParser;
 import net.cmpsb.cacofony.http.response.ResponsePreparer;
 import net.cmpsb.cacofony.http.response.ResponseWriter;
@@ -7,6 +8,7 @@ import net.cmpsb.cacofony.mime.MimeType;
 import net.cmpsb.cacofony.server.MutableServerSettings;
 import net.cmpsb.cacofony.server.ServerProperties;
 import net.cmpsb.cacofony.server.ServerSettings;
+import net.cmpsb.cacofony.util.UrlCodec;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,7 +39,9 @@ public class FileResponseTest {
     public void before() {
         final ServerSettings settings = new MutableServerSettings();
         final ServerProperties properties = new ServerProperties();
-        this.preparer = new ResponsePreparer(settings, properties);
+        final UrlCodec urlCodec = new UrlCodec();
+        final CookieWriter cookieWriter = new CookieWriter(urlCodec);
+        this.preparer = new ResponsePreparer(settings, properties, cookieWriter);
 
         this.writer = new ResponseWriter(settings, new HeaderValueParser());
     }

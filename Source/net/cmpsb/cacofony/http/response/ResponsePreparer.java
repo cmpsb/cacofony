@@ -1,5 +1,7 @@
 package net.cmpsb.cacofony.http.response;
 
+import net.cmpsb.cacofony.http.cookie.Cookie;
+import net.cmpsb.cacofony.http.cookie.CookieWriter;
 import net.cmpsb.cacofony.http.request.Request;
 import net.cmpsb.cacofony.mime.MimeType;
 import net.cmpsb.cacofony.server.ServerProperties;
@@ -31,15 +33,23 @@ public class ResponsePreparer {
     private final ServerProperties properties;
 
     /**
+     * The cookie writer to use.
+     */
+    private final CookieWriter cookieWriter;
+
+    /**
      * Creates a new response parser.
      *
-     * @param settings   the server configuration
-     * @param properties the static server properties
+     * @param settings     the server configuration
+     * @param properties   the static server properties
+     * @param cookieWriter the cookie writer to use
      */
     public ResponsePreparer(final ServerSettings settings,
-                            final ServerProperties properties) {
+                            final ServerProperties properties,
+                            final CookieWriter cookieWriter) {
         this.settings = settings;
         this.properties = properties;
+        this.cookieWriter = cookieWriter;
     }
 
     /**
@@ -75,6 +85,7 @@ public class ResponsePreparer {
             response.setHeader("Date", dateLine);
         }
 
+        // Indicate the server version.
         if (!headers.containsKey("Server") && this.settings.mayBroadcastServerVersion()) {
             final String version = this.properties.getProperty("net.cmpsb.cacofony.version");
             if (version != null) {
@@ -82,6 +93,11 @@ public class ResponsePreparer {
             } else {
                 response.setHeader("Server", "Cacofony/with love from your IDE");
             }
+        }
+
+        // Append the cookies.
+        for (final Cookie cookie : response.getCookies()) {
+            response.addHeader("Set-Cookie", this.cookieWriter.writeAttributed(cookie));
         }
     }
 }

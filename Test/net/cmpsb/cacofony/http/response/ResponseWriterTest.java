@@ -1,11 +1,13 @@
 package net.cmpsb.cacofony.http.response;
 
+import net.cmpsb.cacofony.http.cookie.CookieWriter;
 import net.cmpsb.cacofony.http.request.HeaderValueParser;
 import net.cmpsb.cacofony.http.request.Method;
 import net.cmpsb.cacofony.http.request.MutableRequest;
 import net.cmpsb.cacofony.http.request.Request;
 import net.cmpsb.cacofony.server.MutableServerSettings;
 import net.cmpsb.cacofony.server.ServerProperties;
+import net.cmpsb.cacofony.util.UrlCodec;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,7 +40,9 @@ public class ResponseWriterTest {
         this.writer = new ResponseWriter(this.settings, this.valueParser);
 
         final ServerProperties properties = new ServerProperties();
-        this.preparer = new ResponsePreparer(this.settings, properties);
+        final UrlCodec urlCodec = new UrlCodec();
+        final CookieWriter cookieWriter = new CookieWriter(urlCodec);
+        this.preparer = new ResponsePreparer(this.settings, properties, cookieWriter);
     }
 
     @Test

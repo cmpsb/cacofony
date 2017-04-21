@@ -1,5 +1,6 @@
 package net.cmpsb.cacofony.http.request;
 
+import net.cmpsb.cacofony.http.cookie.Cookie;
 import net.cmpsb.cacofony.http.exception.HttpException;
 import net.cmpsb.cacofony.http.response.ResponseCode;
 import net.cmpsb.cacofony.mime.MimeType;
@@ -242,6 +243,31 @@ public abstract class Request {
 
         return value;
     }
+
+    /**
+     * Looks for a cookie by its name.
+     *
+     * @param name the name of the cookie
+     *
+     * @return the cookie or {@code null} if there is no cookie with that name
+     */
+    public abstract Cookie getCookie(String name);
+
+    /**
+     * Looks for a collection of cookies by its name.
+     *
+     * @param name the name to look for
+     *
+     * @return the cookie or an empty list if there are no cookies with that name
+     */
+    public abstract List<Cookie> getCookies(String name);
+
+    /**
+     * Returns all cookies in the request.
+     *
+     * @return all cookies
+     */
+    public abstract Map<String, List<Cookie>> getCookies();
 
     /**
      * Returns all headers with all values that were sent in the original request.

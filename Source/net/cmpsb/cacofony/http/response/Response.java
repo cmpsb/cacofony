@@ -1,5 +1,6 @@
 package net.cmpsb.cacofony.http.response;
 
+import net.cmpsb.cacofony.http.cookie.Cookie;
 import net.cmpsb.cacofony.http.request.Request;
 import net.cmpsb.cacofony.mime.MimeType;
 
@@ -36,6 +37,11 @@ public abstract class Response {
      * The response's headers.
      */
     private final Map<String, List<String>> headers = new HashMap<>();
+
+    /**
+     * The response's cookies.
+     */
+    private final List<Cookie> cookies = new ArrayList<>();
 
     /**
      * Whether to allow compression on the set response. If {@code null}, the server will decide
@@ -141,6 +147,24 @@ public abstract class Response {
         for (final String key : otherHeaders.keySet()) {
             this.addHeader(key, otherHeaders.get(key));
         }
+    }
+
+    /**
+     * Adds a cookie to the response.
+     *
+     * @param cookie the cookie to add
+     */
+    public void addCookie(final Cookie cookie) {
+        this.cookies.add(cookie);
+    }
+
+    /**
+     * Returns the cookies in the response.
+     *
+     * @return the cookies
+     */
+    public List<Cookie> getCookies() {
+        return this.cookies;
     }
 
     /**

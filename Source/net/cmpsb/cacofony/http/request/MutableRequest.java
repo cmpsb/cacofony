@@ -1,11 +1,13 @@
 package net.cmpsb.cacofony.http.request;
 
+import net.cmpsb.cacofony.http.cookie.Cookie;
 import net.cmpsb.cacofony.http.exception.BadRequestException;
 import net.cmpsb.cacofony.mime.MimeType;
 
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,6 +89,11 @@ public class MutableRequest extends Request {
      * The query string parameters from the request path.
      */
     private Map<String, String> queryParameters = new HashMap<>();
+
+    /**
+     * The cookies in the request.
+     */
+    private Map<String, List<Cookie>> cookies = new HashMap<>();
 
     /**
      * The acceptable content type.
@@ -307,6 +314,51 @@ public class MutableRequest extends Request {
      */
     public void setQueryParameters(final Map<String, String> queryParameters) {
         this.queryParameters = queryParameters;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Cookie getCookie(final String name) {
+        final List<Cookie> filteredCookies = this.cookies.get(name);
+
+        if (filteredCookies == null) {
+            return null;
+        }
+
+        return filteredCookies.get(0);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Cookie> getCookies(final String name) {
+        final List<Cookie> filteredCookies = this.cookies.get(name);
+
+        if (filteredCookies == null) {
+            return Collections.emptyList();
+        }
+
+        return filteredCookies;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<String, List<Cookie>> getCookies() {
+        return this.cookies;
+    }
+
+    /**
+     * Sets the request's cookies.
+     *
+     * @param cookies the cookies
+     */
+    public void setCookies(final Map<String, List<Cookie>> cookies) {
+        this.cookies = cookies;
     }
 
     /**

@@ -3,8 +3,8 @@ package net.cmpsb.cacofony.route;
 import net.cmpsb.cacofony.http.exception.NotFoundException;
 import net.cmpsb.cacofony.http.request.Method;
 import net.cmpsb.cacofony.http.request.MutableRequest;
-import net.cmpsb.cacofony.http.request.QueryStringParser;
 import net.cmpsb.cacofony.http.request.Request;
+import net.cmpsb.cacofony.http.request.RequestPreparer;
 import net.cmpsb.cacofony.mime.MimeParser;
 import net.cmpsb.cacofony.mime.MimeType;
 import net.cmpsb.cacofony.http.response.Response;
@@ -35,9 +35,9 @@ public class Router {
     private final MimeParser mimeParser;
 
     /**
-     * The query string parser to use.
+     * The request preparer to use.
      */
-    private final QueryStringParser queryStringParser;
+    private final RequestPreparer requestPreparer;
 
     /**
      * A mapping towards routing entries.
@@ -60,11 +60,11 @@ public class Router {
      * Creates a new request handler.
      *
      * @param mimeParser the MIME type parser to use
-     * @param queryStringParser the query string parser to use
+     * @param requestPreparer the query string parser to use
      */
-    public Router(final MimeParser mimeParser, final QueryStringParser queryStringParser) {
+    public Router(final MimeParser mimeParser, final RequestPreparer requestPreparer) {
         this.mimeParser = mimeParser;
-        this.queryStringParser = queryStringParser;
+        this.requestPreparer = requestPreparer;
 
         // Build the routing table.
         this.routes = new HashMap<>();
@@ -220,29 +220,8 @@ public class Router {
 
             // The route matches! Serve the request through this route.
             if (targetMatcher.matches()) {
-                final Map<String, String> params = entry.getPath().parseParameters(targetMatcher);
+                this.requestPreparer.prepare(request, entry, target, targetMatcher);
 
-                String path = target;
-                String queryString = "";
-                try {
-                    queryString = targetMatcher.group("QUERY");
-                    path = targetMatcher.group("PATH");
-                } catch (final IllegalArgumentException ex) {
-                    logger.warn("Custom path regex for route {} does not include a "
-                              + "PATH and/or QUERY group!",
-                            entry.getName(), ex);
-                }
-
-                if (queryString == null) {
-                    queryString = "";
-                }
-
-                request.setPath(path, queryString);
-
-                final Map<String, String> queryParams = this.queryStringParser.parse(queryString);
-                request.setQueryParameters(queryParams);
-
-                request.setPathParameters(params);
                 request.setContentType(contentType);
 
                 return entry.getAction().handle(request);

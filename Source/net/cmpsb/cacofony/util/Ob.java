@@ -71,4 +71,36 @@ public final class Ob {
     public static <T> Set<T> set(final T... entries) {
         return INSTANCE.set(entries);
     }
+
+    /**
+     * Checks whether each pair of arguments is equal.
+     * <p>
+     * Calling this function like this:
+     * <pre>
+     * {@code
+     *  Ob.multiEquals(
+     *      one, other,
+     *      etaoin, shrdlu
+     *  );
+     * }
+     * </pre>
+     * is equivalent to:
+     * <pre>
+     * {@code
+     *  (Object.equals(one, other)
+     *  && Object.equals(etaoin, shrdlu));
+     * }
+     * </pre>
+     * <p>
+     * This operation is vacuously true; it will return {@code true} if called without values.
+     *
+     * @param values the values to check for equality
+     *
+     * @return {@code true} if all pairs are equal, otherwise {@code false}
+     *
+     * @throws IllegalArgumentException if the number of values is odd
+     */
+    public static boolean multiEquals(final Object... values) {
+        return INSTANCE.multiEquals(values);
+    }
 }
