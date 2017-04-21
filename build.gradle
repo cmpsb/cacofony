@@ -5,7 +5,7 @@ apply plugin: 'jacoco'
 apply plugin: 'checkstyle'
 apply plugin: 'maven'
 
-version = "0.0.5"
+version = "0.0.6"
 group = "net.cmpsb.cacofony"
 
 task generateMetadata {
