@@ -1,5 +1,6 @@
 package net.cmpsb.cacofony.http.request;
 
+import net.cmpsb.cacofony.http.cookie.Cookie;
 import net.cmpsb.cacofony.http.exception.BadRequestException;
 import net.cmpsb.cacofony.mime.MimeType;
 
@@ -87,6 +88,11 @@ public class MutableRequest extends Request {
      * The query string parameters from the request path.
      */
     private Map<String, String> queryParameters = new HashMap<>();
+
+    /**
+     * The cookies in the request.
+     */
+    private Map<String, List<Cookie>> cookies = new HashMap<>();
 
     /**
      * The acceptable content type.
@@ -232,7 +238,7 @@ public class MutableRequest extends Request {
     public String getHost() {
         final List<String> values = this.getHeaders("host");
 
-        if (values.size() != 1) {
+        if (values == null || values.size() != 1) {
             throw new BadRequestException("None or multiple Host headers present.");
         }
 
@@ -312,6 +318,51 @@ public class MutableRequest extends Request {
     /**
      * {@inheritDoc}
      */
+    @Override
+    public Cookie getCookie(final String name) {
+        final List<Cookie> filteredCookies = this.getCookies(name);
+
+        if (filteredCookies == null) {
+            return null;
+        }
+
+        return filteredCookies.get(0);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Cookie> getCookies(final String name) {
+        final List<Cookie> filteredCookies = this.cookies.get(name.toLowerCase());
+
+        if (filteredCookies == null) {
+            return null;
+        }
+
+        return filteredCookies;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<String, List<Cookie>> getCookies() {
+        return this.cookies;
+    }
+
+    /**
+     * Sets the request's cookies.
+     *
+     * @param cookies the cookies
+     */
+    public void setCookies(final Map<String, List<Cookie>> cookies) {
+        this.cookies = cookies;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public Map<String, List<String>> getHeaders() {
         return this.headers;
     }
@@ -320,14 +371,14 @@ public class MutableRequest extends Request {
      * {@inheritDoc}
      */
     public List<String> getHeaders(final String key) {
-        return this.headers.get(key);
+        return this.headers.get(key.toLowerCase());
     }
 
     /**
      * {@inheritDoc}
      */
     public String getHeader(final String key) {
-        final List<String> values = this.headers.get(key);
+        final List<String> values = this.headers.get(key.toLowerCase());
 
         if (values == null) {
             return null;
@@ -340,7 +391,7 @@ public class MutableRequest extends Request {
      * {@inheritDoc}
      */
     public boolean hasHeader(final String key) {
-        return this.headers.containsKey(key);
+        return this.headers.containsKey(key.toLowerCase());
     }
 
     /**

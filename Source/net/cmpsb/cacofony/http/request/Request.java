@@ -1,5 +1,6 @@
 package net.cmpsb.cacofony.http.request;
 
+import net.cmpsb.cacofony.http.cookie.Cookie;
 import net.cmpsb.cacofony.http.exception.HttpException;
 import net.cmpsb.cacofony.http.response.ResponseCode;
 import net.cmpsb.cacofony.mime.MimeType;
@@ -244,6 +245,31 @@ public abstract class Request {
     }
 
     /**
+     * Looks for a cookie by its name.
+     *
+     * @param name the name of the cookie
+     *
+     * @return the cookie or {@code null} if there is no cookie with that name
+     */
+    public abstract Cookie getCookie(String name);
+
+    /**
+     * Looks for a collection of cookies by its name.
+     *
+     * @param name the name to look for
+     *
+     * @return the cookie or {@code null} if the cookie was not included in the request
+     */
+    public abstract List<Cookie> getCookies(String name);
+
+    /**
+     * Returns all cookies in the request.
+     *
+     * @return all cookies
+     */
+    public abstract Map<String, List<Cookie>> getCookies();
+
+    /**
      * Returns all headers with all values that were sent in the original request.
      *
      * <p>
@@ -365,11 +391,15 @@ public abstract class Request {
     public String readFullBody(final int maxSize, final Charset charset) throws IOException {
         final long contentLength = this.getContentLength();
 
+        if (contentLength == 0) {
+            return "";
+        }
+
         if (contentLength > maxSize || contentLength > Integer.MAX_VALUE) {
             throw new HttpException(ResponseCode.PAYLOAD_TOO_LARGE, maxSize + " bytes max.");
         }
 
-        if (contentLength == 0) {
+        if (contentLength == -1) {
             return this.readFullChunkedBody(maxSize, charset);
         }
 
@@ -390,7 +420,7 @@ public abstract class Request {
                                       final Charset charset) throws IOException {
         int bytesLeft = contentLength;
         int position = 0;
-        final byte[] buffer = new byte[bytesLeft];
+        final byte[] buffer = new byte[contentLength];
 
         final InputStream body = this.getBody();
         while (bytesLeft > 0) {
@@ -423,6 +453,10 @@ public abstract class Request {
             final int size = source.read(buffer);
             if (size == -1) {
                 break;
+            }
+
+            if (target.size() + size > maxSize) {
+                throw new HttpException(ResponseCode.PAYLOAD_TOO_LARGE, maxSize + " bytes max.");
             }
 
             target.write(buffer, 0, size);

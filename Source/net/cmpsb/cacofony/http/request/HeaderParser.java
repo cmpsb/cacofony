@@ -38,7 +38,7 @@ public class HeaderParser {
                 throw new BadRequestException("Obs-folding is prohibited.");
             }
 
-            final String key = line.substring(0, colonIdx);
+            final String key = line.substring(0, colonIdx).toLowerCase();
             final String value = line.substring(colonIdx + 1, line.length()).trim();
 
             // If the header key ends with a space, refuse to continue.

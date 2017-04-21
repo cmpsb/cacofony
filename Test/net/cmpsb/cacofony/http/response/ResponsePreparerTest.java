@@ -1,7 +1,9 @@
 package net.cmpsb.cacofony.http.response;
 
+import net.cmpsb.cacofony.http.cookie.CookieWriter;
 import net.cmpsb.cacofony.server.MutableServerSettings;
 import net.cmpsb.cacofony.server.ServerProperties;
+import net.cmpsb.cacofony.util.UrlCodec;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,7 +26,9 @@ public class ResponsePreparerTest {
     public void before() {
         this.settings = new MutableServerSettings();
         final ServerProperties properties = new ServerProperties();
-        this.preparer = new ResponsePreparer(this.settings, properties);
+        final UrlCodec urlCodec = new UrlCodec();
+        final CookieWriter cookieWriter = new CookieWriter(urlCodec);
+        this.preparer = new ResponsePreparer(this.settings, properties, cookieWriter);
     }
 
     @Test

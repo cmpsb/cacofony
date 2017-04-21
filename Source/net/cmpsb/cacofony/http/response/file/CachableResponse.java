@@ -4,6 +4,11 @@ import net.cmpsb.cacofony.http.request.Request;
 import net.cmpsb.cacofony.http.response.Response;
 import net.cmpsb.cacofony.http.response.ResponseCode;
 
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+
 /**
  * Indicates that a response is cachable.
  *
@@ -19,6 +24,11 @@ public abstract class CachableResponse extends Response {
      * The file's ETag.
      */
     private final String etag;
+
+    /**
+     * The response's maximum age. Defaults to one day.
+     */
+    private long maxAge = 86400;
 
     /**
      * Creates a new cachable response.
@@ -61,6 +71,17 @@ public abstract class CachableResponse extends Response {
     }
 
     /**
+     * Sets the maximum age in seconds of the response.
+     * <p>
+     * Set the age to {@code 0} to discourage any caching.
+     *
+     * @param maxAge the max age in seconds
+     */
+    public void setMaxAge(final long maxAge) {
+        this.maxAge = maxAge;
+    }
+
+    /**
      * Generates an ETag based on the file's modification date.
      *
      * @return an ETag
@@ -90,6 +111,19 @@ public abstract class CachableResponse extends Response {
         // Calculate the ETag based on the modification date.
         if (this.getLastModified() != Long.MAX_VALUE) {
             this.setHeader("ETag", this.getEtag());
+        }
+
+        // Add caching headers to the response if the resource is allowed to expire.
+        // Otherwise explicitly disallow caching.
+        if (this.maxAge > 0) {
+            final ZonedDateTime expires = ZonedDateTime.ofInstant(
+                    Instant.now().plusSeconds(this.maxAge),
+                    ZoneOffset.UTC
+            );
+            this.setHeader("Cache-Control", "max-age=" + this.maxAge);
+            this.setHeader("Expires", DateTimeFormatter.RFC_1123_DATE_TIME.format(expires));
+        } else {
+            this.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         }
 
         super.prepare(request);

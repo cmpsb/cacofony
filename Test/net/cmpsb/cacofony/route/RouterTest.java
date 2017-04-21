@@ -1,9 +1,11 @@
 package net.cmpsb.cacofony.route;
 
+import net.cmpsb.cacofony.http.cookie.CookieParser;
 import net.cmpsb.cacofony.http.exception.NotFoundException;
 import net.cmpsb.cacofony.http.request.Method;
 import net.cmpsb.cacofony.http.request.MutableRequest;
 import net.cmpsb.cacofony.http.request.QueryStringParser;
+import net.cmpsb.cacofony.http.request.RequestPreparer;
 import net.cmpsb.cacofony.http.response.EmptyResponse;
 import net.cmpsb.cacofony.http.response.Response;
 import net.cmpsb.cacofony.http.response.TextResponse;
@@ -11,6 +13,7 @@ import net.cmpsb.cacofony.mime.MimeParser;
 import net.cmpsb.cacofony.mime.MimeType;
 import net.cmpsb.cacofony.mime.StrictMimeParser;
 import net.cmpsb.cacofony.util.Ob;
+import net.cmpsb.cacofony.util.UrlCodec;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,7 +39,11 @@ public class RouterTest {
     @Before
     public void before() {
         this.parser = new StrictMimeParser();
-        this.router = new Router(this.parser, new QueryStringParser());
+        final UrlCodec urlCodec = new UrlCodec();
+        final CookieParser cookieParser = new CookieParser(urlCodec);
+        final QueryStringParser queryStringParser = new QueryStringParser();
+        final RequestPreparer preparer = new RequestPreparer(cookieParser, queryStringParser);
+        this.router = new Router(this.parser, preparer);
     }
 
     @Test(expected = NotFoundException.class)
@@ -85,7 +92,7 @@ public class RouterTest {
         this.populatePicky();
 
         final MutableRequest request = new MutableRequest(Method.GET, "/?id=3", 1, 1);
-        request.getHeaders().put("Accept", Collections.singletonList("audio/mpeg"));
+        request.getHeaders().put("accept", Collections.singletonList("audio/mpeg"));
 
         final Response response = this.router.handle(request);
 

@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -78,5 +79,47 @@ public class ObI {
         final Set<T> set = new HashSet<>();
         set.addAll(Arrays.asList(entries));
         return set;
+    }
+
+    /**
+     * Checks whether each pair of arguments is equal.
+     * <p>
+     * Calling this function like this:
+     * <pre>
+     * {@code
+     *  ObI.multiEquals(
+     *      one, other,
+     *      etaoin, shrdlu
+     *  );
+     * }
+     * </pre>
+     * is equivalent to:
+     * <pre>
+     * {@code
+     *  (Object.equals(one, other)
+     *  && Object.equals(etaoin, shrdlu));
+     * }
+     * </pre>
+     * <p>
+     * This operation is vacuously true; it will return {@code true} if called without values.
+     *
+     * @param values the values to check for equality
+     *
+     * @return {@code true} if all pairs are equal, otherwise {@code false}
+     *
+     * @throws IllegalArgumentException if the number of values is odd
+     */
+    public boolean multiEquals(final Object... values) {
+        if ((values.length & 1) != 0) {
+            throw new IllegalArgumentException("Odd number of values.");
+        }
+
+        for (int i = 0; i < values.length; i += 2) {
+            if (!Objects.equals(values[i], values[i + 1])) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
