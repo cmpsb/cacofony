@@ -92,7 +92,7 @@ public class RouterTest {
         this.populatePicky();
 
         final MutableRequest request = new MutableRequest(Method.GET, "/?id=3", 1, 1);
-        request.getHeaders().put("Accept", Collections.singletonList("audio/mpeg"));
+        request.getHeaders().put("accept", Collections.singletonList("audio/mpeg"));
 
         final Response response = this.router.handle(request);
 

@@ -258,7 +258,7 @@ public abstract class Request {
      *
      * @param name the name to look for
      *
-     * @return the cookie or an empty list if there are no cookies with that name
+     * @return the cookie or {@code null} if the cookie was not included in the request
      */
     public abstract List<Cookie> getCookies(String name);
 

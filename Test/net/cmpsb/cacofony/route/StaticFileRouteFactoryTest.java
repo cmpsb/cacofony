@@ -96,7 +96,7 @@ public class StaticFileRouteFactoryTest {
         final RoutingEntry entry = this.factory.build("/dir", tempDir);
         final MutableRequest request = new MutableRequest(Method.GET, "/dir/" + path, 1, 1);
         request.setPathParameters(Collections.singletonMap("file", path));
-        request.getHeaders().put("If-None-Match", Collections.singletonList(etag));
+        request.getHeaders().put("if-none-match", Collections.singletonList(etag));
 
         final FileResponse response = (FileResponse) entry.getAction().handle(request);
 

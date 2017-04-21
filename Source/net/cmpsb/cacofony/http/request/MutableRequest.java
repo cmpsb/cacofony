@@ -7,7 +7,6 @@ import net.cmpsb.cacofony.mime.MimeType;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -239,7 +238,7 @@ public class MutableRequest extends Request {
     public String getHost() {
         final List<String> values = this.getHeaders("host");
 
-        if (values.size() != 1) {
+        if (values == null || values.size() != 1) {
             throw new BadRequestException("None or multiple Host headers present.");
         }
 
@@ -321,7 +320,7 @@ public class MutableRequest extends Request {
      */
     @Override
     public Cookie getCookie(final String name) {
-        final List<Cookie> filteredCookies = this.cookies.get(name);
+        final List<Cookie> filteredCookies = this.getCookies(name);
 
         if (filteredCookies == null) {
             return null;
@@ -335,10 +334,10 @@ public class MutableRequest extends Request {
      */
     @Override
     public List<Cookie> getCookies(final String name) {
-        final List<Cookie> filteredCookies = this.cookies.get(name);
+        final List<Cookie> filteredCookies = this.cookies.get(name.toLowerCase());
 
         if (filteredCookies == null) {
-            return Collections.emptyList();
+            return null;
         }
 
         return filteredCookies;
@@ -372,14 +371,14 @@ public class MutableRequest extends Request {
      * {@inheritDoc}
      */
     public List<String> getHeaders(final String key) {
-        return this.headers.get(key);
+        return this.headers.get(key.toLowerCase());
     }
 
     /**
      * {@inheritDoc}
      */
     public String getHeader(final String key) {
-        final List<String> values = this.headers.get(key);
+        final List<String> values = this.headers.get(key.toLowerCase());
 
         if (values == null) {
             return null;
@@ -392,7 +391,7 @@ public class MutableRequest extends Request {
      * {@inheritDoc}
      */
     public boolean hasHeader(final String key) {
-        return this.headers.containsKey(key);
+        return this.headers.containsKey(key.toLowerCase());
     }
 
     /**

@@ -140,7 +140,7 @@ public class ResponseWriterTest {
         };
 
         final MutableRequest request = new MutableRequest(Method.GET, "/", 1, 0);
-        request.getHeaders().put("Accept-Encoding", Collections.singletonList("gzip"));
+        request.getHeaders().put("accept-encoding", Collections.singletonList("gzip"));
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final Response response = new TextResponse(plainContent);
         response.setCompressionAllowed(true);
@@ -184,7 +184,7 @@ public class ResponseWriterTest {
         };
 
         final MutableRequest request = new MutableRequest(Method.HEAD, "/", 1, 0);
-        request.getHeaders().put("Accept-Encoding", Collections.singletonList("gzip"));
+        request.getHeaders().put("accept-encoding", Collections.singletonList("gzip"));
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final Response response = new TextResponse(plainContent);
         response.setCompressionAllowed(true);
@@ -218,7 +218,7 @@ public class ResponseWriterTest {
         final String plainContent = "Hello, Cacofony!";
 
         final MutableRequest request = new MutableRequest(Method.GET, "/", 1, 0);
-        request.getHeaders().put("Accept-Encoding", Collections.singletonList("no existing enc"));
+        request.getHeaders().put("accept-encoding", Collections.singletonList("no existing enc"));
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final Response response = new TextResponse(plainContent);
         response.setCompressionAllowed(true);
@@ -246,7 +246,7 @@ public class ResponseWriterTest {
         final String plainContent = "Hello, Cacofony!";
 
         final MutableRequest request = new MutableRequest(Method.GET, "/", 1, 0);
-        request.getHeaders().put("Accept-Encoding", Collections.singletonList("gzip"));
+        request.getHeaders().put("accept-encoding", Collections.singletonList("gzip"));
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final Response response = new TextResponse(plainContent);
         response.setCompressionAllowed(true);
