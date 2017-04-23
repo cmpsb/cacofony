@@ -64,7 +64,8 @@ public class Listener implements Runnable {
     public void run() {
         logger.info("Now listening on port {}.", this.socket.getLocalPort());
         for (;;) {
-            try (Socket client = this.socket.accept()) {
+            try {
+                final Socket client = this.socket.accept();
                 client.setSoTimeout(4444);
 
                 final InetAddress address = client.getInetAddress();
@@ -76,6 +77,12 @@ public class Listener implements Runnable {
                         this.handler.handle(address, port, in, out, this.scheme);
                     } catch (final IOException ex) {
                         logger.error("I/O exception while accepting a client: ", ex);
+                    } finally {
+                        try {
+                            client.close();
+                        } catch (final IOException ex) {
+                            logger.error("I/O exception while closing socket: ", ex);
+                        }
                     }
                 });
             } catch (final IOException e) {
