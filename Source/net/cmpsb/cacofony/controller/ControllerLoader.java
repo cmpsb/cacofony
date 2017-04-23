@@ -75,27 +75,29 @@ public class ControllerLoader {
     /**
      * Load all known controllers through reflection.
      *
-     * @param pack the package to inspect for controllers
+     * @param prefix the path prefix the controllers fall under
+     * @param pack   the package to inspect for controllers
      */
-    public void loadAll(final String pack) {
+    public void loadAll(final String prefix, final String pack) {
         Reflections reflections = new Reflections(pack);
         Set<Class<? extends Controller>> controllers = reflections.getSubTypesOf(Controller.class);
 
-        controllers.forEach(this::load);
+        controllers.forEach(c -> this.load(prefix, c));
     }
 
     /**
      * Load a controller's routes.
      *
-     * @param type the controller type
-     * @param <T>  the controller type
+     * @param prefix the path prefix the controllers fall under
+     * @param type   the controller type
+     * @param <T>    the controller type
      */
-    public <T> void load(final Class<T> type) {
+    public <T> void load(final String prefix, final Class<T> type) {
         final Object controller = this.dependencyResolver.get(type);
 
         for (final java.lang.reflect.Method method : type.getMethods()) {
             for (Route annotation : method.getAnnotationsByType(Route.class)) {
-                this.mapSingle(controller,
+                this.mapSingle(prefix,
                                request -> (Response) method.invoke(controller, request),
                                annotation);
             }
@@ -106,17 +108,17 @@ public class ControllerLoader {
      * Load a single route.
      * An action may have multiple routes, this loads only one.
      *
-     * @param controller the controller the action belongs to
-     * @param method     the action itself
-     * @param route      the one annotation to map
+     * @param prefix the path prefix the controllers fall under
+     * @param method the action itself
+     * @param route  the one annotation to map
      */
-    private void mapSingle(final Object controller, final RouteAction method, final Route route) {
+    private void mapSingle(final String prefix, final RouteAction method, final Route route) {
         final Map<String, String> requirements = new HashMap<>();
         for (final Requirement requirement : route.requirements()) {
             requirements.put(requirement.name(), requirement.regex());
         }
 
-        final CompiledPath path = this.pathCompiler.compile(route.path(), requirements);
+        final CompiledPath path = this.pathCompiler.compile(prefix + route.path(), requirements);
 
         final List<MimeType> types = Arrays.stream(route.types())
             .map(this.mimeParser::parse)

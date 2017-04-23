@@ -4,6 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
@@ -61,19 +64,18 @@ public class Listener implements Runnable {
     public void run() {
         logger.info("Now listening on port {}.", this.socket.getLocalPort());
         for (;;) {
-            try {
-                final Socket client = this.socket.accept();
+            try (Socket client = this.socket.accept()) {
                 client.setSoTimeout(4444);
 
+                final InetAddress address = client.getInetAddress();
+                final int port = client.getPort();
+
                 this.executor.submit(() -> {
-                    try {
-                        this.handler.handle(client, this.scheme);
-                    } finally {
-                        try {
-                            client.close();
-                        } catch (IOException e) {
-                            logger.error("I/O exception while closing client socket: ", e);
-                        }
+                    try (InputStream in = client.getInputStream();
+                         OutputStream out = client.getOutputStream()) {
+                        this.handler.handle(address, port, in, out, this.scheme);
+                    } catch (final IOException ex) {
+                        logger.error("I/O exception while accepting a client: ", ex);
                     }
                 });
             } catch (final IOException e) {

@@ -24,7 +24,7 @@ public class DefaultDependencyResolverTest {
 
     @Before
     public void before() {
-        this.resolver = new DefaultDependencyResolver();
+        this.resolver = new DependencyResolver();
     }
 
     @Test

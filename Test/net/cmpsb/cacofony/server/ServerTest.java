@@ -1,6 +1,5 @@
 package net.cmpsb.cacofony.server;
 
-import net.cmpsb.cacofony.di.DefaultDependencyResolver;
 import net.cmpsb.cacofony.di.DependencyResolver;
 import net.cmpsb.cacofony.mime.FastMimeParser;
 import net.cmpsb.cacofony.mime.MimeParser;
@@ -28,7 +27,7 @@ public class ServerTest {
 
     @Before
     public void before() {
-        this.resolver = new DefaultDependencyResolver();
+        this.resolver = new DependencyResolver();
         this.settings = new MutableServerSettings();
 
         this.resolver.implement(MimeParser.class, FastMimeParser.class);
@@ -44,8 +43,8 @@ public class ServerTest {
 
     @Test
     public void testRunDefaultPort() throws IOException {
-        final Server server = new Server(this.resolver, this.settings);
-        server.start();
+        final Server server = new ServerBuilder(this.resolver).build();
+        server.run();
 
         this.factory.verify();
     }
@@ -60,44 +59,28 @@ public class ServerTest {
                    this.expectedPorts.size(),
                    is(1));
 
-        final Server server = new Server(this.resolver, this.settings);
-        server.start();
+        final ServerBuilder builder = new ServerBuilder(this.resolver);
+        builder.setSettings(this.settings);
+        final Server server = builder.build();
+        server.run();
+
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            // Do nothing.
+        }
 
         this.factory.verify();
     }
 
     @Test(expected = RunningServerException.class)
     public void testRunAlreadyRunning() throws IOException {
-        final Server server = new Server(this.resolver, this.settings);
-        server.start();
+        final Server server = new ServerBuilder(this.resolver).build();
+        server.run();
 
         this.expectedPorts.add(new Port(80, false));
         this.expectedPorts.add(new Port(443, true));
-        server.start();
-    }
-
-    @Test(expected = RunningServerException.class)
-    public void testRegisterAlreadyRunning() throws IOException {
-        final Server server = new Server(this.resolver, this.settings);
-        server.start();
-
-        server.register(String.class, "fake dependency");
-    }
-
-    @Test(expected = RunningServerException.class)
-    public void testAddStaticFilesAlreadyRunning() throws IOException {
-        final Server server = new Server(this.resolver, this.settings);
-        server.start();
-
-        server.addStaticFiles("/static/", "/");
-    }
-
-    @Test(expected = RunningServerException.class)
-    public void testScanPackageAlreadyRunning() throws IOException {
-        final Server server = new Server(this.resolver, this.settings);
-        server.start();
-
-        server.scanPackage("net.cmpsb.cacofony");
+        server.run();
     }
 
     private class VerifyingListenerFactory implements ListenerFactory {
@@ -124,7 +107,7 @@ public class ServerTest {
 
         public void verify() {
             if (!this.expectedPorts.isEmpty()) {
-                fail("Not all ports have been booted.");
+                fail("Not all ports have been booted: " + this.expectedPorts);
             }
         }
     }

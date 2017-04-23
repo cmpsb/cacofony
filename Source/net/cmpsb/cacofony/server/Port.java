@@ -72,4 +72,14 @@ public final class Port {
     public int hashCode() {
         return Integer.hashCode(this.port);
     }
+
+    /**
+     * Returns the port as a string.
+     *
+     * @return the port as a string
+     */
+    @Override
+    public String toString() {
+        return String.valueOf(this.port);
+    }
 }
