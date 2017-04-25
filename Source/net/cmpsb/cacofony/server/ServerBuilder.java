@@ -88,7 +88,7 @@ public class ServerBuilder {
         }
 
         this.resolver.add(ServerSettings.class, this.settings);
-        this.resolver.addSupplied(ServerProperties.class, ServerProperties::load);
+        this.resolver.addFactory(ServerProperties.class, r -> ServerProperties.load());
         this.resolver.add(ServerSocketFactory.class, this.socketFactory);
         this.resolver.implement(ListenerFactory.class, this.listenerFactory);
 
@@ -96,9 +96,9 @@ public class ServerBuilder {
         this.resolver.implement(ExceptionHandler.class, DefaultExceptionHandler.class);
         this.resolver.implementDefault(MimeParser.class, FastMimeParser.class);
 
-        this.resolver.addDefaultSupplied(MimeDb.class, () -> {
+        this.resolver.addDefaultFactory(MimeDb.class, r -> {
             final MimeDb db = new MimeDb();
-            final MimeDbLoader loader = this.resolver.get(MimeDbLoader.class);
+            final MimeDbLoader loader = r.get(MimeDbLoader.class);
             loader.load(this.getClass().getResourceAsStream("/net/cmpsb/cacofony/mime.types"),
                     db::register);
             return db;

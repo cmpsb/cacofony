@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * @author Luc Everse
  */
-public class FreeMarkerTemplatingService extends TemplatingService {
+public class FreeMarkerService extends TemplatingService {
     /**
      * The FreeMarker configuration to use.
      */
@@ -31,8 +31,8 @@ public class FreeMarkerTemplatingService extends TemplatingService {
      * @param configuration the FreeMarker configuration to use
      * @param mimeParser    the MIME parser to use
      */
-    public FreeMarkerTemplatingService(final Configuration configuration,
-                                       final MimeParser mimeParser) {
+    public FreeMarkerService(final Configuration configuration,
+                             final MimeParser mimeParser) {
         this.configuration = configuration;
         this.mimeParser = mimeParser;
     }

@@ -1,5 +1,6 @@
 package net.cmpsb.cacofony.templating;
 
+import net.cmpsb.cacofony.di.Service;
 import net.cmpsb.cacofony.http.response.Response;
 
 import java.util.Collections;
@@ -8,7 +9,7 @@ import java.util.Map;
 /**
  * @author Luc Everse
  */
-public abstract class TemplatingService {
+public abstract class TemplatingService extends Service {
     /**
      * Renders a template as a response.
      * <p>

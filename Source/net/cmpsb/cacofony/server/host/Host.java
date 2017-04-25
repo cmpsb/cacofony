@@ -5,7 +5,12 @@ import net.cmpsb.cacofony.di.DependencyResolver;
 import net.cmpsb.cacofony.exception.ExceptionHandler;
 import net.cmpsb.cacofony.http.response.ResponsePreparer;
 import net.cmpsb.cacofony.http.response.ResponseWriter;
+import net.cmpsb.cacofony.route.ResourceFileRouteFactory;
 import net.cmpsb.cacofony.route.Router;
+import net.cmpsb.cacofony.route.RoutingEntry;
+import net.cmpsb.cacofony.route.StaticFileRouteFactory;
+
+import java.nio.file.Path;
 
 /**
  * A host to serve.
@@ -126,5 +131,30 @@ public class Host {
      */
     public void addControllers(final ControllerPackage pack) {
         this.controllerLoader.loadAll(pack.getPrefix(), pack.getPack());
+    }
+
+    /**
+     * Adds a route that serves static files.
+     *
+     * @param prefix the URL prefix for the routes
+     * @param dir    the local directory the files are in
+     */
+    public void addStaticFiles(final String prefix, final Path dir) {
+        final StaticFileRouteFactory factory = this.resolver.get(StaticFileRouteFactory.class);
+        final RoutingEntry entry = factory.build(prefix, dir);
+        this.router.addRoute(entry);
+    }
+
+    /**
+     * Adds a route that serves jar resources.
+     *
+     * @param prefix the URL prefix for the routes
+     * @param jar    the jar the resources are in
+     * @param dir    the directory inside the jar
+     */
+    public void addStaticResources(final String prefix, final Class<?> jar, final String dir) {
+        final ResourceFileRouteFactory factory = this.resolver.get(ResourceFileRouteFactory.class);
+        final RoutingEntry entry = factory.build(prefix, jar, dir);
+        this.router.addRoute(entry);
     }
 }

@@ -66,6 +66,9 @@ dependencies {
     // CSV parser.
     compile 'com.opencsv:opencsv:3.9'
 
+    // Yaml.
+    compile 'org.yaml:snakeyaml:1.18'
+
     // JSON.
     compile 'com.google.code.gson:gson:2.8.+'
 

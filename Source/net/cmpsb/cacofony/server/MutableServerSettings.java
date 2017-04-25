@@ -145,4 +145,13 @@ public class MutableServerSettings implements ServerSettings {
     public void addInsecurePort(final int port) {
         this.ports.add(new Port(port, false));
     }
+
+    /**
+     * Adds a port.
+     *
+     * @param port the port to add
+     */
+    public void addPort(final Port port) {
+        this.ports.add(port);
+    }
 }

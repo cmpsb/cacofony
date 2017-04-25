@@ -2,6 +2,7 @@ package net.cmpsb.cacofony.server;
 
 import net.cmpsb.cacofony.di.DependencyResolver;
 import net.cmpsb.cacofony.server.host.DefaultHostBuilder;
+import net.cmpsb.cacofony.server.host.Host;
 import net.cmpsb.cacofony.server.host.HostBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,7 +127,9 @@ public class Server {
 
         final ConnectionHandler handler = this.resolver.get(ConnectionHandler.class);
         for (final HostBuilder builder : this.hostBuilders) {
-            handler.addHost(builder.build());
+            final Host host = builder.build();
+            logger.debug("Built host {}.", host.getName());
+            handler.addHost(host);
         }
         handler.setDefaultHost(this.defaultHostBuilder.build());
 
