@@ -3,7 +3,6 @@ package net.cmpsb.cacofony.yaml;
 import net.cmpsb.cacofony.di.DependencyResolver;
 import net.cmpsb.cacofony.di.Factory;
 import net.cmpsb.cacofony.server.MutableServerSettings;
-import net.cmpsb.cacofony.server.Port;
 import net.cmpsb.cacofony.server.Server;
 import net.cmpsb.cacofony.server.ServerBuilder;
 import net.cmpsb.cacofony.server.host.HostBuilder;
@@ -30,10 +29,16 @@ public class YamlLoader {
     private final Yaml yaml;
 
     /**
+     * The settings loader to use.
+     */
+    private final SettingsLoader settingsLoader;
+
+    /**
      * Creates a new yaml loader.
      */
     public YamlLoader() {
         this.yaml = new Yaml();
+        this.settingsLoader = new SettingsLoader();
     }
 
     /**
@@ -49,13 +54,10 @@ public class YamlLoader {
 
         final DependencyResolver resolver = new DependencyResolver();
         final ServerBuilder builder = new ServerBuilder(resolver);
-        final MutableServerSettings masterSettings = new MutableServerSettings();
-        builder.setSettings(masterSettings);
 
-        final List<Object> ports = (List<Object>) config.get("ports");
-        if (ports != null) {
-            this.setPorts(masterSettings, ports);
-        }
+        // Load the settings.
+        final MutableServerSettings masterSettings = this.settingsLoader.load(config);
+        builder.setSettings(masterSettings);
 
         final Server server = builder.build();
 
@@ -79,40 +81,6 @@ public class YamlLoader {
         }
 
         return server;
-    }
-
-    /**
-     * Parses the ports from the yaml spec and adds them to the server settings.
-     *
-     * @param settings the server settings
-     * @param ports    the yaml spec
-     */
-    @SuppressWarnings("unchecked")
-    private void setPorts(final MutableServerSettings settings,
-                          final List<Object> ports) {
-        for (final Object portSpec : ports) {
-            final Port port;
-
-            if (portSpec instanceof Number) {
-                // Take the port as a number and decide based on that whether it's secure.
-                final int portNum = (int) portSpec;
-
-                port = new Port(portNum, portNum == 80 || portNum == 8080);
-            } else if (portSpec instanceof Map) {
-                // Parse the object into an integer and an optional boolean.
-                final Map<String, Object> spec = (Map<String, Object>) portSpec;
-
-                final int portNum = (int) spec.get("port");
-                final boolean secure = (boolean) spec.getOrDefault("secure", true);
-
-                port = new Port(portNum, secure);
-            } else {
-                // Don't know what to do: error.
-                throw new InvalidYamlException("Unknown port specification format.");
-            }
-
-            settings.addPort(port);
-        }
     }
 
     /**

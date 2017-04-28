@@ -2,9 +2,7 @@ package net.cmpsb.cacofony.server;
 
 import net.cmpsb.cacofony.http.encoding.TransferEncoding;
 
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -16,30 +14,40 @@ public class MutableServerSettings implements ServerSettings {
     /**
      * Whether to allow compression at all.
      */
-    private boolean compressionEnabled = true;
+    private boolean compressionEnabled;
 
     /**
      * Whether to compress responses that don't care about compression.
      */
-    private boolean compressByDefault = false;
+    private boolean compressByDefault;
 
     /**
      * A list of enabled compressing transfer encodings.
      */
-    private List<TransferEncoding> compressionAlgorithms = Arrays.asList(
-            TransferEncoding.GZIP,
-            TransferEncoding.DEFLATE
-    );
+    private Set<TransferEncoding> compressionAlgorithms;
 
     /**
      * Whether to add the Server header to each response.
      */
-    private boolean broadcastServerVersion = true;
+    private boolean broadcastServerVersion;
 
     /**
      * The ports the server should listen on.
      */
     private final Set<Port> ports = new HashSet<>();
+
+    /**
+     * Creates a new set of server settings by copying the defaults.
+     */
+    public MutableServerSettings() {
+        final ServerSettings defaults = new DefaultSettings();
+
+        this.compressionEnabled = defaults.isCompressionEnabled();
+        this.compressByDefault = defaults.canCompressByDefault();
+        this.compressionAlgorithms = new HashSet<>(defaults.getCompressionAlgorithms());
+        this.broadcastServerVersion = defaults.mayBroadcastServerVersion();
+
+    }
 
     /**
      * Returns whether the server is allowed to try to apply compression if the client supports it.
@@ -86,7 +94,7 @@ public class MutableServerSettings implements ServerSettings {
      * @return a list of allowed compression algorithms
      */
     @Override
-    public List<TransferEncoding> getCompressionAlgorithms() {
+    public Set<TransferEncoding> getCompressionAlgorithms() {
         return this.compressionAlgorithms;
     }
 
@@ -95,7 +103,7 @@ public class MutableServerSettings implements ServerSettings {
      *
      * @param algorithms the list of algorithms
      */
-    public void setCompressionAlgorithms(final List<TransferEncoding> algorithms) {
+    public void setCompressionAlgorithms(final Set<TransferEncoding> algorithms) {
         this.compressionAlgorithms = algorithms;
     }
 
