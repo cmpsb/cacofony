@@ -1,5 +1,6 @@
 package net.cmpsb.cacofony.yaml;
 
+import net.cmpsb.cacofony.http.encoding.TransferEncoding;
 import net.cmpsb.cacofony.server.DefaultSettings;
 import net.cmpsb.cacofony.server.Port;
 import net.cmpsb.cacofony.server.ServerSettings;
@@ -199,6 +200,36 @@ public class SettingsLoaderTest {
                 80,
                 "four four three"
             )
+        );
+
+        assertThrows(InvalidYamlException.class, () -> this.loader.load(spec));
+    }
+
+    @Test
+    public void testCompressionAlgorithms() {
+        final Map<String, Object> spec = Ob.map(
+                "algorithms", Collections.singletonList("deflate")
+        );
+
+        final ServerSettings settings = this.loader.load(spec);
+
+        assertThat(settings.getCompressionAlgorithms()).containsExactly(TransferEncoding.DEFLATE);
+    }
+
+    @Test
+    public void testDefaultAlgorithms() {
+        final Map<String, Object> spec = Ob.map();
+
+        final ServerSettings settings = this.loader.load(spec);
+
+        assertThat(settings.getCompressionAlgorithms())
+                .isEqualTo(this.defaults.getCompressionAlgorithms());
+    }
+
+    @Test
+    public void testInvalidAlgorithm() {
+        final Map<String, Object> spec = Ob.map(
+                "algorithms", Arrays.asList("gzip", "press it all together")
         );
 
         assertThrows(InvalidYamlException.class, () -> this.loader.load(spec));
