@@ -2,14 +2,13 @@ package net.cmpsb.cacofony.server;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Luc Everse
@@ -30,8 +29,6 @@ public class PortTest {
         final Set<Port> set = new HashSet<>();
         set.add(etaoin);
 
-        assertThat("The set will claim it contains the port already.",
-                   set.contains(shrdlu),
-                   is(true));
+        assertThat(set).contains(shrdlu);
     }
 }

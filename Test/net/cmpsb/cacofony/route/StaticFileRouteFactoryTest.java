@@ -8,8 +8,8 @@ import net.cmpsb.cacofony.http.response.ResponseCode;
 import net.cmpsb.cacofony.http.response.file.FileResponse;
 import net.cmpsb.cacofony.http.response.file.RangeParser;
 import net.cmpsb.cacofony.mime.MimeGuesser;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -18,10 +18,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -30,7 +28,7 @@ import static org.mockito.Mockito.mock;
 public class StaticFileRouteFactoryTest {
     private StaticFileRouteFactory factory;
 
-    @Before
+    @BeforeEach
     public void before() {
         final PathCompiler pathCompiler = mock(PathCompiler.class);
         final HeaderValueParser headerValueParser = new HeaderValueParser();
@@ -61,17 +59,9 @@ public class StaticFileRouteFactoryTest {
 
         final FileResponse response = (FileResponse) entry.getAction().handle(request);
 
-        assertThat("The response is not null.",
-                   response,
-                   is(notNullValue()));
-
-        assertThat("The response code is OK.",
-                   response.getStatus(),
-                   is(equalTo(ResponseCode.OK)));
-
-        assertThat("The content length is equal to the file's.",
-                   response.getContentLength(),
-                   is(equalTo((long) content.length())));
+        assertThat(response).isNotNull();
+        assertThat(response.getStatus()).as("status").isEqualTo(ResponseCode.OK);
+        assertThat(response.getContentLength()).as("content length").isEqualTo(content.length());
 
         Files.delete(temp);
         Files.delete(tempDir);
@@ -100,40 +90,32 @@ public class StaticFileRouteFactoryTest {
 
         final FileResponse response = (FileResponse) entry.getAction().handle(request);
 
-        assertThat("The response is not null.",
-                   response,
-                   is(notNullValue()));
-
-        assertThat("The status code is Not Modified.",
-                   response.getStatus(),
-                   is(equalTo(ResponseCode.NOT_MODIFIED)));
-
-        assertThat("The content length is equal to the file's.",
-                   response.getContentLength(),
-                   is(equalTo((long) content.length())));
+        assertThat(response).isNotNull();
+        assertThat(response.getStatus()).as("status").isEqualTo(ResponseCode.NOT_MODIFIED);
+        assertThat(response.getContentLength()).as("content length").isEqualTo(content.length());
 
         Files.delete(temp);
         Files.delete(tempDir);
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test
     public void testRequestNonexistentFile() throws Exception {
         final String path = "thaoethoeaoeahteoathoethoaohtoeaht.hmtl";
         final RoutingEntry entry = this.factory.build("/dir", this.cwd());
         final MutableRequest request = new MutableRequest(Method.GET, "/dir/" + path, 1, 1);
         request.setPathParameters(Collections.singletonMap("file", path));
 
-        entry.getAction().handle(request);
+        assertThrows(NotFoundException.class, () -> entry.getAction().handle(request));
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test
     public void testRequestParentPath() throws Exception {
         final String path = "../file.txt";
         final RoutingEntry entry = this.factory.build("/dir", this.cwd());
         final MutableRequest request = new MutableRequest(Method.GET, "/dir/" + path, 1, 1);
         request.setPathParameters(Collections.singletonMap("file", path));
 
-        entry.getAction().handle(request);
+        assertThrows(NotFoundException.class, () -> entry.getAction().handle(request));
     }
 
     private Path cwd() {

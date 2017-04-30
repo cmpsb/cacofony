@@ -3,16 +3,16 @@ package net.cmpsb.cacofony.server;
 import net.cmpsb.cacofony.di.DependencyResolver;
 import net.cmpsb.cacofony.mime.FastMimeParser;
 import net.cmpsb.cacofony.mime.MimeParser;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests for the server.
@@ -25,7 +25,7 @@ public class ServerTest {
     private Set<Port> expectedPorts;
     private VerifyingListenerFactory factory;
 
-    @Before
+    @BeforeEach
     public void before() {
         this.resolver = new DependencyResolver();
         this.settings = new MutableServerSettings();
@@ -55,9 +55,7 @@ public class ServerTest {
         this.expectedPorts.clear();
         this.expectedPorts.addAll(this.settings.getPorts());
 
-        assertThat("Adding one port does actually add exactly one port.",
-                   this.expectedPorts.size(),
-                   is(1));
+        assertThat(this.expectedPorts).hasSize(1);
 
         final ServerBuilder builder = new ServerBuilder(this.resolver);
         builder.setSettings(this.settings);
@@ -73,14 +71,14 @@ public class ServerTest {
         this.factory.verify();
     }
 
-    @Test(expected = RunningServerException.class)
+    @Test
     public void testRunAlreadyRunning() throws IOException {
         final Server server = new ServerBuilder(this.resolver).build();
         server.run();
 
         this.expectedPorts.add(new Port(80, false));
         this.expectedPorts.add(new Port(443, true));
-        server.run();
+        assertThrows(RunningServerException.class, () -> server.run());
     }
 
     private class VerifyingListenerFactory implements ListenerFactory {

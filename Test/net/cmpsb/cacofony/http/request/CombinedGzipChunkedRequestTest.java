@@ -2,15 +2,13 @@ package net.cmpsb.cacofony.http.request;
 
 import net.cmpsb.cacofony.io.HttpInputStream;
 import net.cmpsb.cacofony.io.StreamHelper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Luc Everse
@@ -18,12 +16,12 @@ import static org.hamcrest.Matchers.is;
 public class CombinedGzipChunkedRequestTest {
     @Test
     public void test() throws IOException {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("POST / HTTP/1.1\r\n");
-        builder.append("Transfer-Encoding: gzip, chunked\r\n");
-        builder.append("\r\n");
+        String builder =
+            "POST / HTTP/1.1\r\n"
+          + "Transfer-Encoding: gzip, chunked\r\n"
+          + "\r\n";
 
-        final byte[] header = builder.toString().getBytes(StandardCharsets.ISO_8859_1);
+        final byte[] header = builder.getBytes(StandardCharsets.ISO_8859_1);
         final byte[] body = {
             '5', '\r', '\n',
             0x1f, (byte) 0x8b, 0x08, 0x00, 0x3c,
@@ -62,9 +60,7 @@ public class CombinedGzipChunkedRequestTest {
 
         final String string = new String(read, 0, length, StandardCharsets.UTF_8);
 
-        assertThat("The read string is correct.",
-                   string,
-                   is(equalTo("Hello, Cacofony!\n")));
+        assertThat(string).isEqualTo("Hello, Cacofony!\n");
     }
 
     private HttpInputStream getStream(final byte[] packet) {

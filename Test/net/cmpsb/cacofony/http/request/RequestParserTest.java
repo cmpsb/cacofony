@@ -5,16 +5,15 @@ import net.cmpsb.cacofony.http.exception.HttpException;
 import net.cmpsb.cacofony.http.exception.NotImplementedException;
 import net.cmpsb.cacofony.io.HttpInputStream;
 import net.cmpsb.cacofony.io.StreamHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Luc Everse
@@ -22,7 +21,7 @@ import static org.hamcrest.Matchers.is;
 public class RequestParserTest {
     private RequestParser parser;
 
-    @Before
+    @BeforeEach
     public void before() {
         final HeaderParser headerParser = new HeaderParser();
         final StreamHelper streamHelper = new StreamHelper();
@@ -45,21 +44,10 @@ public class RequestParserTest {
         final int length = request.getBody().read(payload);
         final String body = new String(payload, StandardCharsets.ISO_8859_1);
 
-        assertThat("The method is correct.",
-                   request.getMethod(),
-                   is(equalTo(Method.GET)));
-
-        assertThat("The path is correct.",
-                   request.getRawPath(),
-                   is(equalTo("/index.html")));
-
-        assertThat("The content length is correct.",
-                   length,
-                   is(8));
-
-        assertThat("The body length is correct.",
-                   body,
-                   is(equalTo("14616742")));
+        assertThat(request.getMethod()).as("method").isEqualTo(Method.GET);
+        assertThat(request.getRawPath()).as("raw path").isEqualTo("/index.html");
+        assertThat(length).as("body length").isEqualTo(8);
+        assertThat(body).as("body").isEqualTo("14616742");
     }
 
     @Test
@@ -86,21 +74,10 @@ public class RequestParserTest {
         final int length = request.getBody().read(payload);
         final String body = new String(payload, StandardCharsets.ISO_8859_1);
 
-        assertThat("The method is correct.",
-                request.getMethod(),
-                is(equalTo(Method.POST)));
-
-        assertThat("The path is correct.",
-                request.getRawPath(),
-                is(equalTo("/login/process")));
-
-        assertThat("The content length is correct.",
-                length,
-                is(8));
-
-        assertThat("The body length is correct.",
-                body,
-                is(equalTo("14616742")));
+        assertThat(request.getMethod()).as("method").isEqualTo(Method.POST);
+        assertThat(request.getRawPath()).as("raw path").isEqualTo("/login/process");
+        assertThat(length).as("body length").isEqualTo(8);
+        assertThat(body).as("body").isEqualTo("14616742");
     }
 
     @Test
@@ -113,12 +90,10 @@ public class RequestParserTest {
         final HttpInputStream in = this.getStream(packet);
         final MutableRequest request = this.parser.parse(in);
 
-        assertThat("The content length is 0.",
-                   request.getContentLength(),
-                   is(0L));
+        assertThat(request.getContentLength()).as("body length").isEqualTo(0);
     }
 
-    @Test(expected = BadRequestException.class)
+    @Test
     public void testEncodedStaticRequest() throws IOException {
         final String packet =
             "GET / HTTP/1.1\r\n"
@@ -128,7 +103,7 @@ public class RequestParserTest {
           + "\r\n";
 
         final HttpInputStream in = this.getStream(packet);
-        this.parser.parse(in);
+        assertThrows(BadRequestException.class, () -> this.parser.parse(in));
     }
 
     @Test
@@ -138,56 +113,50 @@ public class RequestParserTest {
         final HttpInputStream in = this.getStream(packet);
         final MutableRequest request = this.parser.parse(in);
 
-        assertThat("THe major version is correct.",
-                   request.getMajorVersion(),
-                   is(0));
-
-        assertThat("THe minor version is correct.",
-                   request.getMinorVersion(),
-                   is(9));
+        assertThat(request.getMajorVersion()).as("major version").isEqualTo(0);
+        assertThat(request.getMinorVersion()).as("minor version").isEqualTo(9);
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void testEof() throws IOException {
         final String packet = "";
-
         final HttpInputStream in = this.getStream(packet);
-        final MutableRequest request = this.parser.parse(in);
+        assertThrows(IOException.class, () -> this.parser.parse(in));
     }
 
-    @Test(expected = NotImplementedException.class)
+    @Test
     public void testUnknownEncoding() throws IOException {
         final String packet = "HEAD / HTTP/1.1\r\nTransfer-Encoding: _invalid\r\n\r\n";
         final HttpInputStream in = this.getStream(packet);
-        this.parser.parse(in);
+        assertThrows(NotImplementedException.class, () -> this.parser.parse(in));
     }
 
-    @Test(expected = HttpException.class)
+    @Test
     public void testBadRequestLine() throws IOException {
         final String packet = "GET /";
         final HttpInputStream in = this.getStream(packet);
-        this.parser.parse(in);
+        assertThrows(HttpException.class, () -> this.parser.parse(in));
     }
 
-    @Test(expected = HttpException.class)
+    @Test
     public void testUnknownMethod() throws IOException {
         final String packet = "FROBNICATE / HTTP/1.1\r\n\r\n";
         final HttpInputStream in = this.getStream(packet);
-        this.parser.parse(in);
+        assertThrows(HttpException.class, () -> this.parser.parse(in));
     }
 
-    @Test(expected = HttpException.class)
+    @Test
     public void testBadVersion() throws IOException {
         final String packet = "GET / HTTPbis\r\n\r\n";
         final HttpInputStream in = this.getStream(packet);
-        this.parser.parse(in);
+        assertThrows(HttpException.class, () -> this.parser.parse(in));
     }
 
-    @Test(expected = HttpException.class)
+    @Test
     public void testFutureVersion() throws IOException {
         final String packet = "GET / HTTP/99.99";
         final HttpInputStream in = this.getStream(packet);
-        this.parser.parse(in);
+        assertThrows(HttpException.class, () -> this.parser.parse(in));
     }
 
     private HttpInputStream getStream(final String packet) {

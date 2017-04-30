@@ -1,12 +1,11 @@
 package net.cmpsb.cacofony.http.cookie;
 
 import net.cmpsb.cacofony.util.UrlCodec;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Luc Everse
@@ -14,25 +13,26 @@ import static org.hamcrest.Matchers.is;
 public class AttributedCookieParserTest {
     private CookieParser parser;
 
-    @Before
+    @BeforeEach
     public void before() {
         this.parser = new CookieParser(new UrlCodec());
     }
 
-    @Test(expected = InvalidCookieException.class)
+    @Test
     public void testSimpleValueless() {
-        final String line = "name";
-        this.parser.parseAttributed(line);
+        assertThrows(InvalidCookieException.class, () -> this.parser.parseAttributed("name"));
     }
 
-    @Test(expected = InvalidCookieException.class)
+    @Test
     public void testSimpleEmpty() {
-        this.parser.parseAttributed("");
+        assertThrows(InvalidCookieException.class, () -> this.parser.parseAttributed(""));
     }
 
-    @Test(expected = InvalidCookieException.class)
+    @Test
     public void testAttributedValueless() {
-        this.parser.parseAttributed("name; Expires=right now");
+        assertThrows(InvalidCookieException.class, () ->
+            this.parser.parseAttributed("name; Expires=right now")
+        );
     }
 
     @Test
@@ -40,39 +40,21 @@ public class AttributedCookieParserTest {
         final String line = "foo=bar";
         final Cookie cookie = this.parser.parseAttributed(line);
 
-        assertThat("The name is correct.",
-                   cookie.getName(),
-                   is(equalTo("foo")));
-
-        assertThat("The value is correct.",
-                   cookie.getValue(),
-                   is(equalTo("bar")));
+        assertThat(cookie.getName()).as("name").isEqualTo("foo");
+        assertThat(cookie.getValue()).as("value").isEqualTo("bar");
     }
 
     @Test
     public void testWithAttributes() {
-        final String line = "token=iIIIiIILiIlIlIIIliIIliIlIIL; Expires=now; Path = /; Secure";
+        final String line = "token=iIIIiIILiIlIliIIliIlIIL; Expires=now; Path = /; Secure";
         final Cookie cookie = this.parser.parseAttributed(line);
 
-        assertThat("The name is correct.",
-                   cookie.getName(),
-                   is(equalTo("token")));
-
-        assertThat("The value is correct.",
-                   cookie.getValue(),
-                   is(equalTo("iIIIiIILiIlIlIIIliIIliIlIIL")));
-
-        assertThat("The Expires attribute is correct.",
-                   cookie.getAttributes().get("expires"),
-                   is(equalTo("now")));
-
-        assertThat("The Path attribute is correct.",
-                   cookie.getAttributes().get("path"),
-                   is(equalTo("/")));
-
-        assertThat("There is a Secure attribute.",
-                   cookie.getAttributes().containsKey("secure"),
-                   is(true));
+        assertThat(cookie.getName()).as("name").isEqualTo("token");
+        assertThat(cookie.getValue()).as("value").isEqualTo("iIIIiIILiIlIliIIliIlIIL");
+        assertThat(cookie.getAttributes()).as("attributes")
+                .containsEntry("expires", "now")
+                .containsEntry("path", "/")
+                .containsKey("secure");
     }
 
     @Test
@@ -80,21 +62,10 @@ public class AttributedCookieParserTest {
         final String line = "baz=qux; Secure; HttpOnly";
         final Cookie cookie = this.parser.parseAttributed(line);
 
-        assertThat("The name is correct.",
-                   cookie.getName(),
-                   is(equalTo("baz")));
-
-        assertThat("The value is correct.",
-                   cookie.getValue(),
-                   is(equalTo("qux")));
-
-        assertThat("There is a Secure attribute.",
-                   cookie.getAttributes().containsKey("secure"),
-                   is(true));
-
-        assertThat("There is an HttpOnly attribute.",
-                   cookie.getAttributes().containsKey("httponly"),
-                   is(true));
+        assertThat(cookie.getName()).as("name").isEqualTo("baz");
+        assertThat(cookie.getValue()).as("value").isEqualTo("qux");
+        assertThat(cookie.getAttributes()).as("attributes")
+                .containsKeys("secure", "httponly");
     }
 
     @Test
@@ -102,20 +73,11 @@ public class AttributedCookieParserTest {
         final String line = "baz=qux; Secure; Expires=now";
         final Cookie cookie = this.parser.parseAttributed(line);
 
-        assertThat("The name is correct.",
-                cookie.getName(),
-                is(equalTo("baz")));
+        assertThat(cookie.getName()).as("name").isEqualTo("baz");
+        assertThat(cookie.getValue()).as("value").isEqualTo("qux");
+        assertThat(cookie.getAttributes()).as("attributes")
+                .containsKey("secure")
+                .containsEntry("expires", "now");
 
-        assertThat("The value is correct.",
-                cookie.getValue(),
-                is(equalTo("qux")));
-
-        assertThat("There is a Secure attribute.",
-                cookie.getAttributes().containsKey("secure"),
-                is(true));
-
-        assertThat("The Expires attribute is correct.",
-                cookie.getAttributes().get("expires"),
-                is(equalTo("now")));
     }
 }

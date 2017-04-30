@@ -4,8 +4,8 @@ import net.cmpsb.cacofony.http.cookie.Cookie;
 import net.cmpsb.cacofony.http.exception.BadRequestException;
 import net.cmpsb.cacofony.http.exception.HttpException;
 import net.cmpsb.cacofony.util.Ob;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -13,11 +13,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
-import static org.hamcrest.Matchers.nullValue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Luc Everse
@@ -28,7 +25,7 @@ public class MutableRequestTest {
     private String defaultInput;
     private byte[] defaultPacket;
 
-    @Before
+    @BeforeEach
     public void before() {
         this.request = new MutableRequest(Method.GET, "/path/", 1, 0);
 
@@ -45,9 +42,7 @@ public class MutableRequestTest {
 
         final String output = this.request.readFullBody(8192, StandardCharsets.UTF_8);
 
-        assertThat("The input and output are equal.",
-                   output,
-                   is(equalTo(this.defaultInput)));
+        assertThat(output).isEqualTo(this.defaultInput);
     }
 
     @Test
@@ -59,39 +54,38 @@ public class MutableRequestTest {
 
         final String output = this.request.readFullBody(8192, StandardCharsets.UTF_8);
 
-        assertThat("The output is an empty string.",
-                   output,
-                   isEmptyOrNullString());
+        assertThat(output).isEmpty();
     }
 
     @Test
     public void testGetHost() {
         this.request.getHeaders().put("host", Collections.singletonList("example.org"));
 
-        assertThat("The returned host is the value of the single Host header.",
-                   this.request.getHost(),
-                   is(equalTo("example.org")));
+        assertThat(this.request.getHost()).as("host").isEqualTo("example.org");
     }
 
-    @Test(expected = BadRequestException.class)
+    @Test
     public void testMultipleHostHeaders() {
         this.request.getHeaders().put("host", Arrays.asList("example.com", "example.net"));
-        this.request.getHost();
+
+        assertThrows(BadRequestException.class, this.request::getHost);
     }
 
-    @Test(expected = BadRequestException.class)
+    @Test
     public void testNoHostHeader() {
-        this.request.getHost();
+        assertThrows(BadRequestException.class, this.request::getHost);
     }
 
-    @Test(expected = HttpException.class)
+    @Test
     public void testReadStaticTooLong() throws IOException {
         final ByteArrayInputStream in = new ByteArrayInputStream(this.defaultPacket);
 
         this.request.setBody(in);
         this.request.setContentLength(this.defaultPacket.length);
 
-        this.request.readFullBody(4, StandardCharsets.UTF_8);
+        assertThrows(HttpException.class, () ->
+                this.request.readFullBody(4, StandardCharsets.UTF_8)
+        );
     }
 
     @Test
@@ -103,19 +97,19 @@ public class MutableRequestTest {
 
         final String output = this.request.readFullBody(8192, StandardCharsets.UTF_8);
 
-        assertThat("The input and output are equal.",
-                   output,
-                   is(equalTo(this.defaultInput)));
+        assertThat(output).isEqualTo(this.defaultInput);
     }
 
-    @Test(expected = HttpException.class)
+    @Test
     public void testReadEncodedTooLong() throws IOException {
         final ByteArrayInputStream in = new ByteArrayInputStream(this.defaultPacket);
 
         this.request.setBody(in);
         this.request.setContentLength(-1);
 
-        this.request.readFullBody(4, StandardCharsets.UTF_8);
+        assertThrows(HttpException.class, () ->
+                this.request.readFullBody(4, StandardCharsets.UTF_8)
+        );
     }
 
     @Test
@@ -128,9 +122,7 @@ public class MutableRequestTest {
             )
         );
 
-        assertThat("The returned cookie is as expected.",
-                   this.request.getCookie(cookie.getName()),
-                   is(equalTo(cookie)));
+        assertThat(this.request.getCookie(cookie.getName())).as("cookie").isEqualTo(cookie);
     }
 
     @Test
@@ -143,9 +135,8 @@ public class MutableRequestTest {
                 )
         );
 
-        assertThat("The returned cookie is as expected.",
-                   this.request.getCookie("not the right cookie"),
-                   is(nullValue()));
+        assertThat(this.request.getCookie("not the right cookie")).as("nonexistent cookie")
+                .isNull();
     }
 
     @Test
@@ -157,9 +148,7 @@ public class MutableRequestTest {
 
         final String value = this.request.getQueryParameter("ccc", "CcC");
 
-        assertThat("The returned value is the default value.",
-                   value,
-                   is(equalTo("CcC")));
+        assertThat(value).as("default").isEqualTo("CcC");
     }
 
     @Test
@@ -171,9 +160,7 @@ public class MutableRequestTest {
 
         final String value = this.request.getQueryParameter("aaa", "AaA");
 
-        assertThat("The returned value is the stored value.",
-                   value,
-                   is(equalTo("aAa")));
+        assertThat(value).as("given").isEqualTo("aAa");
     }
 
     @Test
@@ -185,9 +172,7 @@ public class MutableRequestTest {
 
         final String value = this.request.getPathParameter("three", "three");
 
-        assertThat("The returned value is the default value.",
-                value,
-                is(equalTo("three")));
+        assertThat(value).as("default").isEqualTo("three");
     }
 
     @Test
@@ -199,8 +184,6 @@ public class MutableRequestTest {
 
         final String value = this.request.getPathParameter("one", "one");
 
-        assertThat("The returned value is the stored value.",
-                value,
-                is(equalTo("ONE")));
+        assertThat(value).as("given").isEqualTo("ONE");
     }
 }

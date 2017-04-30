@@ -1,12 +1,10 @@
 package net.cmpsb.cacofony.http.response;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for the redirect response.
@@ -19,12 +17,9 @@ public class RedirectResponseTest {
         final RedirectResponse response = new RedirectResponse("/page/home");
         response.prepare(null);
 
-        assertThat("The response has the Location header set.",
-                   response.getHeaders().get("Location"),
-                   is(equalTo(Collections.singletonList("/page/home"))));
+        assertThat(response.getHeaders()).as("headers")
+                .containsEntry("Location", Collections.singletonList("/page/home"));
 
-        assertThat("The status is 302 Found.",
-                   response.getStatus(),
-                   is(equalTo(ResponseCode.FOUND)));
+        assertThat(response.getStatus()).as("status").isEqualTo(ResponseCode.FOUND);
     }
 }

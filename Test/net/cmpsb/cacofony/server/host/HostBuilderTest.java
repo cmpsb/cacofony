@@ -5,10 +5,9 @@ import net.cmpsb.cacofony.exception.ExceptionHandler;
 import net.cmpsb.cacofony.mime.MimeParser;
 import net.cmpsb.cacofony.route.Router;
 import net.cmpsb.cacofony.server.ServerSettings;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -28,8 +27,6 @@ public class HostBuilderTest {
         final HostBuilder builder = new HostBuilder("name", resolver);
         final Host host = builder.build();
 
-        assertThat("The host inherits the dependencies from the server.",
-                   host.getResolver().get(String.class),
-                   is(str));
+        assertThat(host.getResolver().get(String.class)).isSameAs(str);
     }
 }

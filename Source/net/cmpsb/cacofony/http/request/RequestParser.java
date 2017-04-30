@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -151,7 +152,8 @@ public class RequestParser {
             throws IOException {
 
         // Read the headers first.
-        this.headerParser.parse(in, request);
+        final Map<String, List<String>> headers = this.headerParser.parse(in);
+        request.adoptHeaders(headers);
 
         // Build the stack of input streams to read the message body.
         final List<String> teHeaders = request.getHeaders("Transfer-Encoding");

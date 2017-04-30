@@ -1,16 +1,15 @@
 package net.cmpsb.cacofony.http.request;
 
-import org.junit.Before;
-import org.junit.Test;
+import net.cmpsb.cacofony.util.Ob;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for the form parser.
@@ -20,7 +19,7 @@ import static org.hamcrest.Matchers.is;
 public class FormParserTest {
     private FormParser parser;
 
-    @Before
+    @BeforeEach
     public void before() {
         this.parser = new FormParser();
     }
@@ -31,13 +30,9 @@ public class FormParserTest {
 
         final Map<String, List<String>> form = this.parser.parse(line);
 
-        assertThat("There is one entry.",
-                   form.size(),
-                   is(1));
-
-        assertThat("The key entry is correct.",
-                   form.get("key"),
-                   is(equalTo(Collections.singletonList("value"))));
+        assertThat(form).isEqualTo(Collections.singletonMap("key",
+            Collections.singletonList("value")
+        ));
     }
 
     @Test
@@ -46,21 +41,11 @@ public class FormParserTest {
 
         final Map<String, List<String>> form = this.parser.parse(line);
 
-        assertThat("There are three entries.",
-                   form.size(),
-                   is(3));
-
-        assertThat("The key entry is correct.",
-                   form.get("key"),
-                   is(equalTo(Arrays.asList("one", "two", "three"))));
-
-        assertThat("The three entry is correct.",
-                   form.get("three"),
-                   is(equalTo(Collections.singletonList("four"))));
-
-        assertThat("The test entry is correct.",
-                   form.get("test"),
-                   is(equalTo(Collections.singletonList("yes"))));
+        assertThat(form).isEqualTo(Ob.map(
+                "key", Arrays.asList("one", "two", "three"),
+                "three", Collections.singletonList("four"),
+                "test", Collections.singletonList("yes")
+        ));
     }
 
     @Test
@@ -69,16 +54,9 @@ public class FormParserTest {
 
         final Map<String, List<String>> form = this.parser.parse(line);
 
-        assertThat("There are two entries.",
-                   form.size(),
-                   is(2));
-
-        assertThat("The title entry is an empty string.",
-                   form.get("title"),
-                   is(equalTo(Collections.singletonList(""))));
-
-        assertThat("The encode entry is an empty string.",
-                   form.get("encode"),
-                   is(equalTo(Collections.singletonList(""))));
+        assertThat(form).isEqualTo(Ob.map(
+                "title", Collections.singletonList(""),
+                "encode", Collections.singletonList("")
+        ));
     }
 }

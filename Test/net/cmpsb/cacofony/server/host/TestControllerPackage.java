@@ -1,10 +1,8 @@
 package net.cmpsb.cacofony.server.host;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Luc Everse
@@ -14,12 +12,7 @@ public class TestControllerPackage {
     public void testConstructor() {
         final ControllerPackage controllerPackage = new ControllerPackage("etaoin", "shrdlu");
 
-        assertThat("The package is correct.",
-                   controllerPackage.getPack(),
-                   is(equalTo("etaoin")));
-
-        assertThat("The prefix is correct.",
-                   controllerPackage.getPrefix(),
-                   is(equalTo("shrdlu")));
+        assertThat(controllerPackage.getPack()).as("package").isEqualTo("etaoin");
+        assertThat(controllerPackage.getPrefix()).as("prefix").isEqualTo("shrdlu");
     }
 }

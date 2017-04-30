@@ -1,6 +1,6 @@
 package net.cmpsb.cacofony.mime;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -67,7 +67,7 @@ public class MimeTypeTest {
     public void testEqualsWrongTypes() {
         final MimeType type = new MimeType("video", "vp8");
 
-        assertNotEquals(type, "video/vp8");
+        assertNotEquals("video/vp8", type);
     }
 
     @Test
@@ -75,6 +75,6 @@ public class MimeTypeTest {
         final MimeType type = new MimeType("test", "string");
         type.getParameters().put("q", "0.2");
 
-        assertEquals(type.toString(), "test/string; q=0.2");
+        assertEquals("test/string; q=0.2", type.toString());
     }
 }

@@ -1,13 +1,11 @@
 package net.cmpsb.cacofony.http.request;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for the query string parser.
@@ -17,7 +15,7 @@ import static org.hamcrest.Matchers.is;
 public class QueryStringParserTest {
     private QueryStringParser parser;
 
-    @Before
+    @BeforeEach
     public void before() {
         this.parser = new QueryStringParser();
     }
@@ -27,9 +25,7 @@ public class QueryStringParserTest {
         final String queryString = "?";
         final Map<String, String> values = this.parser.parse(queryString);
 
-        assertThat("The map is empty.",
-                   values.isEmpty(),
-                   is(true));
+        assertThat(values).isEmpty();
     }
 
     @Test
@@ -37,9 +33,8 @@ public class QueryStringParserTest {
         final String queryString = "?id=2233";
         final Map<String, String> values = this.parser.parse(queryString);
 
-        assertThat("The map contains an entry <id, 2233>.",
-                   values.get("id"),
-                   is(equalTo("2233")));
+        assertThat(values).hasSize(1);
+        assertThat(values.get("id")).as("The id entry").isEqualTo("2233");
     }
 
     @Test
@@ -47,13 +42,9 @@ public class QueryStringParserTest {
         final String queryString = "?page=about&lang=en_us";
         final Map<String, String> values = this.parser.parse(queryString);
 
-        assertThat("The map contains an entry <page, about>.",
-                   values.get("page"),
-                   is(equalTo("about")));
-
-        assertThat("The map contains an entry <lang, en_us>.",
-                   values.get("lang"),
-                   is(equalTo("en_us")));
+        assertThat(values).hasSize(2);
+        assertThat(values.get("page")).as("The page entry").isEqualTo("about");
+        assertThat(values.get("lang")).as("The lang entry").isEqualTo("en_us");
     }
 
     @Test
@@ -61,17 +52,10 @@ public class QueryStringParserTest {
         final String queryString = "?form=contact&noborder&name=John";
         final Map<String, String> values = this.parser.parse(queryString);
 
-        assertThat("The map contains the entry <form, contact>",
-                   values.get("form"),
-                   is(equalTo("contact")));
-
-        assertThat("The map contains the key noborder.",
-                   values.containsKey("noborder"),
-                   is(true));
-
-        assertThat("The map contains the entry <name, John>.",
-                   values.get("name"),
-                   is(equalTo("John")));
+        assertThat(values).hasSize(3);
+        assertThat(values.get("form")).as("The form entry").isEqualTo("contact");
+        assertThat(values.containsKey("noborder")).as("The noborder entry is present").isTrue();
+        assertThat(values.get("name")).as("The name entry").isEqualTo("John");
     }
 
     @Test
@@ -83,12 +67,8 @@ public class QueryStringParserTest {
 
         final Map<String, String> values = this.parser.parse(queryString);
 
-        assertThat("The map contains an entry <url, ...>",
-                   values.get("url"),
-                   is(equalTo("http://cmpsb.net/submit?ns=2&mail=test@cmpsb.net")));
-
-        assertThat("The map contains an entry <date, 2015-02-02>.",
-                   values.get("date"),
-                   is(equalTo("2015-02-02")));
+        assertThat(values.get("url")).as("The url entry")
+                .isEqualTo("http://cmpsb.net/submit?ns=2&mail=test@cmpsb.net");
+        assertThat(values.get("date")).as("The date entry").isEqualTo("2015-02-02");
     }
 }

@@ -7,6 +7,7 @@ import net.cmpsb.cacofony.mime.MimeType;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -430,6 +431,17 @@ public class MutableRequest extends Request {
      */
     public boolean hasHeader(final String key) {
         return this.headers.containsKey(key.toLowerCase());
+    }
+
+    /**
+     * Adopts the headers from another map.
+     *
+     * @param otherHeaders the other headers
+     */
+    public void adoptHeaders(final Map<String, List<String>> otherHeaders) {
+        for (final String key : otherHeaders.keySet()) {
+            this.headers.computeIfAbsent(key, k -> new ArrayList<>()).addAll(otherHeaders.get(key));
+        }
     }
 
     /**

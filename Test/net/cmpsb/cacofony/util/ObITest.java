@@ -1,17 +1,15 @@
 package net.cmpsb.cacofony.util;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.emptyCollectionOf;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Luc Everse
@@ -19,7 +17,7 @@ import static org.hamcrest.Matchers.is;
 public class ObITest {
     private ObI ob;
 
-    @Before
+    @BeforeEach
     public void before() {
         this.ob = new ObI();
     }
@@ -37,23 +35,19 @@ public class ObITest {
         expected.put("two",   "twice");
         expected.put("three", "3");
 
-        assertThat("The map is as expected.",
-                   map,
-                   is(equalTo(expected)));
+        assertThat(map).isEqualTo(expected);
     }
 
     @Test
     public void testEmptyMap() {
         final Map<String, String> map = this.ob.map();
 
-        assertThat("The map is empty.",
-                   map.isEmpty(),
-                   is(true));
+        assertThat(map).isEmpty();
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testOddMapEntries() {
-        this.ob.map("one", "first", "two");
+        assertThrows(IllegalArgumentException.class, () -> this.ob.map("one", "first", "two"));
     }
 
     @Test
@@ -65,18 +59,14 @@ public class ObITest {
         expected.add("too");
         expected.add("tree");
 
-        assertThat("The set is as expected.",
-                   set,
-                   is(equalTo(expected)));
+        assertThat(set).isEqualTo(expected);
     }
 
     @Test
     public void testEmptySet() {
         final Set<String> set = this.ob.set();
 
-        assertThat("The set is empty.",
-                   set,
-                   is(emptyCollectionOf(String.class)));
+        assertThat(set).isEmpty();
     }
 
     @Test
@@ -86,9 +76,7 @@ public class ObITest {
             3, 3
         );
 
-        assertThat("The values are equal.",
-                   equals,
-                   is(true));
+        assertThat(equals).isTrue();
     }
 
     @Test
@@ -99,22 +87,20 @@ public class ObITest {
             2, 2
         );
 
-        assertThat("The values are not equal.",
-                   equals,
-                   is(false));
+        assertThat(equals).isFalse();
     }
 
     @Test
     public void testMultiEqualsNoParameters() {
         final boolean equals = this.ob.multiEquals();
 
-        assertThat("The empty set is considered equal.",
-                   equals,
-                   is(true));
+        assertThat(equals).isTrue();
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testMultiEqualsOddEntries() {
-        this.ob.multiEquals("one", "two", "three");
+        assertThrows(IllegalArgumentException.class, () ->
+                this.ob.multiEquals("one", "two", "three")
+        );
     }
 }

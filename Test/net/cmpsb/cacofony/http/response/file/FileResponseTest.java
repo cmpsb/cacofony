@@ -9,8 +9,8 @@ import net.cmpsb.cacofony.server.MutableServerSettings;
 import net.cmpsb.cacofony.server.ServerProperties;
 import net.cmpsb.cacofony.server.ServerSettings;
 import net.cmpsb.cacofony.util.UrlCodec;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -20,11 +20,8 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Tests for file responses.
@@ -35,7 +32,7 @@ public class FileResponseTest {
     private ResponsePreparer preparer;
     private ResponseWriter writer;
 
-    @Before
+    @BeforeEach
     public void before() {
         final ServerSettings settings = new MutableServerSettings();
         final ServerProperties properties = new ServerProperties();
@@ -51,9 +48,7 @@ public class FileResponseTest {
         final File tmp = this.temp();
         final FileResponse response = new FileResponse(tmp);
 
-        assertThat("The modification date is equal to that of the input file.",
-                   response.getLastModified(),
-                   is(equalTo(tmp.lastModified())));
+        assertThat(response.getLastModified()).as("last modified").isEqualTo(tmp.lastModified());
     }
 
     @Test
@@ -65,14 +60,13 @@ public class FileResponseTest {
         final FileResponse olderResponse = new FileResponse(olderFile);
         final FileResponse newerResponse = new FileResponse(newerFile);
 
-        assertThat("The ETag changes when the modification date changes.",
-                   olderResponse,
-                   is(not(equalTo(newerResponse))));
+        assertThat(olderResponse).isNotEqualTo(newerResponse);
     }
 
     @Test
     public void testUnrangedRequest() throws IOException {
-        final File tmp = this.temp("Test string for testing!");
+        final String content = "Test string for testing!";
+        final File tmp = this.temp(content);
         final FileResponse response = new FileResponse(tmp);
         response.setContentType(MimeType.text());
         response.setBufferSize(8);
@@ -85,17 +79,9 @@ public class FileResponseTest {
 
         final String sResponse = out.toString("UTF-8");
 
-        assertThat("The content type is the original type.",
-                   response.getContentType(),
-                   is(equalTo(MimeType.text())));
-
-        assertThat("There is no Content-Range header.",
-                   response.getHeaders().containsKey("Content-Range"),
-                   is(false));
-
-        assertThat("The response contains the full string.",
-                   sResponse,
-                   containsString("Test string for testing!"));
+        assertThat(response.getContentType()).as("content type").isEqualTo(MimeType.text());
+        assertThat(response.getHeaders()).as("headers").doesNotContainKey("Content-Range");
+        assertThat(sResponse).contains(content);
     }
 
     @Test
@@ -115,21 +101,13 @@ public class FileResponseTest {
 
         final String sResponse = out.toString("UTF-8");
 
-        assertThat("The content type is the original type.",
-                response.getContentType(),
-                is(equalTo(MimeType.text())));
-
-        assertThat("A Content-Range header is prevent.",
-                response.getHeaders().get("Content-Range").get(0),
-                is(equalTo("bytes 5-10/24")));
-
-        assertThat("The response contains the range.",
-                   sResponse,
-                   containsString("string"));
-
-        assertThat("The response doesn't contain the rest of the content.",
-                   sResponse,
-                   not(containsString(" for testing!")));
+        assertThat(response.getContentType()).as("content type").isEqualTo(MimeType.text());
+        assertThat(response.getHeaders().get("Content-Range")).as("Content-Range header")
+                .hasSize(1)
+                .element(0).asString().isEqualTo("bytes 5-10/24");
+        assertThat(sResponse)
+                .contains("string")
+                .doesNotContain(" for testing!");
     }
 
     @Test
@@ -150,32 +128,16 @@ public class FileResponseTest {
 
         final String sResponse = out.toString("UTF-8");
 
-        assertThat("The content type is multipart/byteranges.",
-                response.getContentType(),
-                is(equalTo(new MimeType("multipart", "byteranges"))));
-
-        assertThat("A Content-Range header for the first range is present.",
-                   sResponse,
-                   containsString("Content-Range: bytes 5-10/24"));
-
-        assertThat("The first range is present.",
-                   sResponse,
-                   containsString("string"));
-
-        assertThat("A Content-Range header for teh second range is present.",
-                   sResponse,
-                   containsString("Content-Range: bytes 16-23/24"));
-
-        assertThat("The second range is present.",
-                   sResponse,
-                   containsString("testing!"));
-
-        assertThat("The rest of the content is not present.",
-                   sResponse,
-                   not(containsString("Test ")));
+        assertThat(response.getContentType()).as("content type").isEqualTo(MimeType.byteranges());
+        assertThat(sResponse).containsSequence(
+                "Content-Range: bytes 5-10/24",
+                "string",
+                "Content-Range: bytes 16-23/24",
+                "testing!"
+        ).doesNotContain("Test ");
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void testWriteInvalidRange() throws IOException {
         final File tmp = this.temp("Test string for testing!");
         final FileResponse response = new FileResponse(tmp);
@@ -187,10 +149,10 @@ public class FileResponseTest {
         this.preparer.prepare(null, response);
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final OutputStream outc = this.writer.write(null, response, out);
+        assertThrows(IOException.class, () -> this.writer.write(null, response, out));
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void testWriteInvalidRanges() throws IOException {
         final File tmp = this.temp("Test string for testing!");
         final FileResponse response = new FileResponse(tmp);
@@ -203,10 +165,10 @@ public class FileResponseTest {
         this.preparer.prepare(null, response);
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final OutputStream outc = this.writer.write(null, response, out);
+        assertThrows(IOException.class, () -> this.writer.write(null, response, out));
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void testWriteDeletedFile() throws IOException {
         final File tmp = this.temp("Test string for testing!");
         final FileResponse response = new FileResponse(tmp);
@@ -217,10 +179,10 @@ public class FileResponseTest {
         tmp.delete();
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final OutputStream outc = this.writer.write(null, response, out);
+        assertThrows(IOException.class, () -> this.writer.write(null, response, out));
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void testWriteDeletedWithRange() throws IOException {
         final File tmp = this.temp("Test string for testing!");
         final FileResponse response = new FileResponse(tmp);
@@ -234,10 +196,10 @@ public class FileResponseTest {
         tmp.delete();
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final OutputStream outc = this.writer.write(null, response, out);
+        assertThrows(IOException.class, () -> this.writer.write(null, response, out));
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void testWriteDeletedWithRanges() throws IOException {
         final File tmp = this.temp("Test string for testing!");
         final FileResponse response = new FileResponse(tmp);
@@ -252,15 +214,15 @@ public class FileResponseTest {
         tmp.delete();
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final OutputStream outc = this.writer.write(null, response, out);
+        assertThrows(IOException.class, () -> this.writer.write(null, response, out));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testSetInvalidRange() throws IOException {
         final File tmp = this.temp();
         final FileResponse response = new FileResponse(tmp);
 
-        response.setBufferSize(-200);
+        assertThrows(IllegalArgumentException.class, () -> response.setBufferSize(-200));
     }
 
     private File temp() throws IOException {

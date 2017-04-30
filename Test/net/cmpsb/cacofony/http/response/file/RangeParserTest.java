@@ -3,15 +3,14 @@ package net.cmpsb.cacofony.http.response.file;
 import net.cmpsb.cacofony.http.exception.BadRequestException;
 import net.cmpsb.cacofony.http.exception.HttpException;
 import net.cmpsb.cacofony.http.request.HeaderValueParser;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Tests for the range parser.
@@ -21,7 +20,7 @@ import static org.hamcrest.Matchers.is;
 public class RangeParserTest {
     private RangeParser parser;
 
-    @Before
+    @BeforeEach
     public void before() {
         this.parser = new RangeParser(new HeaderValueParser());
     }
@@ -35,46 +34,42 @@ public class RangeParserTest {
 
         final List<Range> ranges = this.parser.parse(values, 1200);
 
-        assertThat("There are three ranges.",
-                   ranges.size(),
-                   is(3));
-
-        assertThat("The ranges are correct.",
-                   ranges,
-                   contains(new Range(900, 1199), new Range(500, 700), new Range(1000, 1199)));
+        assertThat(ranges)
+                .hasSize(3)
+                .contains(new Range(900, 1199), new Range(500, 700), new Range(1000, 1199));
     }
 
-    @Test(expected = HttpException.class)
+    @Test
     public void testParseInvertedRange() {
         final List<String> values = Arrays.asList(
             "percents=0-12", "88-",
             "bytes=500-12"
         );
 
-        this.parser.parse(values, 1200);
+        assertThrows(HttpException.class, () -> this.parser.parse(values, 1200));
     }
 
-    @Test(expected = HttpException.class)
+    @Test
     public void testParseNegativeEnd() {
         final List<String> values = Arrays.asList(
                 "percents=0-12", "88-",
                 "bytes=500--900"
         );
 
-        this.parser.parse(values, 1200);
+        assertThrows(HttpException.class, () -> this.parser.parse(values, 1200));
     }
 
-    @Test(expected = HttpException.class)
+    @Test
     public void testParseOverflowStart() {
         final List<String> values = Arrays.asList(
                 "percents=0-12", "88-",
                 "bytes=500-900"
         );
 
-        this.parser.parse(values, 200);
+        assertThrows(HttpException.class, () -> this.parser.parse(values, 200));
     }
 
-    @Test(expected = BadRequestException.class)
+    @Test
     public void testManyRanges() {
         final List<String> values = Arrays.asList(
                 "a", "b", "c", "d",
@@ -84,6 +79,6 @@ public class RangeParserTest {
                 "q", "r", "s", "t"
         );
 
-        this.parser.parse(values, 1200);
+        assertThrows(BadRequestException.class, () -> this.parser.parse(values, 1200));
     }
 }

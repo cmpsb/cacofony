@@ -1,11 +1,9 @@
 package net.cmpsb.cacofony.mime;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for the mime parser.
@@ -17,7 +15,7 @@ public abstract class MimeParserTest<P extends MimeParser> {
 
     public abstract P getParser();
 
-    @Before
+    @BeforeEach
     public void before() {
         this.parser = this.getParser();
     }
@@ -27,13 +25,9 @@ public abstract class MimeParserTest<P extends MimeParser> {
         final String raw = "text/plain";
         final MimeType type = this.parser.parse(raw);
 
-        assertThat("The type is correct.",
-                   type.getMainType(),
-                   is(equalTo("text")));
-
-        assertThat("The subtype is correct.",
-                   type.getSubType(),
-                   is(equalTo("plain")));
+        assertThat(type.getMainType()).as("main type").isEqualTo("text");
+        assertThat(type.getSubType()).as("sub type").isEqualTo("plain");
+        assertThat(type.getParameters()).as("parameters").isEmpty();
     }
 
     @Test
@@ -41,13 +35,9 @@ public abstract class MimeParserTest<P extends MimeParser> {
         final String raw = "image/*";
         final MimeType type = this.parser.parse(raw);
 
-        assertThat("The type is correct.",
-                   type.getMainType(),
-                   is(equalTo("image")));
-
-        assertThat("The subtype is correct.",
-                   type.getSubType(),
-                   is(equalTo("*")));
+        assertThat(type.getMainType()).as("main type").isEqualTo("image");
+        assertThat(type.getSubType()).as("sub type").isEqualTo("*");
+        assertThat(type.getParameters()).as("parameters").isEmpty();
     }
 
     @Test
@@ -55,13 +45,9 @@ public abstract class MimeParserTest<P extends MimeParser> {
         final String raw = "*/*";
         final MimeType type = this.parser.parse(raw);
 
-        assertThat("The type is correct.",
-                   type.getMainType(),
-                   is(equalTo("*")));
-
-        assertThat("The subtype is correct.",
-                   type.getSubType(),
-                   is(equalTo("*")));
+        assertThat(type.getMainType()).as("main type").isEqualTo("*");
+        assertThat(type.getSubType()).as("sub type").isEqualTo("*");
+        assertThat(type.getParameters()).as("parameters").isEmpty();
     }
 
     @Test
@@ -69,20 +55,10 @@ public abstract class MimeParserTest<P extends MimeParser> {
         final String raw = "text/html+xml; encoding=utf-8; q=0.9";
         final MimeType type = this.parser.parse(raw);
 
-        assertThat("The type is correct.",
-                   type.getMainType(),
-                   is(equalTo("text")));
-
-        assertThat("The subtype is correct.",
-                   type.getSubType(),
-                   is(equalTo("html+xml")));
-
-        assertThat("The first parameter is present and correct.",
-                   type.getParameters().get("encoding"),
-                   is(equalTo("utf-8")));
-
-        assertThat("The second parameter is present and correct.",
-                   type.getParameters().get("q"),
-                   is(equalTo("0.9")));
+        assertThat(type.getMainType()).as("main type").isEqualTo("text");
+        assertThat(type.getSubType()).as("sub type").isEqualTo("html+xml");
+        assertThat(type.getParameters()).as("parameters")
+                .containsEntry("encoding", "utf-8")
+                .containsEntry("q", "0.9");
     }
 }

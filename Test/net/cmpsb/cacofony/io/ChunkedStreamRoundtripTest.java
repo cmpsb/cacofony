@@ -2,16 +2,14 @@ package net.cmpsb.cacofony.io;
 
 import net.cmpsb.cacofony.http.request.HeaderParser;
 import net.cmpsb.cacofony.http.request.MutableRequest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Random;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests that combine the chunked input and output streams.
@@ -21,7 +19,7 @@ import static org.hamcrest.Matchers.is;
 public class ChunkedStreamRoundtripTest {
     @Test
     public void testBigDataSet() throws IOException {
-        final int dataSize = 9000;
+        final int dataSize = 9_000_000;
 
         final Random random = new Random();
         final int[] bigData = random.ints(dataSize).map(i -> i & 255).toArray();
@@ -46,12 +44,7 @@ public class ChunkedStreamRoundtripTest {
         final byte[] readData = new byte[dataSize];
         final int readLength = in.read(readData);
 
-        assertThat("The read length is equal to the input length.",
-                   readLength,
-                   is(equalTo(dataSize)));
-
-        assertThat("The read data is correct.",
-                   readData,
-                   is(equalTo(data)));
+        assertThat(readLength).as("reported number of bytes").isEqualTo(dataSize);
+        assertThat(readData).isEqualTo(data);
     }
 }

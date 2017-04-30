@@ -14,18 +14,15 @@ import net.cmpsb.cacofony.mime.MimeType;
 import net.cmpsb.cacofony.mime.StrictMimeParser;
 import net.cmpsb.cacofony.util.Ob;
 import net.cmpsb.cacofony.util.UrlCodec;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.regex.Pattern;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Tests for the request router.
@@ -33,23 +30,22 @@ import static org.hamcrest.Matchers.notNullValue;
  * @author Luc Everse
  */
 public class RouterTest {
-    private MimeParser parser;
     private Router router;
 
-    @Before
+    @BeforeEach
     public void before() {
-        this.parser = new StrictMimeParser();
+        final MimeParser parser = new StrictMimeParser();
         final UrlCodec urlCodec = new UrlCodec();
         final CookieParser cookieParser = new CookieParser(urlCodec);
         final QueryStringParser queryStringParser = new QueryStringParser();
         final RequestPreparer preparer = new RequestPreparer(cookieParser, queryStringParser);
-        this.router = new Router(this.parser, preparer);
+        this.router = new Router(parser, preparer);
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test
     public void testNoRoutes() throws Exception {
         final MutableRequest request = new MutableRequest(Method.GET, "", 1, 1);
-        this.router.handle(request);
+        assertThrows(NotFoundException.class, () -> this.router.handle(request));
     }
 
     @Test
@@ -61,13 +57,7 @@ public class RouterTest {
 
         final Response response = this.router.handle(request);
 
-        assertThat("The response is not null.",
-                   response,
-                   is(notNullValue()));
-
-        assertThat("The response has the right type.",
-                   response,
-                   is(instanceOf(EmptyResponse.class)));
+        assertThat(response).isNotNull().isInstanceOf(EmptyResponse.class);
     }
 
     @Test
@@ -78,13 +68,7 @@ public class RouterTest {
 
         final Response response = this.router.handle(request);
 
-        assertThat("The response is not null.",
-                response,
-                is(notNullValue()));
-
-        assertThat("The response has the right type.",
-                response,
-                is(instanceOf(EmptyResponse.class)));
+        assertThat(response).isNotNull().isInstanceOf(EmptyResponse.class);
     }
 
     @Test
@@ -96,28 +80,20 @@ public class RouterTest {
 
         final Response response = this.router.handle(request);
 
-        assertThat("The response is not null.",
-                response,
-                is(notNullValue()));
-
-        assertThat("The response has the right type.",
-                response,
-                is(instanceOf(TextResponse.class)));
+        assertThat(response).isNotNull().isInstanceOf(TextResponse.class);
 
         final TextResponse textResponse = (TextResponse) response;
 
-        assertThat("The content is correct.",
-                   textResponse.getContent(),
-                   is(equalTo("get mpeg")));
+        assertThat(textResponse.getContent()).as("content").isEqualTo("get mpeg");
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test
     public void testNoMatchingRoute() throws Exception {
         this.populateComplex();
 
         final MutableRequest request = new MutableRequest(Method.HEAD, "!!no_such_route!!", 1, 1);
 
-        this.router.handle(request);
+        assertThrows(NotFoundException.class, () -> this.router.handle(request));
     }
 
     private void populateSimple() {

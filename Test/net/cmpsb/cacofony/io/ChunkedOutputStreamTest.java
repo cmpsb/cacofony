@@ -1,14 +1,13 @@
 package net.cmpsb.cacofony.io;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Tests for the chunked output stream.
@@ -18,7 +17,7 @@ import static org.hamcrest.Matchers.is;
 public class ChunkedOutputStreamTest {
     private ByteArrayOutputStream target;
 
-    @Before
+    @BeforeEach
     public void before() {
         this.target = new ByteArrayOutputStream();
     }
@@ -28,10 +27,7 @@ public class ChunkedOutputStreamTest {
         final ChunkedOutputStream out = new ChunkedOutputStream(this.target);
         out.close();
 
-        assertThat("The buffer contains only the 0-length chunk.",
-                   this.target.toByteArray(),
-                   is(equalTo(new byte[] {'0', '\r', '\n', '\r', '\n'})));
-
+        assertThat(this.target.toByteArray()).containsExactly('0', '\r', '\n', '\r', '\n');
     }
 
     @Test
@@ -61,9 +57,7 @@ public class ChunkedOutputStreamTest {
             '\r', '\n'
         };
 
-        assertThat("The output buffer is as expected.",
-                   this.target.toByteArray(),
-                   is(equalTo(expected)));
+        assertThat(this.target.toByteArray()).isEqualTo(expected);
     }
 
     @Test
@@ -82,9 +76,7 @@ public class ChunkedOutputStreamTest {
             '\r', '\n'
         };
 
-        assertThat("The output buffer is as expected.",
-                   this.target.toByteArray(),
-                   is(equalTo(expected)));
+        assertThat(this.target.toByteArray()).isEqualTo(expected);
     }
 
     @Test
@@ -110,9 +102,7 @@ public class ChunkedOutputStreamTest {
             '\r', '\n'
         };
 
-        assertThat("The output buffer is as expected.",
-                   this.target.toByteArray(),
-                   is(equalTo(expected)));
+        assertThat(this.target.toByteArray()).isEqualTo(expected);
     }
 
     @Test
@@ -140,55 +130,55 @@ public class ChunkedOutputStreamTest {
             '\r', '\n'
         };
 
-        assertThat("The output is as expected.",
-                   this.target.toByteArray(),
-                   is(equalTo(expected)));
+        assertThat(this.target.toByteArray()).isEqualTo(expected);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testInvalidWriteBuffer() throws IOException {
         final ChunkedOutputStream out = new ChunkedOutputStream(this.target);
 
-        out.write(null, 0, 10);
+        assertThrows(NullPointerException.class, () -> out.write(null, 0, 10));
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test
     public void testInvalidOffset() throws IOException {
         final ChunkedOutputStream out = new ChunkedOutputStream(this.target);
 
-        out.write(new byte[10], -2, 10);
+        assertThrows(IndexOutOfBoundsException.class, () -> out.write(new byte[10], -2, 10));
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test
     public void testInvalidLength() throws IOException {
         final ChunkedOutputStream out = new ChunkedOutputStream(this.target);
 
-        out.write(new byte[10], 0, -10);
+        assertThrows(IndexOutOfBoundsException.class, () -> out.write(new byte[10], 0, -10));
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test
     public void testOobWrite() throws IOException {
         final ChunkedOutputStream out = new ChunkedOutputStream(this.target);
 
-        out.write(new byte[10], 0, 100000);
+        assertThrows(IndexOutOfBoundsException.class, () -> out.write(new byte[10], 0, 100000));
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void testSingleWriteToClosedStream() throws IOException {
         final ChunkedOutputStream out = new ChunkedOutputStream(this.target);
         out.close();
-        out.write(2);
+        assertThrows(IOException.class, () -> out.write(2));
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void testBulkWriteToClosedStream() throws IOException {
         final ChunkedOutputStream out = new ChunkedOutputStream(this.target);
         out.close();
-        out.write(new byte[] {20, 20, 20, 20});
+        assertThrows(IOException.class, () -> out.write(new byte[] {20, 20, 20, 20}));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testConstructWithBadSize() {
-        final ChunkedOutputStream out = new ChunkedOutputStream(this.target, -1020);
+        assertThrows(IllegalArgumentException.class, () ->
+                new ChunkedOutputStream(this.target, -1020)
+        );
     }
 }
