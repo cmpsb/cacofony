@@ -102,7 +102,7 @@ public class ConnectionHandler {
             } else {
                 logger.error("I/O exception while serving a client: ", ex);
             }
-        } catch (final RuntimeException ex) {
+        } catch (final Exception ex) {
             logger.error("Fatal exception: ", ex);
             throw ex;
         }
@@ -132,7 +132,6 @@ public class ConnectionHandler {
             Host host = this.defaultHost;
 
             try {
-                final long start = System.nanoTime();
                 request = this.parser.parse(in);
                 request.setPort(port);
                 request.setScheme(scheme);
@@ -146,10 +145,6 @@ public class ConnectionHandler {
                     // "Unpack" an exception raised through reflection calls.
                     throw ex.getCause();
                 }
-
-                final long time = System.nanoTime() - start;
-                final double satisfactionIndex = 600_000_000.0 / time * 100.0;
-                response.setHeader("X-Satisfaction-Index", satisfactionIndex + "%");
 
                 host.getResponsePreparer().prepare(request, response);
             } catch (final SilentException ex) {
