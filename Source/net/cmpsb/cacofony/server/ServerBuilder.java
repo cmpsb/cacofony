@@ -10,7 +10,6 @@ import net.cmpsb.cacofony.mime.MimeParser;
 import net.cmpsb.cacofony.templating.DummyTemplatingService;
 import net.cmpsb.cacofony.templating.TemplatingService;
 
-import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLServerSocketFactory;
 import java.util.Set;
 
@@ -28,7 +27,8 @@ public class ServerBuilder {
     /**
      * The server socket factory.
      */
-    private ServerSocketFactory socketFactory = SSLServerSocketFactory.getDefault();
+    private SSLServerSocketFactory socketFactory =
+            (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 
     /**
      * The server listener factory.
@@ -61,7 +61,7 @@ public class ServerBuilder {
      *
      * @param socketFactory the socket factory
      */
-    public void setSocketFactory(final ServerSocketFactory socketFactory) {
+    public void setSocketFactory(final SSLServerSocketFactory socketFactory) {
         this.socketFactory = socketFactory;
     }
 
@@ -89,7 +89,7 @@ public class ServerBuilder {
 
         this.resolver.add(ServerSettings.class, this.settings);
         this.resolver.addFactory(ServerProperties.class, r -> ServerProperties.load());
-        this.resolver.add(ServerSocketFactory.class, this.socketFactory);
+        this.resolver.add(SSLServerSocketFactory.class, this.socketFactory);
         this.resolver.implement(ListenerFactory.class, this.listenerFactory);
 
         this.resolver.implementDefault(TemplatingService.class, DummyTemplatingService.class);

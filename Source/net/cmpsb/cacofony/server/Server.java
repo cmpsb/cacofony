@@ -135,7 +135,8 @@ public class Server {
 
         final ListenerFactory factory = this.resolver.get(ListenerFactory.class);
         for (final Port port : this.settings.getPorts()) {
-            factory.boot(port);
+            final Listener listener = factory.build(port);
+            new Thread(listener).start();
         }
 
         this.idle = false;

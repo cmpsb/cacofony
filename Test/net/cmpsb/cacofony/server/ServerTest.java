@@ -95,12 +95,14 @@ public class ServerTest {
          * @throws IOException if an I/O error occurs
          */
         @Override
-        public void boot(final Port port) throws IOException {
+        public Listener build(final Port port) throws IOException {
             if (!this.expectedPorts.contains(port)) {
                 fail("Unexpected port " + port);
             }
 
             this.expectedPorts.remove(port);
+
+            return null;
         }
 
         public void verify() {

@@ -1,6 +1,6 @@
 package net.cmpsb.cacofony.server;
 
-import javax.net.ServerSocketFactory;
+import javax.net.ssl.SSLServerSocketFactory;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.concurrent.ExecutorService;
@@ -15,7 +15,7 @@ public class DefaultListenerFactory implements ListenerFactory {
     /**
      * The server socket factory to use.
      */
-    private final ServerSocketFactory factory;
+    private final SSLServerSocketFactory factory;
 
     /**
      * The connection handler to use.
@@ -33,24 +33,26 @@ public class DefaultListenerFactory implements ListenerFactory {
      * @param factory  the SSL server socket factory
      * @param handler  the connection handler to direct the listeners to
      */
-    public DefaultListenerFactory(final ServerSocketFactory factory,
+    public DefaultListenerFactory(final SSLServerSocketFactory factory,
                                   final ConnectionHandler handler) {
         this.factory = factory;
         this.handler = handler;
     }
 
     /**
-     * Boots a listener listening on a port.
+     * Builds a listener listening on a port.
      *
      * @param port the port
      *
+     * @return the listener
+     *
      * @throws IOException if an I/O error occurs
      */
-    public void boot(final Port port) throws IOException {
+    public Listener build(final Port port) throws IOException {
         if (port.isSecure()) {
-            this.bootSecure(port);
+            return this.bootSecure(port);
         } else {
-            this.bootInsecure(port);
+            return this.bootInsecure(port);
         }
     }
 
@@ -59,14 +61,13 @@ public class DefaultListenerFactory implements ListenerFactory {
      *
      * @param port the port the listener should watch
      *
+     * @return the listener
+     *
      * @throws IOException if an I/O error occurs
      */
-    private void bootInsecure(final Port port) throws IOException {
+    private Listener bootInsecure(final Port port) throws IOException {
         final ServerSocket socket = new ServerSocket(port.getPort());
-        final Listener listener = new Listener(socket, this.executor, this.handler, "http");
-
-        final Thread runner = new Thread(listener);
-        runner.start();
+        return new Listener(socket, this.executor, this.handler, "http");
     }
 
     /**
@@ -74,14 +75,12 @@ public class DefaultListenerFactory implements ListenerFactory {
      *
      * @param port the port the listener should watch
      *
+     * @return the listener
+     *
      * @throws IOException if an I/O error occurs
      */
-    private void bootSecure(final Port port) throws IOException {
+    private Listener bootSecure(final Port port) throws IOException {
         final ServerSocket socket = this.factory.createServerSocket(port.getPort());
-
-        final Listener listener = new Listener(socket, this.executor, this.handler, "https");
-
-        final Thread runner = new Thread(listener);
-        runner.start();
+        return new Listener(socket, this.executor, this.handler, "https");
     }
 }
