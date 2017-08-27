@@ -1,7 +1,10 @@
 package net.cmpsb.cacofony.route;
 
+import net.cmpsb.cacofony.controller.Controller;
 import net.cmpsb.cacofony.http.request.HeaderValueParser;
 import net.cmpsb.cacofony.http.request.Method;
+import net.cmpsb.cacofony.http.request.Request;
+import net.cmpsb.cacofony.http.response.Response;
 import net.cmpsb.cacofony.http.response.ResponseCode;
 import net.cmpsb.cacofony.http.response.file.ResourceResponse;
 import net.cmpsb.cacofony.mime.MimeGuesser;
@@ -58,40 +61,81 @@ public class ResourceFileRouteFactory extends FileRouteFactory {
         final String parameterizedPath = prefix + "/{file}";
         final CompiledPath path = this.compiler.compile(parameterizedPath, Ob.map("file", ".+"));
 
-        final RouteAction action = this.createAction(jar, base);
+        final Controller controller = new ResourceFileController(jar, base);
+        final java.lang.reflect.Method method;
+        try {
+             method = ResourceFileController.class.getMethod("handle", Request.class);
+        } catch (final NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
 
         final List<Method> methods = Arrays.asList(Method.GET, Method.HEAD);
         final List<MimeType> mimeTypes = Collections.singletonList(MimeType.any());
 
-        return new RoutingEntry(name, path, action, methods, mimeTypes);
+        return new RoutingEntry(name, path, controller, method, methods, mimeTypes);
     }
 
     /**
-     * Generates a routing action that should serve a file.
-     *
-     * @param jar  the class representing the jar containing the resources
-     * @param base the base directory for the resources
-     *
-     * @return an action capable of serving a file
+     * The virtual controller to serve these routes.
      */
-    private RouteAction createAction(final Class<?> jar, final String base) {
-        final long modificationDate = Instant.now().toEpochMilli();
+    private class ResourceFileController extends Controller {
+        /**
+         * The base directory for the resources.
+         */
+        private final String base;
 
-        return request -> {
-            final String file = base + '/' + request.getPathParameter("file");
+        /**
+         * The jar containing the resources.
+         */
+        private final Class<?> jar;
 
-            final ResourceResponse response = new ResourceResponse(jar, file, modificationDate);
+        /**
+         * The MIME guesser to use.
+         */
+        private final MimeGuesser mimeGuesser;
+
+        /**
+         * The file's modification date.
+         */
+        private final long modificationDate;
+
+        /**
+         * Creates a new file resource controller.
+         *
+         * @param jar the jar containing the resources
+         * @param base the base directory for the resources
+         */
+        ResourceFileController(final Class<?> jar, final String base) {
+            this.base = base;
+            this.jar = jar;
+
+            this.modificationDate = Instant.now().toEpochMilli();
+            this.mimeGuesser = ResourceFileRouteFactory.this.mimeGuesser;
+        }
+
+        /**
+         * Handles the request.
+         *
+         * @param request the request
+         *
+         * @return the response
+         */
+        public Response handle(final Request request) {
+            final String file = this.base + '/' + request.getPathParameter("file");
+
+            final ResourceResponse response =
+                    new ResourceResponse(this.jar, file, this.modificationDate);
 
             // Guess and set the content type too.
-            response.setContentType(this.mimeGuesser.guessLocal(jar, file));
+            response.setContentType(this.mimeGuesser.guessLocal(this.jar, file));
 
             // If the client indicates it may have cached the file and it actually did,
             // reply Not Modified.
-            if (this.can304(request, response)) {
+            if (ResourceFileRouteFactory.this.can304(request, response)) {
                 response.setStatus(ResponseCode.NOT_MODIFIED);
             }
 
             return response;
-        };
+        }
     }
 }

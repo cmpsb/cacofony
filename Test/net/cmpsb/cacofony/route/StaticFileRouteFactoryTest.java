@@ -57,7 +57,7 @@ public class StaticFileRouteFactoryTest {
         final MutableRequest request = new MutableRequest(Method.GET, "/dir/" + path, 1, 1);
         request.setPathParameters(Collections.singletonMap("file", path));
 
-        final FileResponse response = (FileResponse) entry.getAction().handle(request);
+        final FileResponse response = (FileResponse) entry.invoke(request);
 
         assertThat(response).isNotNull();
         assertThat(response.getStatus()).as("status").isEqualTo(ResponseCode.OK);
@@ -88,7 +88,7 @@ public class StaticFileRouteFactoryTest {
         request.setPathParameters(Collections.singletonMap("file", path));
         request.getHeaders().put("if-none-match", Collections.singletonList(etag));
 
-        final FileResponse response = (FileResponse) entry.getAction().handle(request);
+        final FileResponse response = (FileResponse) entry.invoke(request);
 
         assertThat(response).isNotNull();
         assertThat(response.getStatus()).as("status").isEqualTo(ResponseCode.NOT_MODIFIED);
@@ -105,7 +105,7 @@ public class StaticFileRouteFactoryTest {
         final MutableRequest request = new MutableRequest(Method.GET, "/dir/" + path, 1, 1);
         request.setPathParameters(Collections.singletonMap("file", path));
 
-        assertThrows(NotFoundException.class, () -> entry.getAction().handle(request));
+        assertThrows(NotFoundException.class, () -> entry.invoke(request));
     }
 
     @Test
@@ -115,7 +115,7 @@ public class StaticFileRouteFactoryTest {
         final MutableRequest request = new MutableRequest(Method.GET, "/dir/" + path, 1, 1);
         request.setPathParameters(Collections.singletonMap("file", path));
 
-        assertThrows(NotFoundException.class, () -> entry.getAction().handle(request));
+        assertThrows(NotFoundException.class, () -> entry.invoke(request));
     }
 
     private Path cwd() {

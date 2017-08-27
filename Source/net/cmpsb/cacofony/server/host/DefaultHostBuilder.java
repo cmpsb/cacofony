@@ -1,7 +1,9 @@
 package net.cmpsb.cacofony.server.host;
 
+import net.cmpsb.cacofony.controller.Controller;
 import net.cmpsb.cacofony.di.DependencyResolver;
 import net.cmpsb.cacofony.http.request.Method;
+import net.cmpsb.cacofony.http.request.Request;
 import net.cmpsb.cacofony.http.response.EmptyResponse;
 import net.cmpsb.cacofony.http.response.Response;
 import net.cmpsb.cacofony.http.response.ResponseCode;
@@ -44,16 +46,21 @@ public class DefaultHostBuilder extends HostBuilder {
     public Host build() {
         final Host host = new Host("*", this.resolver);
 
+        final Controller controller = new NotFoundController();
+        final java.lang.reflect.Method method;
+        try {
+            method = NotFoundController.class.getMethod("handle", Request.class);
+        } catch (final NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+
         final Pattern anyPattern = Pattern.compile("(?<PATH>.*)(?<QUERY>.*)");
         final CompiledPath path = new CompiledPath("", anyPattern, Collections.emptyList());
         final RoutingEntry entry = new RoutingEntry(
             "catch_all",
             path,
-            request -> {
-                final Response response = new EmptyResponse(ResponseCode.NOT_FOUND);
-                response.setContentType(MimeType.text());
-                return response;
-            },
+            controller,
+            method,
             Arrays.asList(Method.values()),
             Collections.singletonList(MimeType.any())
         );
@@ -61,5 +68,23 @@ public class DefaultHostBuilder extends HostBuilder {
         host.getRouter().addRoute(entry);
 
         return host;
+    }
+
+    /**
+     * The controller responding Not Found to any request.
+     */
+    public class NotFoundController extends Controller {
+        /**
+         * Handles any request and replies a 404.
+         *
+         * @param request the request
+         *
+         * @return a Not Found response
+         */
+        public Response handle(final Request request) {
+            final Response response = new EmptyResponse(ResponseCode.NOT_FOUND);
+            response.setContentType(MimeType.text());
+            return response;
+        }
     }
 }

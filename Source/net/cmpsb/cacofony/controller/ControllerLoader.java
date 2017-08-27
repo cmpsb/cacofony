@@ -2,14 +2,12 @@ package net.cmpsb.cacofony.controller;
 
 import net.cmpsb.cacofony.di.DependencyResolver;
 import net.cmpsb.cacofony.http.request.Method;
-import net.cmpsb.cacofony.http.response.Response;
 import net.cmpsb.cacofony.mime.MimeParser;
 import net.cmpsb.cacofony.mime.MimeType;
 import net.cmpsb.cacofony.route.CompiledPath;
 import net.cmpsb.cacofony.route.PathCompiler;
 import net.cmpsb.cacofony.route.Requirement;
 import net.cmpsb.cacofony.route.Route;
-import net.cmpsb.cacofony.route.RouteAction;
 import net.cmpsb.cacofony.route.Router;
 import net.cmpsb.cacofony.route.RoutingEntry;
 import org.reflections.Reflections;
@@ -92,14 +90,12 @@ public class ControllerLoader {
      * @param type   the controller type
      * @param <T>    the controller type
      */
-    public <T> void load(final String prefix, final Class<T> type) {
-        final Object controller = this.dependencyResolver.get(type);
+    public <T extends Controller> void load(final String prefix, final Class<T> type) {
+        final Controller controller = this.dependencyResolver.get(type);
 
         for (final java.lang.reflect.Method method : type.getMethods()) {
             for (Route annotation : method.getAnnotationsByType(Route.class)) {
-                this.mapSingle(prefix,
-                               request -> (Response) method.invoke(controller, request),
-                               annotation);
+                this.mapSingle(prefix, controller, method, annotation);
             }
         }
     }
@@ -109,10 +105,14 @@ public class ControllerLoader {
      * An action may have multiple routes, this loads only one.
      *
      * @param prefix the path prefix the controllers fall under
+     * @param controller the controller instance
      * @param method the action itself
      * @param route  the one annotation to map
      */
-    private void mapSingle(final String prefix, final RouteAction method, final Route route) {
+    private void mapSingle(final String prefix,
+                           final Controller controller,
+                           final java.lang.reflect.Method method,
+                           final Route route) {
         final Map<String, String> requirements = new HashMap<>();
         for (final Requirement requirement : route.requirements()) {
             requirements.put(requirement.name(), requirement.regex());
@@ -126,7 +126,8 @@ public class ControllerLoader {
 
         final List<Method> methods = Arrays.asList(route.methods());
 
-        final RoutingEntry entry = new RoutingEntry(route.name(), path, method, methods, types);
+        final RoutingEntry entry =
+                new RoutingEntry(route.name(), path, controller, method, methods, types);
 
         this.router.addRoute(entry);
     }

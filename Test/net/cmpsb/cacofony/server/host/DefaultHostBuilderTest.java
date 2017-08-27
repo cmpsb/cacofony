@@ -45,7 +45,7 @@ public class DefaultHostBuilderTest {
 
         final RoutingEntry entry = addedEntries.get(0);
 
-        final Response response = entry.getAction().handle(new MutableRequest());
+        final Response response = (Response) entry.invoke(new MutableRequest());
 
         assertThat(response.getStatus()).as("status").isEqualTo(ResponseCode.NOT_FOUND);
     }

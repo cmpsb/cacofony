@@ -1,8 +1,10 @@
 package net.cmpsb.cacofony.route;
 
+import net.cmpsb.cacofony.controller.Controller;
 import net.cmpsb.cacofony.http.request.Method;
 import net.cmpsb.cacofony.mime.MimeType;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Objects;
 
@@ -23,9 +25,14 @@ public class RoutingEntry implements Comparable<RoutingEntry> {
     private final CompiledPath path;
 
     /**
-     * The action to call when the route matches.
+     * The controller to invoke the method upon.
      */
-    private final RouteAction action;
+    private final Controller controller;
+
+    /**
+     * The method to call when the route matches.
+     */
+    private final java.lang.reflect.Method method;
 
     /**
      * The HTTP method this route accepts.
@@ -42,18 +49,21 @@ public class RoutingEntry implements Comparable<RoutingEntry> {
      *
      * @param name         the entry's programmer-friendly name
      * @param path         the route path
-     * @param action       the function to call when the route matches
+     * @param controller   the controller to invoke the method upon
+     * @param method       the function to call when the route matches
      * @param methods      the HTTP methods this route serves
      * @param contentTypes the MIME types the route can serve
      */
     public RoutingEntry(final String name,
                         final CompiledPath path,
-                        final RouteAction action,
+                        final Controller controller,
+                        final java.lang.reflect.Method method,
                         final List<Method> methods,
                         final List<MimeType> contentTypes) {
         this.name = name;
         this.path = path;
-        this.action = action;
+        this.controller = controller;
+        this.method = method;
         this.methods = methods;
         this.contentTypes = contentTypes;
     }
@@ -73,10 +83,19 @@ public class RoutingEntry implements Comparable<RoutingEntry> {
     }
 
     /**
-     * @return the action to call if the route matches
+     * Returns the controller to invoke the method upon.
+     *
+     * @return the controller to invoke the method upon
      */
-    public RouteAction getAction() {
-        return this.action;
+    public Controller getController() {
+        return this.controller;
+    }
+
+    /**
+     * @return the method to call if the route matches
+     */
+    public java.lang.reflect.Method getMethod() {
+        return this.method;
     }
 
     /**
@@ -91,6 +110,31 @@ public class RoutingEntry implements Comparable<RoutingEntry> {
      */
     public List<MimeType> getContentTypes() {
         return this.contentTypes;
+    }
+
+    /**
+     * Invokes the routing entry with the given arguments.
+     *
+     * @param args the method arguments
+     *
+     * @return the response
+     *
+     * @throws Exception any exception
+     */
+    public Object invoke(final Object... args) throws Exception {
+        try {
+            return this.method.invoke(this.controller, args);
+        } catch (final InvocationTargetException ex) {
+
+            // Unpack the cause if there is a valid one.
+            // Throwables are skipped to prevent having to modify the entire invocation chain.
+            final Throwable cause = ex.getCause();
+            if (cause instanceof Exception) {
+                throw (Exception) cause;
+            }
+
+            throw ex;
+        }
     }
 
     /**
@@ -110,7 +154,8 @@ public class RoutingEntry implements Comparable<RoutingEntry> {
 
         return Objects.equals(this.path, otherEntry.path)
             && Objects.equals(this.name, otherEntry.name)
-            && Objects.equals(this.action, otherEntry.action)
+            && Objects.equals(this.controller, otherEntry.controller)
+            && Objects.equals(this.method, otherEntry.method)
             && Objects.equals(this.methods, otherEntry.methods)
             && Objects.equals(this.contentTypes, otherEntry.contentTypes);
     }
@@ -122,7 +167,9 @@ public class RoutingEntry implements Comparable<RoutingEntry> {
      */
     @Override
     public final int hashCode() {
-        return Objects.hash(this.path, this.name, this.action, this.methods, this.contentTypes);
+        return Objects.hash(
+                this.path, this.name, this.controller, this.method, this.methods, this.contentTypes
+        );
     }
 
     /**

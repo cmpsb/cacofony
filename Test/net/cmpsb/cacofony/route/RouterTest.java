@@ -1,10 +1,12 @@
 package net.cmpsb.cacofony.route;
 
+import net.cmpsb.cacofony.controller.Controller;
 import net.cmpsb.cacofony.http.cookie.CookieParser;
 import net.cmpsb.cacofony.http.exception.NotFoundException;
 import net.cmpsb.cacofony.http.request.Method;
 import net.cmpsb.cacofony.http.request.MutableRequest;
 import net.cmpsb.cacofony.http.request.QueryStringParser;
+import net.cmpsb.cacofony.http.request.Request;
 import net.cmpsb.cacofony.http.request.RequestPreparer;
 import net.cmpsb.cacofony.http.response.EmptyResponse;
 import net.cmpsb.cacofony.http.response.Response;
@@ -19,6 +21,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,7 +42,8 @@ public class RouterTest {
         final CookieParser cookieParser = new CookieParser(urlCodec);
         final QueryStringParser queryStringParser = new QueryStringParser();
         final RequestPreparer preparer = new RequestPreparer(cookieParser, queryStringParser);
-        this.router = new Router(parser, preparer);
+        final ActionInvoker invoker = new ActionInvoker();
+        this.router = new Router(parser, preparer, invoker);
     }
 
     @Test
@@ -102,8 +106,9 @@ public class RouterTest {
 
         final RouteAction action = request -> new EmptyResponse();
 
-        final RoutingEntry entry = new RoutingEntry(
-            "test", path, action, Collections.singletonList(Method.GET), Collections.emptyList()
+        final RoutingEntry entry = this.createEntry(
+                "test", path, "emptyAction", Collections.singletonList(Method.GET),
+                Collections.emptyList()
         );
 
         this.router.addRoute(entry);
@@ -113,22 +118,18 @@ public class RouterTest {
         final PathCompiler compiler = new PathCompiler();
         final CompiledPath path = compiler.compile("/", Ob.map());
 
-        final RouteAction getTextAction = request -> new TextResponse("get text");
-        final RouteAction putTextAction = request -> new TextResponse("put text");
-        final RouteAction getMpegAction = request -> new TextResponse("get mpeg");
-
-        final RoutingEntry getTextEntry = new RoutingEntry(
-                "test_get_text", path, getTextAction, Collections.singletonList(Method.GET),
+        final RoutingEntry getTextEntry = this.createEntry(
+                "test_get_text", path, "getTextAction", Collections.singletonList(Method.GET),
                 Collections.singletonList(MimeType.text())
         );
 
-        final RoutingEntry putTextEntry = new RoutingEntry(
-                "test_put_text", path, putTextAction, Collections.singletonList(Method.PUT),
+        final RoutingEntry putTextEntry = this.createEntry(
+                "test_put_text", path, "putTextAction", Collections.singletonList(Method.PUT),
                 Collections.singletonList(MimeType.text())
         );
 
-        final RoutingEntry getMpegEntry = new RoutingEntry(
-                "test_get_mpeg", path, getMpegAction, Collections.singletonList(Method.GET),
+        final RoutingEntry getMpegEntry = this.createEntry(
+                "test_get_mpeg", path, "getMpegAction", Collections.singletonList(Method.GET),
                 Collections.singletonList(new MimeType("audio", "mpeg"))
         );
 
@@ -143,13 +144,49 @@ public class RouterTest {
         final PathCompiler compiler = new PathCompiler();
         final CompiledPath helloPath = compiler.compile("/hello/{name}", Ob.map("name", ".+"));
 
-        final RouteAction helloAction = request -> new TextResponse("hello");
-
-        final RoutingEntry helloEntry = new RoutingEntry(
-            "test_hello", helloPath, helloAction, Arrays.asList(Method.GET, Method.POST),
-            Collections.singletonList(MimeType.text())
+        final RoutingEntry helloEntry = this.createEntry(
+                "test_hello", helloPath, "helloAction", Arrays.asList(Method.GET, Method.POST),
+                Collections.singletonList(MimeType.text())
         );
 
         this.router.addRoute(helloEntry);
+    }
+
+    private RoutingEntry createEntry(final String name,
+                                     final CompiledPath path,
+                                     final String route,
+                                     final List<Method> methods,
+                                     final List<MimeType> contentTypes) {
+        final Controller controller = new TestController();
+        final java.lang.reflect.Method method;
+        try {
+            method = TestController.class.getMethod(route, Request.class);
+        } catch (final NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+
+        return new RoutingEntry(name, path, controller, method, methods, contentTypes);
+    }
+
+    private class TestController extends Controller {
+        public Response getTextAction(final Request request) {
+            return new TextResponse("get text");
+        }
+
+        public Response putTextAction(final Request request) {
+            return new TextResponse("put text");
+        }
+
+        public Response getMpegAction(final Request request) {
+            return new TextResponse("get mpeg");
+        }
+
+        public Response emptyAction(final Request request) {
+            return new EmptyResponse();
+        }
+
+        public Response helloAction(final Request request) {
+            return new TextResponse("hello");
+        }
     }
 }
