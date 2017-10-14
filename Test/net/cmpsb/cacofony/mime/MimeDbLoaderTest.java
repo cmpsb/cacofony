@@ -1,8 +1,7 @@
 package net.cmpsb.cacofony.mime;
 
-import net.cmpsb.cacofony.util.Ob;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -10,9 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for the standard MIME DB loader.
@@ -23,7 +20,7 @@ public class MimeDbLoaderTest {
     private MimeDbLoader loader;
     private Map<String, MimeType> db;
 
-    @Before
+    @BeforeEach
     public void before() {
         this.loader = new MimeDbLoader(new StrictMimeParser());
         this.db = new HashMap<>();
@@ -34,9 +31,7 @@ public class MimeDbLoaderTest {
         final InputStream file = this.stream("audio/sounds sounds");
         this.loader.load(file, this.db::put);
 
-        assertThat("The DB contains the right association.",
-                   this.db.get("sounds"),
-                   is(equalTo(new MimeType("audio", "sounds"))));
+        assertThat(this.db).containsEntry("sounds", new MimeType("audio", "sounds"));
     }
 
     @Test
@@ -46,17 +41,10 @@ public class MimeDbLoaderTest {
 
         final MimeType expected = new MimeType("audio", "visual");
 
-        assertThat("The DB contains the first extension.",
-                   this.db.get("eyes"),
-                   is(equalTo(expected)));
-
-        assertThat("The DB contains the second extension.",
-                   this.db.get("ears"),
-                   is(equalTo(expected)));
-
-        assertThat("The DB contains the third extension.",
-                   this.db.get("nose"),
-                   is(equalTo(expected)));
+        assertThat(this.db)
+                .containsEntry("eyes", expected)
+                .containsEntry("ears", expected)
+                .containsEntry("nose", expected);
     }
 
     @Test
@@ -64,9 +52,7 @@ public class MimeDbLoaderTest {
         final InputStream file = this.stream("# Test content for testing!");
         this.loader.load(file, this.db::put);
 
-        assertThat("The DB is empty.",
-                   this.db.isEmpty(),
-                   is(true));
+        assertThat(this.db).isEmpty();
     }
 
     @Test
@@ -74,9 +60,7 @@ public class MimeDbLoaderTest {
         final InputStream file = this.stream("type/without-extension");
         this.loader.load(file, this.db::put);
 
-        assertThat("The DB is empty.",
-                this.db.isEmpty(),
-                is(true));
+        assertThat(this.db).isEmpty();
     }
 
     @Test
@@ -87,32 +71,19 @@ public class MimeDbLoaderTest {
           + "application/first-type first 1st\n"
           + "# comment/type aww\n"
           + "extension-less/type\n"
-          + "application/second-type second"
+          + "text/second-type second"
         );
 
         this.loader.load(file, this.db::put);
 
-        assertThat("The DB is not empty.",
-                   this.db.isEmpty(),
-                   is(false));
+        final MimeType firstType = new MimeType("application", "first-type");
+        final MimeType secondType = new MimeType("text", "second-type");
 
-        assertThat("The first key is correct.",
-                   this.db.get("first"),
-                   is(equalTo(new MimeType("application", "first-type"))));
-
-        assertThat("The second key is correct.",
-                   this.db.get("1st"),
-                   is(equalTo(new MimeType("application", "first-type"))));
-
-        assertThat("The third key is correct.",
-                   this.db.get("second"),
-                   is(equalTo(new MimeType("application", "second-type"))));
-
-        this.db.keySet().removeAll(Ob.set("first", "1st", "second"));
-
-        assertThat("After removing all extensions that should have been present, the DB is empty.",
-                   this.db.isEmpty(),
-                   is(true));
+        assertThat(this.db)
+                .hasSize(3)
+                .containsEntry("first", firstType)
+                .containsEntry("1st", firstType)
+                .containsEntry("second", secondType);
     }
 
     private InputStream stream(final String contents) {

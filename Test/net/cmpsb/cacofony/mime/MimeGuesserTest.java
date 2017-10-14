@@ -2,8 +2,8 @@ package net.cmpsb.cacofony.mime;
 
 import com.j256.simplemagic.ContentInfoUtil;
 import net.cmpsb.cacofony.server.Server;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -11,9 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for the MIME guesser.
@@ -23,7 +21,7 @@ import static org.hamcrest.Matchers.is;
 public class MimeGuesserTest {
     private MimeGuesser guesser;
 
-    @Before
+    @BeforeEach
     public void before() {
         final MimeParser mimeParser = new StrictMimeParser();
         final MimeDb mimeDb = new MimeDb();
@@ -46,9 +44,7 @@ public class MimeGuesserTest {
 
         final MimeType type = this.guesser.guessLocal(path);
 
-        assertThat("The file is correctly read text/html.",
-                   type,
-                   is(equalTo(MimeType.html())));
+        assertThat(type).isEqualTo(MimeType.html());
 
         Files.delete(path);
     }
@@ -58,9 +54,7 @@ public class MimeGuesserTest {
         final Path path = Paths.get("J:\\test.txt");
         final MimeType type = this.guesser.guessLocal(path);
 
-        assertThat("The file was lazily guessed as text/plain.",
-                   type,
-                   is(equalTo(MimeType.text())));
+        assertThat(type).isEqualTo(MimeType.text());
     }
 
     @Test
@@ -73,9 +67,7 @@ public class MimeGuesserTest {
 
         final MimeType type = this.guesser.guessLocal(path);
 
-        assertThat("The guesser gave up and returned application/octet-stream.",
-                   type,
-                   is(equalTo(MimeType.octetStream())));
+        assertThat(type).isEqualTo(MimeType.octetStream());
 
         Files.delete(path);
     }
@@ -85,9 +77,7 @@ public class MimeGuesserTest {
         final String location = "/net/cmpsb/cacofony/test/json.json";
         final MimeType type = this.guesser.guessLocal(Server.class, location);
 
-        assertThat("The type is correct.",
-                   type,
-                   is(equalTo(new MimeType("application", "json"))));
+        assertThat(type).isEqualTo(new MimeType("application", "json"));
     }
 
     @Test
@@ -95,9 +85,7 @@ public class MimeGuesserTest {
         final String location = "/net/cmpsb/cacofony/test/i";
         final MimeType type = this.guesser.guessLocal(Server.class, location);
 
-        assertThat("The type is correct.",
-                   type,
-                   is(equalTo(new MimeType("image", "x-ms-bmp"))));
+        assertThat(type).isEqualTo(new MimeType("image", "x-ms-bmp"));
     }
 
     @Test
@@ -105,8 +93,6 @@ public class MimeGuesserTest {
         final String location = "/net/cmpsb/cacofony/test/nmn";
         final MimeType type = this.guesser.guessLocal(Server.class, location);
 
-        assertThat("The type is application/octet-stream.",
-                   type,
-                   is(equalTo(MimeType.octetStream())));
+        assertThat(type).isEqualTo(MimeType.octetStream());
     }
 }

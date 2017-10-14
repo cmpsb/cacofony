@@ -1,8 +1,11 @@
 package net.cmpsb.cacofony.route;
 
+import net.cmpsb.cacofony.controller.Controller;
 import net.cmpsb.cacofony.http.exception.NotFoundException;
 import net.cmpsb.cacofony.http.request.HeaderValueParser;
 import net.cmpsb.cacofony.http.request.Method;
+import net.cmpsb.cacofony.http.request.Request;
+import net.cmpsb.cacofony.http.response.Response;
 import net.cmpsb.cacofony.http.response.file.FileResponse;
 import net.cmpsb.cacofony.http.response.ResponseCode;
 import net.cmpsb.cacofony.http.response.file.RangeParser;
@@ -89,29 +92,71 @@ public class StaticFileRouteFactory extends FileRouteFactory {
         final String parameterizedPath = prefix + "/{file}";
         final CompiledPath path = this.compiler.compile(parameterizedPath, Ob.map("file", ".+"));
 
-        final RouteAction action = this.createAction(absDir);
+        final Controller controller = new FileController(absDir);
+        final java.lang.reflect.Method method;
+        try {
+            method = FileController.class.getMethod("handle", Request.class);
+        } catch (final NoSuchMethodException ex) {
+            throw new RuntimeException(ex);
+        }
 
         final List<Method> methods = Arrays.asList(Method.GET, Method.HEAD);
         final List<MimeType> mimeTypes = Collections.singletonList(MimeType.any());
 
-        return new RoutingEntry(name, path, action, methods, mimeTypes);
+        return new RoutingEntry(name, path, controller, method, methods, mimeTypes);
     }
 
     /**
-     * Generates a routing action that should serve a file.
-     *
-     * @param localDir the local directory the files should be in
-     *
-     * @return an action capable of serving a file
+     * The virtual controller serving these files.
      */
-    private RouteAction createAction(final Path localDir) {
-        return request -> {
+    private class FileController extends Controller {
+        /**
+         * The local directory the files should be in.
+         */
+        private final Path localDir;
+
+        /**
+         * The header value parser.
+         */
+        private final HeaderValueParser valueParser;
+
+        /**
+         * The Range header parser.
+         */
+        private final RangeParser rangeParser;
+
+        /**
+         * The MIME guesser.
+         */
+        private final MimeGuesser mimeGuesser;
+
+        /**
+         * Creates a new virtual file controller.
+         *
+         * @param localDir the local directory the files should be in
+         */
+        FileController(final Path localDir) {
+            this.localDir = localDir;
+
+            this.valueParser = StaticFileRouteFactory.this.valueParser;
+            this.rangeParser = StaticFileRouteFactory.this.rangeParser;
+            this.mimeGuesser = StaticFileRouteFactory.this.mimeGuesser;
+        }
+
+        /**
+         * Handles the request.
+         *
+         * @param request the request
+         *
+         * @return the response
+         */
+        public Response handle(final Request request) {
             try {
-                final Path file = localDir.resolve(request.getPathParameter("file"));
+                final Path file = this.localDir.resolve(request.getPathParameter("file"));
 
                 // If the request attempts to traverse the directory tree or if the file just
                 // doesn't exist reply Not Found.
-                if (!file.startsWith(localDir) || !Files.exists(file)) {
+                if (!file.startsWith(this.localDir) || !Files.exists(file)) {
                     throw new NotFoundException();
                 }
 
@@ -126,7 +171,7 @@ public class StaticFileRouteFactory extends FileRouteFactory {
 
                 // If the client indicates it may have cached the file and it actually did,
                 // reply Not Modified.
-                if (this.can304(request, response)) {
+                if (StaticFileRouteFactory.this.can304(request, response)) {
                     response.setStatus(ResponseCode.NOT_MODIFIED);
                 }
 
@@ -135,6 +180,6 @@ public class StaticFileRouteFactory extends FileRouteFactory {
                 // If anything happens to the file during this process reply a 404 too.
                 throw new NotFoundException(ex);
             }
-        };
+        }
     }
 }

@@ -5,6 +5,9 @@ import net.cmpsb.cacofony.io.LineAwareInputStream;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A context-agnostic parser for HTTP headers.
@@ -15,13 +18,16 @@ public class HeaderParser {
     /**
      * Parses a set of headers from an input stream.
      *
-     * @param in      the stream to read the headers from
-     * @param request the request to write the headers to
+     * @param in the stream to read the headers from
+     *
+     * @return the parsed headers
      *
      * @throws IOException if an I/O error occurs while reading
      */
-    public void parse(final LineAwareInputStream in, final MutableRequest request)
+    public Map<String, List<String>> parse(final LineAwareInputStream in)
             throws IOException {
+        final Map<String, List<String>> headers = new HashMap<>();
+
         while (true) {
             final String line = in.readLine();
 
@@ -47,7 +53,9 @@ public class HeaderParser {
             }
 
             // Add it to the collection.
-            request.getHeaders().computeIfAbsent(key, k -> new ArrayList<>()).add(value);
+            headers.computeIfAbsent(key, k -> new ArrayList<>()).add(value);
         }
+
+        return headers;
     }
 }

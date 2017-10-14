@@ -1,11 +1,9 @@
 package net.cmpsb.cacofony.util;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Luc Everse
@@ -13,7 +11,7 @@ import static org.hamcrest.Matchers.is;
 public class UrlCodecTest {
     private UrlCodec codec;
 
-    @Before
+    @BeforeEach
     public void before() {
         this.codec = new UrlCodec();
     }
@@ -22,9 +20,8 @@ public class UrlCodecTest {
     public void testEncodeAllowedSpecialCookieComponent() {
         final String allowedSpecialChars = "!#$&'*+-.^_`|~";
         final String encoded = this.codec.encodeCookieComponent(allowedSpecialChars);
-        assertThat("The output is unchanged.",
-                   encoded,
-                   is(equalTo(allowedSpecialChars)));
+
+        assertThat(encoded).isEqualTo(allowedSpecialChars);
     }
 
     @Test
@@ -32,9 +29,7 @@ public class UrlCodecTest {
         final String input = "String full of spaces.";
         final String output = this.codec.encodeCookieComponent(input);
 
-        assertThat("The output is as expected.",
-                   output,
-                   is(equalTo("String%20full%20of%20spaces.")));
+        assertThat(output).isEqualTo("String%20full%20of%20spaces.");
     }
 
     @Test
@@ -42,8 +37,6 @@ public class UrlCodecTest {
         final String input = "møøse";
         final String output = this.codec.encodeCookieComponent(input);
 
-        assertThat("The output is as expected.",
-                   output,
-                   is(equalTo("m%C3%B8%C3%B8se")));
+        assertThat(output).isEqualTo("m%C3%B8%C3%B8se");
     }
 }

@@ -7,12 +7,12 @@ import net.cmpsb.cacofony.di.classes.PrivateConstructor;
 import net.cmpsb.cacofony.di.classes.PrivateDependentConstructor;
 import net.cmpsb.cacofony.di.classes.RiskyConstructor;
 import net.cmpsb.cacofony.di.classes.SimpleImplicit;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Tests for the default dependency resolver.
@@ -22,9 +22,9 @@ import static org.junit.Assert.assertNotNull;
 public class DefaultDependencyResolverTest {
     private DependencyResolver resolver;
 
-    @Before
+    @BeforeEach
     public void before() {
-        this.resolver = new DefaultDependencyResolver();
+        this.resolver = new DependencyResolver();
     }
 
     @Test
@@ -76,24 +76,30 @@ public class DefaultDependencyResolverTest {
         assertEquals(instance.getCount(), count);
     }
 
-    @Test(expected = UnresolvableDependencyException.class)
+    @Test
     public void testPrivateConstructor() {
-        this.resolver.get(PrivateConstructor.class);
+        assertThrows(UnresolvableDependencyException.class, () ->
+                this.resolver.get(PrivateConstructor.class)
+        );
     }
 
-    @Test(expected = Exception.class)
+    @Test
     public void testRiskyConstructor() {
-        this.resolver.get(RiskyConstructor.class);
+        assertThrows(Exception.class, () -> this.resolver.get(RiskyConstructor.class));
     }
 
-    @Test(expected = UnresolvableDependencyException.class)
+    @Test
     public void testPrivateDependentConstructor() {
-        this.resolver.get(PrivateDependentConstructor.class);
+        assertThrows(UnresolvableDependencyException.class, () ->
+                this.resolver.get(PrivateDependentConstructor.class)
+        );
     }
 
-    @Test(expected = UnresolvableDependencyException.class)
+    @Test
     public void testPrivateInnerClass() {
-        this.resolver.get(PrivateInnerClass.class);
+        assertThrows(UnresolvableDependencyException.class, () ->
+                this.resolver.get(PrivateInnerClass.class)
+        );
     }
 
     private class PrivateInnerClass {

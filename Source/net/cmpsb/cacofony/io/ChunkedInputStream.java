@@ -7,6 +7,8 @@ import net.cmpsb.cacofony.http.request.MutableRequest;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -378,7 +380,8 @@ public class ChunkedInputStream extends InputStream {
         // Process some of the trailing headers.
         if (size == 0) {
             this.eof = true;
-            this.headerParser.parse(this.source, this.request);
+            final Map<String, List<String>> headers = this.headerParser.parse(this.source);
+            this.request.adoptHeaders(headers);
         }
 
         // Register the just-read information and remember that at least one chunk was read.

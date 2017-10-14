@@ -1,13 +1,13 @@
 package net.cmpsb.cacofony.io;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Tests for the non-aware to line-aware input stream wrapper.
@@ -22,14 +22,14 @@ public class UnbufferedLineAwareInputStreamTest
         return new UnbufferedLineAwareInputStream(source);
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void testReadAfterClosing() throws IOException {
         final byte[] packet = {
             'T', 'e', 's', 't', '\r', '\n'
         };
         final UnbufferedLineAwareInputStream in = this.getStream(packet);
         in.close();
-        in.read();
+        assertThrows(IOException.class, () -> in.read());
     }
 
     @Test
@@ -50,9 +50,7 @@ public class UnbufferedLineAwareInputStreamTest
         final UnbufferedLineAwareInputStream in = this.getStream(packet);
         in.close();
 
-        assertThat("Marking is unsupported on a closed stream.",
-                   in.markSupported(),
-                   is(false));
+        assertThat(in.markSupported()).isFalse();
     }
 
     @Test
@@ -70,9 +68,7 @@ public class UnbufferedLineAwareInputStreamTest
             }
         });
 
-        assertThat("Marking is supported if the source stream supports it.",
-                   in.markSupported(),
-                   is(true));
+        assertThat(in.markSupported()).isTrue();
     }
 
     @Test
@@ -90,8 +86,6 @@ public class UnbufferedLineAwareInputStreamTest
                     }
                 });
 
-        assertThat("Marking is not supported if the source stream doesn't support it.",
-                in.markSupported(),
-                is(false));
+        assertThat(in.markSupported()).isFalse();
     }
 }

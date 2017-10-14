@@ -1,11 +1,25 @@
 import java.time.ZonedDateTime
 
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0-RC3'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
+    }
+}
+
+apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'java'
 apply plugin: 'jacoco'
 apply plugin: 'checkstyle'
 apply plugin: 'maven'
+apply plugin: 'org.junit.platform.gradle.plugin'
 
-version = "0.0.5"
+version = "0.0.6"
 group = "net.cmpsb.cacofony"
 
 task generateMetadata {
@@ -59,12 +73,17 @@ repositories {
 
 dependencies {
     // Logging.
+    compile 'org.slf4j:slf4j-api:1.7.25'
+    compile 'org.slf4j:jul-to-slf4j:1.7.25'
     compile 'ch.qos.logback:logback-classic:1.1.8'
     compile 'ch.qos.logback:logback-core:1.1.8'
     compile 'org.codehaus.groovy:groovy:2.4.+'
 
     // CSV parser.
     compile 'com.opencsv:opencsv:3.9'
+
+    // Yaml.
+    compile 'org.yaml:snakeyaml:1.18'
 
     // JSON.
     compile 'com.google.code.gson:gson:2.8.+'
@@ -80,8 +99,11 @@ dependencies {
 
     // Test dependencies.
     // JUnit and matchers.
-    testCompile 'org.hamcrest:hamcrest-all:1.3'
-    testCompile 'org.junit.jupiter:junit-jupiter-api:5.0.0-M3'
+    testCompile 'org.junit.jupiter:junit-jupiter-api:5.0.0-RC3'
+    testCompile 'org.junit.jupiter:junit-jupiter-params:5.0.0-RC3'
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.0.0-RC3'
+
+    testCompile 'org.assertj:assertj-core:3.6.2'
 
     // Mockito.
     testCompile 'org.mockito:mockito-core:2.7.+'
@@ -93,25 +115,27 @@ dependencies {
 
 checkstyle {
     config = resources.text.fromFile(
-            new File(rootProject.rootDir, 'Configuration/Checkstyle/cmpsb_style.xml')
+        new File(rootProject.rootDir, 'Configuration/Checkstyle/cmpsb_style.xml')
     )
 
     toolVersion = '7.6'
 }
 
-test {
-    testLogging.showStandardStreams = true
-    testLogging.showExceptions = true
-    testLogging.showStackTraces = true
-    testLogging.showCauses = true
-
-    finalizedBy jacocoTestReport
+junitPlatform {
+    logManager 'java.util.logging.LogManager'
 }
 
-jacocoTestReport {
-    reports {
-        xml.enabled true
+afterEvaluate {
+    jacoco {
+        toolVersion = '0.7.9'
+        applyTo junitPlatformTest
     }
+
+    jacocoTestReport {
+        executionData junitPlatformTest
+    }
+
+    junitPlatformTest.finalizedBy jacocoTestReport
 }
 
 uploadArchives {

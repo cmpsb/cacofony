@@ -1,25 +1,24 @@
 package net.cmpsb.cacofony.server;
 
-import net.cmpsb.cacofony.di.Inject;
-import net.cmpsb.cacofony.exception.ExceptionHandler;
 import net.cmpsb.cacofony.http.exception.HttpException;
 import net.cmpsb.cacofony.http.exception.SilentException;
 import net.cmpsb.cacofony.http.request.MutableRequest;
 import net.cmpsb.cacofony.http.request.Request;
 import net.cmpsb.cacofony.http.request.RequestParser;
 import net.cmpsb.cacofony.http.response.Response;
-import net.cmpsb.cacofony.http.response.ResponsePreparer;
-import net.cmpsb.cacofony.http.response.ResponseWriter;
 import net.cmpsb.cacofony.io.HttpInputStream;
 import net.cmpsb.cacofony.io.ProtectedOutputStream;
-import net.cmpsb.cacofony.route.Router;
+import net.cmpsb.cacofony.server.host.Host;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.net.Socket;
+import java.net.InetAddress;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A handler for active connections.
@@ -32,54 +31,78 @@ public class ConnectionHandler {
     /**
      * The request parser to use.
      */
-    @Inject private RequestParser parser;
+    private final RequestParser parser;
 
     /**
-     * The router to run requests through.
+     * The hosts to serve.
      */
-    @Inject private Router router;
+    private final Map<String, Host> hosts = new HashMap<>();
 
     /**
-     * The response preparer to use.
+     * The default host if none matched.
      */
-    @Inject private ResponsePreparer preparer;
+    private Host defaultHost;
 
     /**
-     * The request writer to use.
+     * Creates a new connection handler.
+     *
+     * @param parser the request parser to use
      */
-    @Inject private ResponseWriter writer;
+    public ConnectionHandler(final RequestParser parser) {
+        this.parser = parser;
+    }
 
     /**
-     * The exception handler to use.
+     * Sets the default host.
+     *
+     * @param host the host
      */
-    @Inject private ExceptionHandler exceptionHandler;
+    public void setDefaultHost(final Host host) {
+        this.defaultHost = host;
+    }
+
+    /**
+     * Adds a host.
+     *
+     * @param host the host
+     */
+    public void addHost(final Host host) {
+        this.hosts.put(host.getName(), host);
+    }
 
     /**
      * Handles an active connection.
      *
-     * @param client the client to serve
-     * @param scheme the request scheme
+     * @param address   the client's address
+     * @param port      the TCP port
+     * @param clientIn  the client's input stream
+     * @param clientOut the client's output stream
+     * @param scheme    the request scheme
      */
-    public void handle(final Socket client, final String scheme) {
+    public void handle(final InetAddress address,
+                       final int port,
+                       final InputStream clientIn,
+                       final OutputStream clientOut,
+                       final String scheme) {
         try {
-            logger.debug("Remote {} connected.", client.getInetAddress());
+            logger.debug("Remote {} connected.", address);
 
-            final ProtectedOutputStream out = new ProtectedOutputStream(client.getOutputStream());
-            final HttpInputStream in = new HttpInputStream(client.getInputStream());
+            final ProtectedOutputStream out = new ProtectedOutputStream(clientOut);
+            final HttpInputStream in = new HttpInputStream(clientIn);
 
-            this.waitForRequest(client, out, in, scheme);
+            this.waitForRequest(address, port, out, in, scheme);
 
             out.allowClosing(true);
             out.close();
 
-            logger.debug("Remote {} disconnected.", client.getInetAddress());
+            logger.debug("Remote {} disconnected.", address);
         } catch (final IOException ex) {
             if (ex.getMessage() != null && ex.getMessage().contains("Connection reset by peer")) {
                 logger.debug("Client closed connection.");
             } else {
                 logger.error("I/O exception while serving a client: ", ex);
             }
-        } catch (final RuntimeException ex) {
+        } catch (final Exception ex) {
             logger.error("Fatal exception: ", ex);
             throw ex;
         }
@@ -88,14 +111,16 @@ public class ConnectionHandler {
     /**
      * The main request-response loop.
      *
-     * @param client the client
-     * @param out    the client's target stream
-     * @param in     the client's source stream
-     * @param scheme the URI scheme
+     * @param address the client's address
+     * @param port    the TCP port
+     * @param out     the client's target stream
+     * @param in      the client's source stream
+     * @param scheme  the URI scheme
      *
      * @throws IOException if an I/O error occurs
      */
-    private void waitForRequest(final Socket client,
+    private void waitForRequest(final InetAddress address,
+                                final int port,
                                 final OutputStream out,
                                 final HttpInputStream in,
                                 final String scheme) throws IOException {
@@ -104,41 +129,40 @@ public class ConnectionHandler {
         do {
             request = null;
             Response response;
+            Host host = this.defaultHost;
 
             try {
                 request = this.parser.parse(in);
+                request.setPort(port);
                 request.setScheme(scheme);
 
-                final long start = System.nanoTime();
+                final String hostname = request.getHost();
+                host = this.hosts.getOrDefault(hostname, this.defaultHost);
 
                 try {
-                    response = this.router.handle(request);
+                    response = host.getRouter().handle(request);
                 } catch (final InvocationTargetException ex) {
                     // "Unpack" an exception raised through reflection calls.
                     throw ex.getCause();
                 }
 
-                final long time = System.nanoTime() - start;
-                final double satisfactionIndex = 600_000_000.0 / time * 100.0;
-                response.setHeader("X-Satisfaction-Index", satisfactionIndex + "%");
-
-                this.preparer.prepare(request, response);
+                host.getResponsePreparer().prepare(request, response);
             } catch (final SilentException ex) {
                 logger.warn("Server closed connection. {}", ex.getMessage());
                 return;
             } catch (final HttpException ex) {
-                response = this.exceptionHandler.handle(request, ex);
-                this.preparer.prepare(request, response);
+                response = host.getExceptionHandler().handle(request, ex);
+                host.getResponsePreparer().prepare(request, response);
             } catch (final IOException ex) {
                 break;
             } catch (final Throwable ex) {
-                response = this.exceptionHandler.handle(request, ex);
-                this.preparer.prepare(request, response);
+                response = host.getExceptionHandler().handle(request, ex);
+                host.getResponsePreparer().prepare(request, response);
             }
 
             if (request != null) {
                 logger.info("{} \"{} {} HTTP/{}.{}\" {} {}",
-                        client.getInetAddress().getHostAddress(),
+                        address,
                         request.getMethod(),
                         request.getRawPath(),
                         request.getMajorVersion(),
@@ -147,7 +171,7 @@ public class ConnectionHandler {
                         response.getContentLength());
             }
 
-            final OutputStream stream = this.writer.write(request, response, out);
+            final OutputStream stream = host.getResponseWriter().write(request, response, out);
             stream.close();
         } while (!this.mustCloseConnection(request));
     }

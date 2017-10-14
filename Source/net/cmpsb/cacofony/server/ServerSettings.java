@@ -2,7 +2,6 @@ package net.cmpsb.cacofony.server;
 
 import net.cmpsb.cacofony.http.encoding.TransferEncoding;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -27,7 +26,7 @@ public interface ServerSettings {
      * Returns a list of allowed compression algorithms.
      * @return a list of allowed compression algorithms
      */
-    List<TransferEncoding> getCompressionAlgorithms();
+    Set<TransferEncoding> getCompressionAlgorithms();
 
     /**
      * Returns whether the server may add its name and version to each response.

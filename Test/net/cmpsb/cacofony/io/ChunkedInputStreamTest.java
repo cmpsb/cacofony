@@ -4,17 +4,16 @@ import net.cmpsb.cacofony.http.exception.BadRequestException;
 import net.cmpsb.cacofony.http.exception.SilentException;
 import net.cmpsb.cacofony.http.request.HeaderParser;
 import net.cmpsb.cacofony.http.request.MutableRequest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Collections;
 
-import static junit.framework.TestCase.fail;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests for the HTTP chunk input stream.
@@ -86,7 +85,7 @@ public class ChunkedInputStreamTest {
         'W', 'h', 'a', 't'
     };
 
-    @Before
+    @BeforeEach
     public void before() {
         this.request = new MutableRequest();
         this.headerParser = new HeaderParser();
@@ -103,9 +102,7 @@ public class ChunkedInputStreamTest {
             }
         }
 
-        assertThat("The final read returns EOF.",
-                   in.read(),
-                   is(-1));
+        assertThat(in.read()).as("next byte").isEqualTo(-1);
 
         this.validateTrailingHeaders();
     }
@@ -121,9 +118,7 @@ public class ChunkedInputStreamTest {
             }
         }
 
-        assertThat("The final read returns EOF.",
-                in.read(),
-                is(-1));
+        assertThat(in.read()).as("next byte").isEqualTo(-1);
 
         this.validateTrailingHeaders();
     }
@@ -135,13 +130,8 @@ public class ChunkedInputStreamTest {
         final byte[] data = new byte[4];
         final int length = in.read(data);
 
-        assertThat("4 bytes have been read.",
-                   length,
-                   is(4));
-
-        assertThat("The read data is the correct part of the chunk body.",
-                   data,
-                   is(equalTo(new byte[] {0, 1, 2, 3})));
+        assertThat(length).as("reported number of bytes").isEqualTo(4);
+        assertThat(data).containsExactly(0, 1, 2, 3);
     }
 
     @Test
@@ -151,13 +141,8 @@ public class ChunkedInputStreamTest {
         final byte[] data = new byte[9];
         final int length = in.read(data);
 
-        assertThat("9 bytes have been read.",
-                   length,
-                   is(9));
-
-        assertThat("The read data is correctly taken from multiple successive chunks.",
-                   data,
-                   is(equalTo(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8})));
+        assertThat(length).as("reported number of bytes").isEqualTo(9);
+        assertThat(data).containsExactly(0, 1, 2, 3, 4, 5, 6, 7, 8);
     }
 
     @Test
@@ -181,37 +166,29 @@ public class ChunkedInputStreamTest {
         // Read the data.
         final int length = in.read(data);
 
-        assertThat("The returned length is correct.",
-                   length,
-                   is(10));
-
-        assertThat("Only the given chunks are read and the data is correct.",
-                   data,
-                   is(equalTo(target)));
+        assertThat(length).as("reported number of bytes").isEqualTo(10);
+        assertThat(data).isEqualTo(target);
 
         this.validateTrailingHeaders();
 
         final int eof = in.read(data);
-
-        assertThat("Reading more returns EOF.",
-                   eof,
-                   is(-1));
+        assertThat(eof).as("last byte").isEqualTo(-1);
     }
 
-    @Test(expected = SilentException.class)
+    @Test
     public void testTruncatedChunk() throws IOException {
         final ChunkedInputStream in = this.getStream(this.truncatedChunk);
 
         final byte[] data = new byte[10];
-        in.read(data);
+        assertThrows(SilentException.class, () -> in.read(data));
     }
 
-    @Test(expected = SilentException.class)
+    @Test
     public void testTruncatedMultiChunk() throws IOException {
         final ChunkedInputStream in = this.getStream(this.truncatedMultiChunk);
 
         final byte[] data = new byte[10];
-        in.read(data);
+        assertThrows(SilentException.class, () -> in.read(data));
     }
 
     @Test
@@ -219,20 +196,13 @@ public class ChunkedInputStreamTest {
         final ChunkedInputStream in = this.getStream(this.singleChunkPacket);
 
         final long skipped = in.skip(4);
-        assertThat("4 bytes have been reported as skipped.",
-                   skipped,
-                   is(4L));
+        assertThat(skipped).as("number of bytes reported skipped").isEqualTo(4);
 
         final byte[] data = new byte[4];
         final int length = in.read(data);
 
-        assertThat("4 bytes have been read.",
-                   length,
-                   is(data.length));
-
-        assertThat("The next read returns the correct data.",
-                   data,
-                   is(equalTo(new byte[] {4, 5, 6, 7})));
+        assertThat(length).as("reported number of bytes").isEqualTo(data.length);
+        assertThat(data).containsExactly(4, 5, 6, 7);
     }
 
     @Test
@@ -240,27 +210,20 @@ public class ChunkedInputStreamTest {
         final ChunkedInputStream in = this.getStream(this.multiChunkPacket);
 
         final long skipped = in.skip(6);
-        assertThat("6 bytes have been reported as skipped.",
-                skipped,
-                is(6L));
+        assertThat(skipped).as("number of bytes reported skipped").isEqualTo(6);
 
         final byte[] data = new byte[4];
         final int length = in.read(data);
 
-        assertThat("4 bytes have been read.",
-                length,
-                is(data.length));
-
-        assertThat("The next read returns the correct data.",
-                data,
-                is(equalTo(new byte[] {6, 7, 8, 9})));
+        assertThat(length).as("reported number of bytes").isEqualTo(data.length);
+        assertThat(data).containsExactly(6, 7, 8, 9);
     }
 
-    @Test(expected = SilentException.class)
+    @Test
     public void testSkipTruncatedPacket() throws IOException {
         final ChunkedInputStream in = this.getStream(this.truncatedChunk);
 
-        final long skipped = in.skip(4);
+        assertThrows(SilentException.class, () -> in.skip(4));
     }
 
     @Test
@@ -268,83 +231,73 @@ public class ChunkedInputStreamTest {
         final ChunkedInputStream in = this.getStream(this.multiChunkPacket);
 
         final long skipped = in.skip(Long.MAX_VALUE);
-        assertThat("At least 10 bytes have been skipped.",
-                   skipped,
-                   is(greaterThanOrEqualTo(10L)));
+        assertThat(skipped).as("number of bytes reported skipped").isGreaterThanOrEqualTo(10);
 
         final long nextSkipped = in.skip(Long.MAX_VALUE);
-        assertThat("Any next skip skips 0 bytes.",
-                   nextSkipped,
-                   is(equalTo(0L)));
+        assertThat(nextSkipped).isEqualTo(0);
 
         final int nextRead = in.read();
-        assertThat("The next read returns EOF.",
-                   nextRead,
-                   is(-1));
+        assertThat(nextRead).as("last byte").isEqualTo(-1);
     }
 
     @Test
     public void testSkipNegativeBytes() throws IOException {
         final ChunkedInputStream in = this.getStream(this.singleChunkPacket);
 
-        final long skipped = in.skip(-10);
-
-        assertThat("The stream has skipped 0 bytes.",
-                   skipped,
-                   is(0L));
+        assertThat(in.skip(-10)).isEqualTo(0);
     }
 
-    @Test(expected = BadRequestException.class)
+    @Test
     public void testNegativeChunkSize() throws IOException {
         final ChunkedInputStream in = this.getStream(this.negativeChunk);
 
-        in.read();
+        assertThrows(BadRequestException.class, () -> in.read());
     }
 
-    @Test(expected = BadRequestException.class)
+    @Test
     public void testNonumericChunkSize() throws IOException {
         final ChunkedInputStream in = this.getStream(this.nonumericChunk);
 
-        in.read();
+        assertThrows(BadRequestException.class, () -> in.read());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testReadInvalidBuffer() throws IOException {
         final ChunkedInputStream in = this.getStream(this.singleChunkPacket);
 
-        in.read(null, 0, 0);
+        assertThrows(NullPointerException.class, () -> in.read(null, 0, 0));
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test
     public void testReadInvalidOffset() throws IOException {
         final ChunkedInputStream in = this.getStream(this.singleChunkPacket);
 
         final byte[] buffer = new byte[20];
-        in.read(buffer, -20, 20);
+        assertThrows(IndexOutOfBoundsException.class, () -> in.read(buffer, -20, 20));
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test
     public void testReadNegativeLength() throws IOException {
         final ChunkedInputStream in = this.getStream(this.singleChunkPacket);
 
         final byte[] buffer = new byte[20];
-        in.read(buffer, 0, -20);
+        assertThrows(IndexOutOfBoundsException.class, () -> in.read(buffer, 0, -20));
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test
     public void testReadLongLength() throws IOException {
         final ChunkedInputStream in = this.getStream(this.singleChunkPacket);
 
         final byte[] buffer = new byte[20];
-        in.read(buffer, 0, 2020);
+        assertThrows(IndexOutOfBoundsException.class, () -> in.read(buffer, 0, 2020));
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void testReadFromClosedStream() throws IOException {
         final ChunkedInputStream in = this.getStream(this.singleChunkPacket);
         in.close();
 
-        in.read();
+        assertThrows(IOException.class, () -> in.read());
     }
 
     private ChunkedInputStream getStream(final byte[] packet) throws IOException {
@@ -354,8 +307,7 @@ public class ChunkedInputStreamTest {
     }
 
     private void validateTrailingHeaders() {
-        assertThat("The request object contains the Checksum header.",
-                this.request.getHeader("Checksum"),
-                is(equalTo("14616742")));
+        assertThat(this.request.getHeaders()).as("headers")
+                .containsEntry("checksum", Collections.singletonList("14616742"));
     }
 }

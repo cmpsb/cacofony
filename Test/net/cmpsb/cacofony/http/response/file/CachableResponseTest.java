@@ -1,12 +1,11 @@
 package net.cmpsb.cacofony.http.response.file;
 
 import net.cmpsb.cacofony.server.Server;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.is;
+import java.util.Collections;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for cachable responses.
@@ -24,9 +23,9 @@ public class CachableResponseTest {
         final ResourceResponse response = new ResourceResponse(Server.class, RES, 1133);
         response.prepare(null);
 
-        assertThat("There is an ETag header.",
-                   response.getHeaders().get("ETag").size(),
-                   is(greaterThanOrEqualTo(1)));
+        assertThat(response.getHeaders().get("ETag")).as("ETag headers")
+                .isNotNull()
+                .hasAtLeastOneElementOfType(String.class);
     }
 
     @Test
@@ -34,9 +33,7 @@ public class CachableResponseTest {
         final ResourceResponse response = new ResourceResponse(Server.class, RES, Long.MAX_VALUE);
         response.prepare(null);
 
-        assertThat("There is no ETag header.",
-                   response.getHeaders().containsKey("ETag"),
-                   is(false));
+        assertThat(response.getHeaders()).as("headers").doesNotContainKey("ETag");
     }
 
     @Test
@@ -45,13 +42,10 @@ public class CachableResponseTest {
         response.setMaxAge(600);
         response.prepare(null);
 
-        assertThat("There is a Cache-Control header with the correct value.",
-                   response.getHeaders().get("Cache-Control").get(0),
-                   containsString("max-age=600"));
+        assertThat(response.getHeaders().get("Cache-Control")).as("Cache-Control header")
+            .isEqualTo(Collections.singletonList("max-age=600"));
 
-        assertThat("There is an Expires header.",
-                   response.getHeaders().containsKey("Expires"),
-                   is(true));
+        assertThat(response.getHeaders()).as("headers").containsKey("Expires");
     }
 
     @Test
@@ -60,12 +54,8 @@ public class CachableResponseTest {
         response.setMaxAge(0);
         response.prepare(null);
 
-        assertThat("There is a Cache-Control header containing at least no-cache.",
-                   response.getHeaders().get("Cache-Control").get(0),
-                   containsString("no-cache"));
-
-        assertThat("There is no Expires header.",
-                   response.getHeaders().containsKey("Expires"),
-                   is(false));
+        assertThat(response.getHeaders().get("Cache-Control")).as("Cache-Control header")
+            .hasSize(1)
+            .element(0).asString().contains("no-cache");
     }
 }

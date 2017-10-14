@@ -3,14 +3,12 @@ package net.cmpsb.cacofony.exception;
 import net.cmpsb.cacofony.http.exception.HttpException;
 import net.cmpsb.cacofony.http.response.Response;
 import net.cmpsb.cacofony.http.response.ResponseCode;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for the default exception handler.
@@ -20,7 +18,7 @@ import static org.hamcrest.Matchers.is;
 public class DefaultExceptionHandlerTest {
     private DefaultExceptionHandler handler;
 
-    @Before
+    @BeforeEach
     public void before() {
         this.handler = new DefaultExceptionHandler();
     }
@@ -31,13 +29,9 @@ public class DefaultExceptionHandlerTest {
         exception.addHeader("Exception-Test", "Exception Test");
         final Response response = this.handler.handle(null, exception);
 
-        assertThat("The response code is correct.",
-                   response.getStatus(),
-                   is(equalTo(ResponseCode.BAD_GATEWAY)));
-
-        assertThat("The header has been copied.",
-                   response.getHeaders().get("Exception-Test"),
-                   is(equalTo(Collections.singletonList("Exception Test"))));
+        assertThat(response.getStatus()).as("status").isEqualTo(ResponseCode.BAD_GATEWAY);
+        assertThat(response.getHeaders()).as("adopted headers")
+                .containsEntry("Exception-Test", Collections.singletonList("Exception Test"));
     }
 
     @Test
@@ -46,13 +40,9 @@ public class DefaultExceptionHandlerTest {
         exception.addHeader("Exception-Test", "Exception Test");
         final Response response = this.handler.handle(null, exception);
 
-        assertThat("The response code is correct.",
-                response.getStatus(),
-                is(equalTo(ResponseCode.BAD_GATEWAY)));
-
-        assertThat("The header has been copied.",
-                response.getHeaders().get("Exception-Test"),
-                is(equalTo(Collections.singletonList("Exception Test"))));
+        assertThat(response.getStatus()).as("status").isEqualTo(ResponseCode.BAD_GATEWAY);
+        assertThat(response.getHeaders()).as("adopted headers")
+                .containsEntry("Exception-Test", Collections.singletonList("Exception Test"));
     }
 
     @Test
@@ -60,9 +50,7 @@ public class DefaultExceptionHandlerTest {
         final Exception exception = new IllegalArgumentException("Bad argument!");
         final Response response = this.handler.handle(null, exception);
 
-        assertThat("The response code is 500 Internal Server Error.",
-                   response.getStatus(),
-                   is(equalTo(ResponseCode.INTERNAL_SERVER_ERROR)));
+        assertThat(response.getStatus()).as("status").isEqualTo(ResponseCode.INTERNAL_SERVER_ERROR);
     }
 
     @Test
@@ -70,8 +58,6 @@ public class DefaultExceptionHandlerTest {
         final Exception exception = new IllegalArgumentException();
         final Response response = this.handler.handle(null, exception);
 
-        assertThat("The response code is 500 Internal Server Error.",
-                response.getStatus(),
-                is(equalTo(ResponseCode.INTERNAL_SERVER_ERROR)));
+        assertThat(response.getStatus()).as("status").isEqualTo(ResponseCode.INTERNAL_SERVER_ERROR);
     }
 }

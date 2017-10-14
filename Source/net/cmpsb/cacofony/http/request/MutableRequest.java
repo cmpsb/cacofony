@@ -7,6 +7,7 @@ import net.cmpsb.cacofony.mime.MimeType;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +54,16 @@ public class MutableRequest extends Request {
      * The request scheme.
      */
     private String scheme = "";
+
+    /**
+     * The request host.
+     */
+    private String host = null;
+
+    /**
+     * The request port.
+     */
+    private int port = 0;
 
     /**
      * The major HTTP version requested.
@@ -236,13 +247,41 @@ public class MutableRequest extends Request {
      */
     @Override
     public String getHost() {
-        final List<String> values = this.getHeaders("host");
+        if (this.host == null) {
+            final List<String> values = this.getHeaders("host");
 
-        if (values == null || values.size() != 1) {
-            throw new BadRequestException("None or multiple Host headers present.");
+            if (values == null || values.size() != 1) {
+                throw new BadRequestException("None or multiple Host headers present.");
+            }
+
+            final String hostSpec = values.get(0);
+            final int colonIndex = hostSpec.indexOf(':');
+
+            if (colonIndex != -1) {
+                this.host = hostSpec.substring(0, colonIndex);
+            } else {
+                this.host = hostSpec;
+            }
         }
 
-        return values.get(0);
+        return this.host;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getPort() {
+        return this.port;
+    }
+
+    /**
+     * Sets the request port.
+     *
+     * @param port the port
+     */
+    public void setPort(final int port) {
+       this.port = port;
     }
 
     /**
@@ -392,6 +431,17 @@ public class MutableRequest extends Request {
      */
     public boolean hasHeader(final String key) {
         return this.headers.containsKey(key.toLowerCase());
+    }
+
+    /**
+     * Adopts the headers from another map.
+     *
+     * @param otherHeaders the other headers
+     */
+    public void adoptHeaders(final Map<String, List<String>> otherHeaders) {
+        for (final String key : otherHeaders.keySet()) {
+            this.headers.computeIfAbsent(key, k -> new ArrayList<>()).addAll(otherHeaders.get(key));
+        }
     }
 
     /**

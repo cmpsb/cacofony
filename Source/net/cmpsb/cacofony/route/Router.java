@@ -40,6 +40,11 @@ public class Router {
     private final RequestPreparer requestPreparer;
 
     /**
+     * The action invoker.
+     */
+    private final ActionInvoker invoker;
+
+    /**
      * A mapping towards routing entries.
      * The first level filters by method, the second level by accept encoding.
      * A single routing entry may appear multiple times in this "tree".
@@ -61,10 +66,14 @@ public class Router {
      *
      * @param mimeParser the MIME type parser to use
      * @param requestPreparer the query string parser to use
+     * @param invoker the action invoker to use
      */
-    public Router(final MimeParser mimeParser, final RequestPreparer requestPreparer) {
+    public Router(final MimeParser mimeParser,
+                  final RequestPreparer requestPreparer,
+                  final ActionInvoker invoker) {
         this.mimeParser = mimeParser;
         this.requestPreparer = requestPreparer;
+        this.invoker = invoker;
 
         // Build the routing table.
         this.routes = new HashMap<>();
@@ -221,10 +230,9 @@ public class Router {
             // The route matches! Serve the request through this route.
             if (targetMatcher.matches()) {
                 this.requestPreparer.prepare(request, entry, target, targetMatcher);
-
                 request.setContentType(contentType);
 
-                return entry.getAction().handle(request);
+                return this.invoker.invoke(entry, request);
             }
         }
 

@@ -47,6 +47,15 @@ public class MimeType implements Comparable<MimeType> {
     }
 
     /**
+     * Returns the MIME type multipart/byteranges.
+     *
+     * @return the MIME type multipart/byteranges
+     */
+    public static MimeType byteranges() {
+        return new MimeType("multipart", "byteranges");
+    }
+
+    /**
      * The head type.
      */
     private final String mainType;

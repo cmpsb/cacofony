@@ -8,8 +8,8 @@ import net.cmpsb.cacofony.http.request.Request;
 import net.cmpsb.cacofony.server.MutableServerSettings;
 import net.cmpsb.cacofony.server.ServerProperties;
 import net.cmpsb.cacofony.util.UrlCodec;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -17,9 +17,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Luc Everse
@@ -32,7 +30,7 @@ public class ResponseWriterTest {
 
     private ResponsePreparer preparer;
 
-    @Before
+    @BeforeEach
     public void before() {
         this.settings = new MutableServerSettings();
 
@@ -60,29 +58,10 @@ public class ResponseWriterTest {
 
         final String serialResponse = out.toString("UTF-8");
 
-        assertThat("The response contains the correct start line.",
-                   serialResponse,
-                   containsString("HTTP/1.1 200 OK"));
-
-        assertThat("The response contains the Server header.",
-                   serialResponse,
-                   containsString("Server"));
-
-        assertThat("The response contains the correct content length.",
-                   serialResponse,
-                   containsString("Content-Length: " + content.length()));
-
-        assertThat("The response contains a Date header.",
-                   serialResponse,
-                   containsString("Date"));
-
-        assertThat("The response has the text/plain default encoding.",
-                   serialResponse,
-                   containsString("Content-Type: text/plain"));
-
-        assertThat("The response contains the content.",
-                   serialResponse,
-                   containsString(content));
+        assertThat(serialResponse)
+                .startsWith("HTTP/1.1 200 OK")
+                .contains("Server", "Content-Length: " + content.length(), "Date")
+                .contains("Content-Type: text/plain", content);
     }
 
     @Test
@@ -100,29 +79,11 @@ public class ResponseWriterTest {
 
         final String serialResponse = out.toString("UTF-8");
 
-        assertThat("The response contains the correct start line.",
-                serialResponse,
-                containsString("HTTP/1.1 200 OK"));
-
-        assertThat("The response contains the Server header.",
-                serialResponse,
-                containsString("Server"));
-
-        assertThat("The response contains the correct content length.",
-                serialResponse,
-                containsString("Content-Length: " + content.length()));
-
-        assertThat("The response contains a Date header.",
-                serialResponse,
-                containsString("Date"));
-
-        assertThat("The response has the text/plain default encoding.",
-                serialResponse,
-                containsString("Content-Type: text/plain"));
-
-        assertThat("The response does not contain the content.",
-                serialResponse,
-                not(containsString(content)));
+        assertThat(serialResponse)
+                .startsWith("HTTP/1.1 200 OK")
+                .contains("Server", "Content-Length: " + content.length(), "Date")
+                .contains("Content-Type: text/plain")
+                .doesNotContain(content);
     }
 
     @Test
@@ -152,21 +113,11 @@ public class ResponseWriterTest {
 
         final String serialResponse = out.toString("UTF-8");
 
-        assertThat("The response contains the correct start line.",
-                serialResponse,
-                containsString("HTTP/1.0 200 OK"));
-
-        assertThat("The content length is that of the compressed data.",
-                serialResponse,
-                containsString("Content-Length: " + gzipContent.length));
-
-        assertThat("The encoding is indicated.",
-                   serialResponse,
-                   containsString("Content-Encoding: gzip"));
-
-        assertThat("The response does not contain the content.",
-                    serialResponse,
-                    not(containsString(plainContent)));
+        assertThat(serialResponse)
+                .startsWith("HTTP/1.0 200 OK")
+                .contains("Content-Length: " + gzipContent.length, "Content-Encoding: gzip")
+                .contains("Content-Type: text/plain")
+                .doesNotContain(plainContent);
     }
 
     @Test
@@ -195,22 +146,14 @@ public class ResponseWriterTest {
         outc.close();
 
         final String serialResponse = out.toString("UTF-8");
+        final String serialGzipContent = new String(gzipContent, StandardCharsets.ISO_8859_1);
 
-        assertThat("The response contains the correct start line.",
-                serialResponse,
-                containsString("HTTP/1.0 200 OK"));
-
-        assertThat("The content length is that of the compressed data.",
-                serialResponse,
-                containsString("Content-Length: " + gzipContent.length));
-
-        assertThat("The encoding is indicated.",
-                serialResponse,
-                containsString("Content-Encoding: gzip"));
-
-        assertThat("The response does not contain the content.",
-                serialResponse,
-                not(containsString(plainContent)));
+        assertThat(serialResponse)
+                .startsWith("HTTP/1.0 200 OK")
+                .contains("Content-Length: " + gzipContent.length, "Content-Encoding: gzip")
+                .contains("Content-Type: text/plain")
+                .doesNotContain(plainContent)
+                .doesNotContain(serialGzipContent);
     }
 
     @Test
@@ -230,13 +173,7 @@ public class ResponseWriterTest {
 
         final String serialResponse = out.toString("UTF-8");
 
-        assertThat("The response is not encoded.",
-                   serialResponse,
-                   not(containsString("Content-Encoding")));
-
-        assertThat("The content is sent as plain text.",
-                   serialResponse,
-                   containsString(plainContent));
+        assertThat(serialResponse).doesNotContain("Content-Encoding").contains(plainContent);
     }
 
     @Test
@@ -258,13 +195,7 @@ public class ResponseWriterTest {
 
         final String serialResponse = out.toString("UTF-8");
 
-        assertThat("The response is not encoded.",
-                serialResponse,
-                not(containsString("Content-Encoding")));
-
-        assertThat("The content is sent as plain text.",
-                serialResponse,
-                containsString(plainContent));
+        assertThat(serialResponse).doesNotContain("Content-Encoding").contains(plainContent);
     }
 
     @Test
@@ -283,21 +214,10 @@ public class ResponseWriterTest {
 
         final String serialResponse = out.toString("UTF-8");
 
-        assertThat("The response contains the correct start line.",
-                   serialResponse,
-                   containsString("HTTP/1.0 200 OK"));
-
-        assertThat("The response contains no content length.",
-                   serialResponse,
-                   not(containsString("Content-Length")));
-
-        assertThat("The response indicates it's chunked.",
-                   serialResponse,
-                   containsString("Transfer-Encoding: chunked"));
-
-        assertThat("The response contains the content.",
-                   serialResponse,
-                   containsString(content));
+        assertThat(serialResponse)
+                .startsWith("HTTP/1.0 200 OK")
+                .doesNotContain("Content-Length")
+                .contains("Transfer-Encoding: chunked", content);
     }
 
     @Test
@@ -316,21 +236,11 @@ public class ResponseWriterTest {
 
         final String serialResponse = out.toString("UTF-8");
 
-        assertThat("The response contains the correct start line.",
-                serialResponse,
-                containsString("HTTP/1.0 200 OK"));
-
-        assertThat("The response contains no content length.",
-                serialResponse,
-                not(containsString("Content-Length")));
-
-        assertThat("The response indicates it's chunked.",
-                serialResponse,
-                containsString("Transfer-Encoding: chunked"));
-
-        assertThat("The response does not contain the content.",
-                serialResponse,
-                not(containsString(content)));
+        assertThat(serialResponse)
+                .startsWith("HTTP/1.0 200 OK")
+                .doesNotContain("Content-Length")
+                .contains("Transfer-Encoding: chunked")
+                .doesNotContain(content);
     }
 
     @Test
@@ -348,12 +258,8 @@ public class ResponseWriterTest {
 
         final String serialResponse = out.toString("UTF-8");
 
-        assertThat("The response is in HTTP/1.0.",
-                   serialResponse,
-                   containsString("HTTP/1.0"));
-
-        assertThat("There is some content.",
-                   serialResponse,
-                   containsString(content));
+        assertThat(serialResponse)
+            .startsWith("HTTP/1.0 400 Bad Request")
+            .contains(content);
     }
 }

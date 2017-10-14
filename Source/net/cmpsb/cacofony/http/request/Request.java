@@ -156,6 +156,16 @@ public abstract class Request {
     public abstract String getHost();
 
     /**
+     * Returns the TCP port the request was issued on.
+     * <p>
+     * This may differ from the value in the {@code Host} header since this value is taken from
+     * the socket listener instead.
+     *
+     * @return the TCP port
+     */
+    public abstract int getPort();
+
+    /**
      * Returns the URL scheme used for this request.
      * <p>
      * This value may not be the actual scheme used; for requests over anything lower than HTTP/2

@@ -1,14 +1,11 @@
 package net.cmpsb.cacofony.io;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isEmptyString;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Generic tests for line-aware input streams.
@@ -36,17 +33,9 @@ public abstract class LineAwareInputStreamTest<T extends LineAwareInputStream> {
         final String second = in.readLine();
         final String empty = in.readLine();
 
-        assertThat("The first string has been read correctly.",
-                first,
-                is(equalTo("First line")));
-
-        assertThat("The second string has been read correctly.",
-                second,
-                is(equalTo("Second")));
-
-        assertThat("The final string is empty.",
-                empty,
-                isEmptyString());
+        assertThat(first).isEqualTo("First line");
+        assertThat(second).isEqualTo("Second");
+        assertThat(empty).isEmpty();
     }
 
     @Test
@@ -60,13 +49,8 @@ public abstract class LineAwareInputStreamTest<T extends LineAwareInputStream> {
         final String testString = in.readLine();
         final String empty = in.readLine();
 
-        assertThat("The first string is copied correctly.",
-                testString,
-                is(equalTo("Te\nst\rstring")));
-
-        assertThat("The final string is empty.",
-                empty,
-                isEmptyString());
+        assertThat(testString).isEqualTo("Te\nst\rstring");
+        assertThat(empty).isEmpty();
     }
 
     @Test
@@ -80,13 +64,8 @@ public abstract class LineAwareInputStreamTest<T extends LineAwareInputStream> {
         final String test = in.readLine();
         final String empty = in.readLine();
 
-        assertThat("The string includes the extra CR.",
-                test,
-                is(equalTo("Test\r")));
-
-        assertThat("The final string is empty.",
-                empty,
-                isEmptyString());
+        assertThat(test).isEqualTo("Test\r");
+        assertThat(empty).isEmpty();
     }
 
     @Test
@@ -100,13 +79,8 @@ public abstract class LineAwareInputStreamTest<T extends LineAwareInputStream> {
         final String test = in.readLine();
         final String empty = in.readLine();
 
-        assertThat("The string is copied until the end of the buffer.",
-                test,
-                is(equalTo("Test")));
-
-        assertThat("The final string is empty.",
-                empty,
-                isEmptyString());
+        assertThat(test).isEqualTo("Test");
+        assertThat(empty).isEmpty();
     }
 
     @Test
@@ -120,12 +94,7 @@ public abstract class LineAwareInputStreamTest<T extends LineAwareInputStream> {
         final String cr = in.readLine();
         final String empty = in.readLine();
 
-        assertThat("The string is copied with the trailing CR.",
-                cr,
-                is(equalTo("CR\r")));
-
-        assertThat("The final string is empty.",
-                empty,
-                isEmptyString());
+        assertThat(cr).isEqualTo("CR\r");
+        assertThat(empty).isEmpty();
     }
 }

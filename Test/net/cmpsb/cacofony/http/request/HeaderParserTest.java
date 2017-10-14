@@ -2,18 +2,20 @@ package net.cmpsb.cacofony.http.request;
 
 import net.cmpsb.cacofony.http.exception.BadRequestException;
 import net.cmpsb.cacofony.io.HttpInputStream;
-import org.junit.Before;
-import org.junit.Test;
+import net.cmpsb.cacofony.util.Ob;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Tests for the HTTP header parser.
@@ -23,7 +25,7 @@ import static org.hamcrest.Matchers.is;
 public class HeaderParserTest {
     private HeaderParser parser;
 
-    @Before
+    @BeforeEach
     public void before() {
         this.parser = new HeaderParser();
     }
@@ -37,16 +39,12 @@ public class HeaderParserTest {
 
         final HttpInputStream in = this.getStream(req);
 
-        final MutableRequest request = new MutableRequest();
-        this.parser.parse(in, request);
+        final Map<String, List<String>> headers = this.parser.parse(in);
 
-        assertThat("The Host header is parsed correctly.",
-                   request.getHeaders("Host"),
-                   is(equalTo(Collections.singletonList("cacofony.cmpsb.net"))));
-
-        assertThat("The Accept header is parsed correctly.",
-                   request.getHeaders("Accept"),
-                   is(equalTo(Collections.singletonList("text/plain"))));
+        assertThat(headers).isEqualTo(Ob.map(
+                "host", Collections.singletonList("cacofony.cmpsb.net"),
+                "accept", Collections.singletonList("text/plain")
+        ));
     }
 
     @Test
@@ -60,33 +58,25 @@ public class HeaderParserTest {
 
         final HttpInputStream in = this.getStream(req);
 
-        final MutableRequest request = new MutableRequest();
-        this.parser.parse(in, request);
+        final Map<String, List<String>> headers = this.parser.parse(in);
 
-        assertThat("The Host header is parsed correctly.",
-                   request.getHeaders("Host"),
-                   is(equalTo(Collections.singletonList("cacofony.cmpsb.net"))));
-
-        assertThat("The Accept headers are combined into a list.",
-                   request.getHeaders("Accept"),
-                   is(equalTo(Arrays.asList("text/plain", "text/html"))));
-
-        assertThat("The Content-Encoding header is parsed correctly.",
-                   request.getHeaders("Content-Encoding"),
-                   is(equalTo(Collections.singletonList("utf-8"))));
+        assertThat(headers).isEqualTo(Ob.map(
+                "host", Collections.singletonList("cacofony.cmpsb.net"),
+                "accept", Arrays.asList("text/plain", "text/html"),
+                "content-encoding", Collections.singletonList("utf-8")
+        ));
     }
 
-    @Test(expected = BadRequestException.class)
+    @Test
     public void testInvalidSyntax() throws IOException {
         final String req = "Host : cacofony.cmpsb.net\r\n\r\n";
 
         final HttpInputStream in = this.getStream(req);
-        final MutableRequest request = new MutableRequest();
 
-        this.parser.parse(in, request);
+        assertThrows(BadRequestException.class, () -> this.parser.parse(in));
     }
 
-    @Test(expected = BadRequestException.class)
+    @Test
     public void testObsFold() throws IOException {
         final String req =
             "Host: cacofony.cmpsb.net\r\n"
@@ -95,9 +85,8 @@ public class HeaderParserTest {
           + "\r\n";
 
         final HttpInputStream in = this.getStream(req);
-        final MutableRequest request = new MutableRequest();
 
-        this.parser.parse(in, request);
+        assertThrows(BadRequestException.class, () -> this.parser.parse(in));
     }
 
     private HttpInputStream getStream(final byte[] bytes) {

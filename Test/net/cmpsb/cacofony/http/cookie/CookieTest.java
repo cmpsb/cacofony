@@ -1,7 +1,7 @@
 package net.cmpsb.cacofony.http.cookie;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 
 /**
