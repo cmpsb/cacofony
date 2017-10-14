@@ -1,6 +1,7 @@
 package net.cmpsb.cacofony.route;
 
 import net.cmpsb.cacofony.controller.Controller;
+import net.cmpsb.cacofony.di.DependencyResolver;
 import net.cmpsb.cacofony.http.cookie.CookieParser;
 import net.cmpsb.cacofony.http.exception.NotFoundException;
 import net.cmpsb.cacofony.http.request.Method;
@@ -42,7 +43,8 @@ public class RouterTest {
         final CookieParser cookieParser = new CookieParser(urlCodec);
         final QueryStringParser queryStringParser = new QueryStringParser();
         final RequestPreparer preparer = new RequestPreparer(cookieParser, queryStringParser);
-        final ActionInvoker invoker = new ActionInvoker();
+        final DependencyResolver resolver = new DependencyResolver();
+        final ActionInvoker invoker = new ActionInvoker(resolver);
         this.router = new Router(parser, preparer, invoker);
     }
 
