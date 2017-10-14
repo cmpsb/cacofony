@@ -126,8 +126,22 @@ public class ControllerLoader {
 
         final List<Method> methods = Arrays.asList(route.methods());
 
-        final RoutingEntry entry =
-                new RoutingEntry(route.name(), path, controller, method, methods, types);
+        final String name;
+        if (!route.name().isEmpty()) {
+            name = route.name();
+        } else {
+            final String canonicalControllerName = controller.getClass().getCanonicalName();
+            final String controllerName;
+            if (canonicalControllerName != null) {
+                controllerName = canonicalControllerName;
+            } else {
+                controllerName = controller.getClass().getName();
+            }
+
+            name = controllerName + ":/" + route.path();
+        }
+
+        final RoutingEntry entry = new RoutingEntry(name, path, controller, method, methods, types);
 
         this.router.addRoute(entry);
     }
