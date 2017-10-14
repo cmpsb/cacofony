@@ -2,13 +2,18 @@ package net.cmpsb.cacofony.templating.freemarker;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import net.cmpsb.cacofony.http.exception.InternalServerException;
 import net.cmpsb.cacofony.http.response.Response;
+import net.cmpsb.cacofony.mime.MimeGuesser;
 import net.cmpsb.cacofony.mime.MimeParser;
 import net.cmpsb.cacofony.mime.MimeType;
 import net.cmpsb.cacofony.templating.TemplatingService;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.Map;
 
 /**
@@ -26,15 +31,23 @@ public class FreeMarkerService extends TemplatingService {
     private final MimeParser mimeParser;
 
     /**
+     * The MIME guesser to use in case FreeMarker doesn't know.
+     */
+    private final MimeGuesser guesser;
+
+    /**
      * Creates a new FreeMarker templating service.
      *
      * @param configuration the FreeMarker configuration to use
      * @param mimeParser    the MIME parser to use
+     * @param mimeGuesser   the MIME guesser to use if FreeMarker doesn't know
      */
     public FreeMarkerService(final Configuration configuration,
-                             final MimeParser mimeParser) {
+                             final MimeParser mimeParser,
+                             final MimeGuesser mimeGuesser) {
         this.configuration = configuration;
         this.mimeParser = mimeParser;
+        this.guesser = mimeGuesser;
     }
 
     /**
@@ -53,7 +66,28 @@ public class FreeMarkerService extends TemplatingService {
 
             final Response response = new PrerenderedFreeMarkerResponse(template, values);
 
-            final MimeType type = this.mimeParser.parse(template.getOutputFormat().getMimeType());
+            // Determine the MIME type of the response.
+            // In the best case, FreeMarker knows the type and we can use that blindly.
+            // If not we pre-pre-render the template and let the MIME guesser do its job on it,
+            // hopefully leading to a valid conclusion this time.
+            final MimeType type;
+            final String rawType = template.getOutputFormat().getMimeType();
+            if (rawType != null) {
+                type = this.mimeParser.parse(rawType);
+            } else {
+                try (ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                     OutputStreamWriter writer = new OutputStreamWriter(buffer)) {
+                    template.process(values, writer);
+
+                    final byte[] bytes = buffer.toByteArray();
+                    final ByteArrayInputStream in = new ByteArrayInputStream(bytes);
+
+                    type = this.guesser.guessRemote(in);
+                } catch (final TemplateException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
             type.getParameters().put("charset", template.getEncoding());
             response.setContentType(type);
 

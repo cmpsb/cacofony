@@ -3,6 +3,7 @@ package net.cmpsb.cacofony.templating.freemarker;
 import freemarker.template.Configuration;
 import freemarker.template.Version;
 import net.cmpsb.cacofony.di.Factory;
+import net.cmpsb.cacofony.mime.MimeGuesser;
 import net.cmpsb.cacofony.mime.MimeParser;
 import net.cmpsb.cacofony.yaml.FactoryFactory;
 import net.cmpsb.cacofony.yaml.InvalidYamlException;
@@ -38,7 +39,8 @@ public class FreeMarkerServiceFactoryFactory implements FactoryFactory<FreeMarke
 
         return resolver -> {
             final MimeParser parser = resolver.get(MimeParser.class);
-            return new FreeMarkerService(config, parser);
+            final MimeGuesser guesser = resolver.get(MimeGuesser.class);
+            return new FreeMarkerService(config, parser, guesser);
         };
     }
 
