@@ -34,11 +34,32 @@ public class YamlLoader {
     private final SettingsLoader settingsLoader;
 
     /**
+     * The dependency resolver to use.
+     */
+    private final ServerBuilder builder;
+
+    /**
      * Creates a new yaml loader.
      */
     public YamlLoader() {
         this.yaml = new Yaml();
         this.settingsLoader = new SettingsLoader();
+        this.builder = new ServerBuilder(new DependencyResolver());
+    }
+
+    /**
+     * Creates a new YAML loader.
+     *
+     * @param yaml the YAML parser
+     * @param settingsLoader the settings loader
+     * @param serverBuilder the server builder
+     */
+    public YamlLoader(final Yaml yaml,
+                      final SettingsLoader settingsLoader,
+                      final ServerBuilder serverBuilder) {
+        this.yaml = yaml;
+        this.settingsLoader = settingsLoader;
+        this.builder = serverBuilder;
     }
 
     /**
@@ -52,14 +73,11 @@ public class YamlLoader {
     public Server load(final InputStream file) {
         final Map<String, Object> config = (Map<String, Object>) this.yaml.load(file);
 
-        final DependencyResolver resolver = new DependencyResolver();
-        final ServerBuilder builder = new ServerBuilder(resolver);
-
         // Load the settings.
         final MutableServerSettings masterSettings = this.settingsLoader.load(config);
-        builder.setSettings(masterSettings);
+        this.builder.setSettings(masterSettings);
 
-        final Server server = builder.build();
+        final Server server = this.builder.build();
 
         final Map<String, Map<String, Object>> hosts =
                 (Map<String, Map<String, Object>>) config.get("hosts");
