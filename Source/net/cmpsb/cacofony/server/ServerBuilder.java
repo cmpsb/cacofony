@@ -87,13 +87,13 @@ public class ServerBuilder {
             ports.add(new Port(443, true));
         }
 
-        this.resolver.add(ServerSettings.class, this.settings);
-        this.resolver.addFactory(ServerProperties.class, r -> ServerProperties.load());
-        this.resolver.add(SSLServerSocketFactory.class, this.socketFactory);
-        this.resolver.implement(ListenerFactory.class, this.listenerFactory);
+        this.resolver.addDefault(ServerSettings.class, this.settings);
+        this.resolver.addDefaultFactory(ServerProperties.class, r -> ServerProperties.load());
+        this.resolver.addDefault(SSLServerSocketFactory.class, this.socketFactory);
+        this.resolver.implementDefault(ListenerFactory.class, this.listenerFactory);
 
         this.resolver.implementDefault(TemplatingService.class, DummyTemplatingService.class);
-        this.resolver.implement(ExceptionHandler.class, DefaultExceptionHandler.class);
+        this.resolver.implementDefault(ExceptionHandler.class, DefaultExceptionHandler.class);
         this.resolver.implementDefault(MimeParser.class, FastMimeParser.class);
 
         this.resolver.addDefaultFactory(MimeDb.class, r -> {
