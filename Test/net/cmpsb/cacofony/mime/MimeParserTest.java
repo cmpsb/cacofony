@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Luc Everse
  */
 public abstract class MimeParserTest<P extends MimeParser> {
-    private P parser;
+    public P parser;
 
     public abstract P getParser();
 

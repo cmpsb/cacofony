@@ -4,7 +4,10 @@ package net.cmpsb.cacofony.mime;
  * A quick mime parser.
  * <p>
  * This parser will cut some corners, but is faster than the {@link StrictMimeParser}. It will
- * parse any valid MIME type, but wont error as quickly.
+ * parse any valid MIME type, but won't error as quickly.
+ * <p>
+ * Additionally, this parser is the only stock parser that can handle requests from Java's HTTP
+ * interface.
  *
  * @author Luc Everse
  */
@@ -17,8 +20,16 @@ public class FastMimeParser implements MimeParser {
      */
     @Override
     public MimeType parse(final String plain) {
-        final int firstSlash = plain.indexOf('/');
         final int firstSemicolon = plain.indexOf(';');
+
+        // Detect noncompliant clients accepting * as a MIME type.
+        if (plain.startsWith("*;") || plain.startsWith("* ;")) {
+            final MimeType type = new MimeType("*", "*");
+            this.parseParameters(plain, firstSemicolon, type);
+            return type;
+        }
+
+        final int firstSlash = plain.indexOf('/');
 
         if (firstSlash == -1) {
             throw new InvalidMimeTypeException(plain);
@@ -37,6 +48,22 @@ public class FastMimeParser implements MimeParser {
 
         final MimeType type = new MimeType(mainType, subType);
 
+        this.parseParameters(plain, firstSemicolon, type);
+        type.recalculateRank();
+
+        return type;
+    }
+
+    /**
+     * Parses the parameters for the MIME type.
+     *
+     * @param plain the source string
+     * @param firstSemicolon the index of the first semicolon
+     * @param type the MIME type to populate
+     */
+    private void parseParameters(final String plain,
+                                 final int firstSemicolon,
+                                 final MimeType type) {
         int lastSemicolon = firstSemicolon;
         while (lastSemicolon != -1) {
             // Locate the key between the last semicolon and the next equals sign.
@@ -66,8 +93,5 @@ public class FastMimeParser implements MimeParser {
 
             type.getParameters().put(key, value);
         }
-
-
-        return type;
     }
 }
