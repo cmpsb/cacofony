@@ -6,6 +6,7 @@ import net.cmpsb.cacofony.mime.MimeType;
 
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -109,6 +110,11 @@ public class MutableRequest extends Request {
      * The acceptable content type.
      */
     private MimeType contentType;
+
+    /**
+     * The client's internet address.
+     */
+    private InetAddress remote;
 
     /**
      * Creates a new request.
@@ -493,6 +499,24 @@ public class MutableRequest extends Request {
      */
     public void setContentLength(final long contentLength) {
         this.contentLength = contentLength;
+    }
+
+    /**
+     * Returns the client's internet address.
+     *
+     * @return the address
+     */
+    public InetAddress getRemote() {
+        return this.remote;
+    }
+
+    /**
+     * Sets the client's internet address.
+     *
+     * @param addr the address
+     */
+    public void setRemote(final InetAddress addr) {
+        this.remote = addr;
     }
 
     /**
