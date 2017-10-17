@@ -8,6 +8,7 @@ import net.cmpsb.cacofony.mime.MimeType;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
@@ -386,6 +387,13 @@ public abstract class Request {
      * @return the number of bytes in the request or {@code -1}
      */
     public abstract long getContentLength();
+
+    /**
+     * Returns the internet address of the client.
+     *
+     * @return the address
+     */
+    public abstract InetAddress getRemote();
 
     /**
      * Reads the full request body into a string.
