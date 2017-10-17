@@ -502,10 +502,9 @@ public class MutableRequest extends Request {
     }
 
     /**
-     * Returns the client's internet address.
-     *
-     * @return the address
+     * {@inheritDoc}
      */
+    @Override
     public InetAddress getRemote() {
         return this.remote;
     }
