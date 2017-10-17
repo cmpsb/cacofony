@@ -135,6 +135,7 @@ public class ConnectionHandler {
                 request = this.parser.parse(in);
                 request.setPort(port);
                 request.setScheme(scheme);
+                request.setRemote(address);
 
                 final String hostname = request.getHost();
                 host = this.hosts.getOrDefault(hostname, this.defaultHost);
