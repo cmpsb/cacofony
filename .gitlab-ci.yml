@@ -1,4 +1,4 @@
-image: 11-jdk-slim
+image: openjdk:11-jdk-slim
 
 stages:
   - test
