@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="net.wukl.cacofony.http.cookie.AttributedCookieWriterTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2019-01-21T16:13:41" hostname="versenwald" time="0.008">
-  <properties/>
-  <testcase name="testWriteValued()" classname="net.wukl.cacofony.http.cookie.AttributedCookieWriterTest" time="0.008"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>
