@@ -129,7 +129,7 @@ public class FileResponseTest {
         final String sResponse = out.toString("UTF-8");
 
         assertThat(response.getContentType()).as("content type").isEqualTo(MimeType.byteranges());
-        assertThat(sResponse).containsSequence(
+        assertThat(sResponse).containsSubsequence(
                 "Content-Range: bytes 5-10/24",
                 "string",
                 "Content-Range: bytes 16-23/24",

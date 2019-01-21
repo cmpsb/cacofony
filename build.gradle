@@ -7,8 +7,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0-RC3'
-        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.+'
     }
 }
 
@@ -17,7 +16,6 @@ apply plugin: 'java'
 apply plugin: 'jacoco'
 apply plugin: 'checkstyle'
 apply plugin: 'maven'
-apply plugin: 'org.junit.platform.gradle.plugin'
 
 version = "0.0.11"
 group = "net.cmpsb.cacofony"
@@ -73,19 +71,19 @@ repositories {
 
 dependencies {
     // Logging.
-    compile 'org.slf4j:slf4j-api:1.7.25'
-    compile 'org.slf4j:jul-to-slf4j:1.7.25'
-    compile 'ch.qos.logback:logback-classic:1.1.8'
-    compile 'ch.qos.logback:logback-core:1.1.8'
-    compile 'org.codehaus.groovy:groovy:2.4.+'
+    compile 'org.slf4j:slf4j-api:1.8.+'
+    compile 'org.slf4j:jul-to-slf4j:1.8.+'
+    compile 'ch.qos.logback:logback-classic:1.2.+'
+    compile 'ch.qos.logback:logback-core:1.2.+'
+    compile 'org.codehaus.groovy:groovy:2.5.+'
 
     compile 'net.wukl:cacodi:1.1.0'
 
     // CSV parser.
-    compile 'com.opencsv:opencsv:3.9'
+    compile 'com.opencsv:opencsv:4.+'
 
     // Yaml.
-    compile 'org.yaml:snakeyaml:1.18'
+    compile 'org.yaml:snakeyaml:1.+'
 
     // JSON.
     compile 'com.google.code.gson:gson:2.8.+'
@@ -97,21 +95,21 @@ dependencies {
     compile 'org.freemarker:freemarker:2.3.+'
 
     // Content type detection.
-    compile 'com.j256.simplemagic:simplemagic:1.11'
+    compile 'com.j256.simplemagic:simplemagic:1.14'
 
     // Test dependencies.
     // JUnit and matchers.
-    testCompile 'org.junit.jupiter:junit-jupiter-api:5.0.0-RC3'
-    testCompile 'org.junit.jupiter:junit-jupiter-params:5.0.0-RC3'
-    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.0.0-RC3'
+    testCompile 'org.junit.jupiter:junit-jupiter-api:5.4.+'
+    testCompile 'org.junit.jupiter:junit-jupiter-params:5.4.+'
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.4.+'
 
-    testCompile 'org.assertj:assertj-core:3.6.2'
+    testCompile 'org.assertj:assertj-core:3.11.+'
 
     // Mockito.
     testCompile 'org.mockito:mockito-core:2.23.+'
 
     // Test helpers.
-    testCompile 'com.github.stefanbirkner:system-rules:1.16.+'
+    testCompile 'com.github.stefanbirkner:system-rules:1.19.+'
     testCompile 'nl.jqno.equalsverifier:equalsverifier:3.1.+'
 }
 
@@ -119,8 +117,8 @@ checkstyle {
     toolVersion = '8.16'
 }
 
-junitPlatform {
-    logManager 'java.util.logging.LogManager'
+test {
+    useJUnitPlatform()
 }
 
 jacoco {
