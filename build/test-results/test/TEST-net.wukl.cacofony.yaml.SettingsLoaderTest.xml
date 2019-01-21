@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="net.wukl.cacofony.yaml.SettingsLoaderTest" tests="21" skipped="0" failures="0" errors="0" timestamp="2019-01-21T16:13:43" hostname="versenwald" time="0.016">
+  <properties/>
+  <testcase name="testInvalidAlgorithm()" classname="net.wukl.cacofony.yaml.SettingsLoaderTest" time="0.001"/>
+  <testcase name="testExpandedPorts()" classname="net.wukl.cacofony.yaml.SettingsLoaderTest" time="0.001"/>
+  <testcase name="testInvalidCompression()" classname="net.wukl.cacofony.yaml.SettingsLoaderTest" time="0.001"/>
+  <testcase name="testEnableDisableBroadcastInfo(boolean)[1]" classname="net.wukl.cacofony.yaml.SettingsLoaderTest" time="0.0"/>
+  <testcase name="testEnableDisableBroadcastInfo(boolean)[2]" classname="net.wukl.cacofony.yaml.SettingsLoaderTest" time="0.0"/>
+  <testcase name="testCompressionAlgorithms()" classname="net.wukl.cacofony.yaml.SettingsLoaderTest" time="0.0"/>
+  <testcase name="testMixedPorts()" classname="net.wukl.cacofony.yaml.SettingsLoaderTest" time="0.0"/>
+  <testcase name="testInvalidDirectPort()" classname="net.wukl.cacofony.yaml.SettingsLoaderTest" time="0.0"/>
+  <testcase name="testMissingPorts()" classname="net.wukl.cacofony.yaml.SettingsLoaderTest" time="0.0"/>
+  <testcase name="testDefaultDefaultCompression()" classname="net.wukl.cacofony.yaml.SettingsLoaderTest" time="0.0"/>
+  <testcase name="testEnableDisableDefaultCompression(boolean)[1]" classname="net.wukl.cacofony.yaml.SettingsLoaderTest" time="0.0"/>
+  <testcase name="testEnableDisableDefaultCompression(boolean)[2]" classname="net.wukl.cacofony.yaml.SettingsLoaderTest" time="0.0"/>
+  <testcase name="testInvalidDefaultCompression()" classname="net.wukl.cacofony.yaml.SettingsLoaderTest" time="0.001"/>
+  <testcase name="testDefaultAlgorithms()" classname="net.wukl.cacofony.yaml.SettingsLoaderTest" time="0.0"/>
+  <testcase name="testDefaultCompression()" classname="net.wukl.cacofony.yaml.SettingsLoaderTest" time="0.0"/>
+  <testcase name="testNoPorts()" classname="net.wukl.cacofony.yaml.SettingsLoaderTest" time="0.001"/>
+  <testcase name="testInvalidBroadcastInfo()" classname="net.wukl.cacofony.yaml.SettingsLoaderTest" time="0.0"/>
+  <testcase name="testEnableDisableCompression(boolean)[1]" classname="net.wukl.cacofony.yaml.SettingsLoaderTest" time="0.001"/>
+  <testcase name="testEnableDisableCompression(boolean)[2]" classname="net.wukl.cacofony.yaml.SettingsLoaderTest" time="0.0"/>
+  <testcase name="testDirectPorts()" classname="net.wukl.cacofony.yaml.SettingsLoaderTest" time="0.0"/>
+  <testcase name="testDefaultBroadcastInfo()" classname="net.wukl.cacofony.yaml.SettingsLoaderTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

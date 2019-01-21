@@ -2,5 +2,5 @@
 .idea
 Build
 out
-Source/net/cmpsb/cacofony/example
-Resources/net/cmpsb/cacofony/example
+src/main/java/net/cmpsb/cacofony/example
+src/main/resources/net/cmpsb/cacofony/example

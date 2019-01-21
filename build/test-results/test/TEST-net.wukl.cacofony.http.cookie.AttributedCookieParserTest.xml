@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="net.wukl.cacofony.http.cookie.AttributedCookieParserTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2019-01-21T16:13:41" hostname="versenwald" time="0.006">
+  <properties/>
+  <testcase name="testSimpleEmpty()" classname="net.wukl.cacofony.http.cookie.AttributedCookieParserTest" time="0.002"/>
+  <testcase name="testEvenMoreWithAttributes()" classname="net.wukl.cacofony.http.cookie.AttributedCookieParserTest" time="0.001"/>
+  <testcase name="testAttributedValueless()" classname="net.wukl.cacofony.http.cookie.AttributedCookieParserTest" time="0.0"/>
+  <testcase name="testSimpleValued()" classname="net.wukl.cacofony.http.cookie.AttributedCookieParserTest" time="0.0"/>
+  <testcase name="testWithAttributes()" classname="net.wukl.cacofony.http.cookie.AttributedCookieParserTest" time="0.0"/>
+  <testcase name="testMoreWithAttributes()" classname="net.wukl.cacofony.http.cookie.AttributedCookieParserTest" time="0.0"/>
+  <testcase name="testSimpleValueless()" classname="net.wukl.cacofony.http.cookie.AttributedCookieParserTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

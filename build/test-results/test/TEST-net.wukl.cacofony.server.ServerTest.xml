@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="net.wukl.cacofony.server.ServerTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2019-01-21T16:13:42" hostname="versenwald" time="0.335">
+  <properties/>
+  <testcase name="testRunAlreadyRunning()" classname="net.wukl.cacofony.server.ServerTest" time="0.125"/>
+  <testcase name="testRunExplicitPort()" classname="net.wukl.cacofony.server.ServerTest" time="0.204"/>
+  <testcase name="testRunDefaultPort()" classname="net.wukl.cacofony.server.ServerTest" time="0.005"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

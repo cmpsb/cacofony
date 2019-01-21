@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="net.wukl.cacofony.http.request.MutableRequestTest" tests="14" skipped="0" failures="0" errors="0" timestamp="2019-01-21T16:13:42" hostname="versenwald" time="0.007">
+  <properties/>
+  <testcase name="testGetDefaultPathParam()" classname="net.wukl.cacofony.http.request.MutableRequestTest" time="0.0"/>
+  <testcase name="testMultipleHostHeaders()" classname="net.wukl.cacofony.http.request.MutableRequestTest" time="0.001"/>
+  <testcase name="testReadStaticTooLong()" classname="net.wukl.cacofony.http.request.MutableRequestTest" time="0.002"/>
+  <testcase name="testReadFullStaticBody()" classname="net.wukl.cacofony.http.request.MutableRequestTest" time="0.0"/>
+  <testcase name="testGetHost()" classname="net.wukl.cacofony.http.request.MutableRequestTest" time="0.0"/>
+  <testcase name="testReadFullEncodedBody()" classname="net.wukl.cacofony.http.request.MutableRequestTest" time="0.0"/>
+  <testcase name="testGetDefaultQueryParam()" classname="net.wukl.cacofony.http.request.MutableRequestTest" time="0.0"/>
+  <testcase name="testReadEmptyStaticRequest()" classname="net.wukl.cacofony.http.request.MutableRequestTest" time="0.0"/>
+  <testcase name="testReadEncodedTooLong()" classname="net.wukl.cacofony.http.request.MutableRequestTest" time="0.001"/>
+  <testcase name="testGetPathParam()" classname="net.wukl.cacofony.http.request.MutableRequestTest" time="0.0"/>
+  <testcase name="testGetCookie()" classname="net.wukl.cacofony.http.request.MutableRequestTest" time="0.0"/>
+  <testcase name="testNoHostHeader()" classname="net.wukl.cacofony.http.request.MutableRequestTest" time="0.0"/>
+  <testcase name="testGetNonexistentCookie()" classname="net.wukl.cacofony.http.request.MutableRequestTest" time="0.0"/>
+  <testcase name="testGetQueryParam()" classname="net.wukl.cacofony.http.request.MutableRequestTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

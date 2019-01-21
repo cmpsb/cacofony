@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<checkstyle version="8.16">
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/controller/Controller.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/controller/ControllerLoader.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/controller/package-info.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/example/Main.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/example/localhost/controller/ExampleController.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/example/localhost/controller/package-info.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/example/loopback/controller/IndexController.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/example/package-info.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/exception/DefaultExceptionHandler.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/exception/ExceptionHandler.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/exception/package-info.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/cookie/Cookie.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/cookie/CookieParser.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/cookie/CookieWriter.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/cookie/InvalidCookieException.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/cookie/package-info.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/encoding/TransferEncoding.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/encoding/package-info.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/exception/BadRequestException.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/exception/HttpException.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/exception/InternalServerException.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/exception/NotFoundException.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/exception/NotImplementedException.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/exception/SilentException.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/exception/package-info.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/package-info.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/request/FormParser.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/request/HeaderParser.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/request/HeaderValueParser.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/request/Method.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/request/MutableRequest.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/request/QueryStringParser.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/request/Request.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/request/RequestParser.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/request/RequestPreparer.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/request/package-info.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/response/AbstractStreamedResponse.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/response/EmptyResponse.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/response/JsonResponse.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/response/RedirectResponse.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/response/Response.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/response/ResponseCode.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/response/ResponsePreparer.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/response/ResponseWriter.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/response/StreamedResponse.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/response/TextResponse.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/response/file/CachableResponse.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/response/file/FileResponse.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/response/file/Range.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/response/file/RangeParser.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/response/file/ResourceResponse.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/response/file/package-info.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/http/response/package-info.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/io/ChunkedInputStream.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/io/ChunkedOutputStream.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/io/HttpInputStream.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/io/InputStreamFactory.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/io/LineAwareInputStream.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/io/OutputStreamFactory.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/io/ProtectedOutputStream.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/io/StreamHelper.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/io/UnbufferedLineAwareInputStream.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/io/package-info.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/mime/FastMimeParser.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/mime/InvalidMimeTypeException.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/mime/MimeDb.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/mime/MimeDbLoader.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/mime/MimeGuesser.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/mime/MimeParser.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/mime/MimeType.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/mime/StrictMimeParser.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/mime/package-info.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/package-info.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/route/ActionInvoker.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/route/BadRoutePathException.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/route/CompiledPath.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/route/FileRouteFactory.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/route/PathCompiler.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/route/RequestPath.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/route/Requirement.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/route/ResourceFileRouteFactory.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/route/Route.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/route/RouteAction.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/route/Router.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/route/Routes.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/route/RoutingEntry.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/route/StaticFileRouteFactory.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/route/package-info.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/server/ConnectionHandler.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/server/DefaultListenerFactory.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/server/DefaultSettings.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/server/Listener.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/server/ListenerFactory.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/server/MutableServerSettings.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/server/Port.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/server/RunningServerException.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/server/Server.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/server/ServerBuilder.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/server/ServerProperties.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/server/ServerSettings.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/server/host/ControllerPackage.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/server/host/DefaultHostBuilder.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/server/host/Host.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/server/host/HostBuilder.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/server/host/StaticRouteEntry.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/server/host/package-info.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/server/package-info.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/templating/DummyTemplatingService.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/templating/TemplatingService.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/templating/freemarker/FreeMarkerService.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/templating/freemarker/FreeMarkerServiceFactoryFactory.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/templating/freemarker/PrerenderedFreeMarkerResponse.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/templating/freemarker/StreamedFreeMarkerResponse.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/templating/freemarker/package-info.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/templating/package-info.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/util/Ob.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/util/ObI.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/util/UrlCodec.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/util/package-info.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/yaml/FactoryFactory.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/yaml/InvalidYamlException.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/yaml/SettingsLoader.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/yaml/YamlLoader.java">
+</file>
+<file name="/home/luc/Projects/Programs/Java/Cacofony/src/main/java/net/wukl/cacofony/yaml/package-info.java">
+</file>
+</checkstyle>

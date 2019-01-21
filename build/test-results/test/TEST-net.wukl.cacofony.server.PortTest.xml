@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="net.wukl.cacofony.server.PortTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2019-01-21T16:13:43" hostname="versenwald" time="0.012">
+  <properties/>
+  <testcase name="testConflictingPorts()" classname="net.wukl.cacofony.server.PortTest" time="0.0"/>
+  <testcase name="testEquals()" classname="net.wukl.cacofony.server.PortTest" time="0.012"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

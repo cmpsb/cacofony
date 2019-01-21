@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="net.wukl.cacofony.http.response.file.FileResponseTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2019-01-21T16:13:41" hostname="versenwald" time="0.038">
+  <properties/>
+  <testcase name="testWriteDeletedFile()" classname="net.wukl.cacofony.http.response.file.FileResponseTest" time="0.003"/>
+  <testcase name="testWriteDeletedWithRanges()" classname="net.wukl.cacofony.http.response.file.FileResponseTest" time="0.004"/>
+  <testcase name="testSingleRangeRequest()" classname="net.wukl.cacofony.http.response.file.FileResponseTest" time="0.009"/>
+  <testcase name="testSetInvalidRange()" classname="net.wukl.cacofony.http.response.file.FileResponseTest" time="0.001"/>
+  <testcase name="testWriteInvalidRange()" classname="net.wukl.cacofony.http.response.file.FileResponseTest" time="0.001"/>
+  <testcase name="testMultiRangeRequest()" classname="net.wukl.cacofony.http.response.file.FileResponseTest" time="0.013"/>
+  <testcase name="testWriteInvalidRanges()" classname="net.wukl.cacofony.http.response.file.FileResponseTest" time="0.001"/>
+  <testcase name="testUnrangedRequest()" classname="net.wukl.cacofony.http.response.file.FileResponseTest" time="0.001"/>
+  <testcase name="testEtagChangesWithModificationDate()" classname="net.wukl.cacofony.http.response.file.FileResponseTest" time="0.001"/>
+  <testcase name="testWriteDeletedWithRange()" classname="net.wukl.cacofony.http.response.file.FileResponseTest" time="0.001"/>
+  <testcase name="testConstructor()" classname="net.wukl.cacofony.http.response.file.FileResponseTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="net.wukl.cacofony.route.RouterTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2019-01-21T16:13:44" hostname="versenwald" time="0.004">
+  <properties/>
+  <testcase name="testAutoHead()" classname="net.wukl.cacofony.route.RouterTest" time="0.001"/>
+  <testcase name="testPickyRoutes()" classname="net.wukl.cacofony.route.RouterTest" time="0.001"/>
+  <testcase name="testNoRoutes()" classname="net.wukl.cacofony.route.RouterTest" time="0.001"/>
+  <testcase name="testNoMatchingRoute()" classname="net.wukl.cacofony.route.RouterTest" time="0.0"/>
+  <testcase name="testSingleRoute()" classname="net.wukl.cacofony.route.RouterTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

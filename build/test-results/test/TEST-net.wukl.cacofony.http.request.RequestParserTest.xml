@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="net.wukl.cacofony.http.request.RequestParserTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2019-01-21T16:13:42" hostname="versenwald" time="0.012">
+  <properties/>
+  <testcase name="testBadVersion()" classname="net.wukl.cacofony.http.request.RequestParserTest" time="0.001"/>
+  <testcase name="testFutureVersion()" classname="net.wukl.cacofony.http.request.RequestParserTest" time="0.0"/>
+  <testcase name="testEof()" classname="net.wukl.cacofony.http.request.RequestParserTest" time="0.0"/>
+  <testcase name="testEncodedStaticRequest()" classname="net.wukl.cacofony.http.request.RequestParserTest" time="0.001"/>
+  <testcase name="testUnknownMethod()" classname="net.wukl.cacofony.http.request.RequestParserTest" time="0.001"/>
+  <testcase name="testBodylessRequest()" classname="net.wukl.cacofony.http.request.RequestParserTest" time="0.0"/>
+  <testcase name="testBadRequestLine()" classname="net.wukl.cacofony.http.request.RequestParserTest" time="0.001"/>
+  <testcase name="testNormalRequest()" classname="net.wukl.cacofony.http.request.RequestParserTest" time="0.006"/>
+  <testcase name="testChunkedRequest()" classname="net.wukl.cacofony.http.request.RequestParserTest" time="0.0"/>
+  <testcase name="testUnknownEncoding()" classname="net.wukl.cacofony.http.request.RequestParserTest" time="0.001"/>
+  <testcase name="testHttp09()" classname="net.wukl.cacofony.http.request.RequestParserTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
