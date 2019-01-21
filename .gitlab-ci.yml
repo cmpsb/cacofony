@@ -3,27 +3,7 @@ stages:
   - build
   - deploy
 
-test:freebsd:
+test:
   stage: test
-  tags:
-    - freebsd
-    - jdk8
   script:
     - ./gradlew check
-
-build:all:
-  stage: build
-  tags:
-    - jdk8
-  script:
-    - ./gradlew build
-
-pages:
-  stage: deploy
-  only:
-    - tags
-  tags:
-    - dl
-  script:
-    - ./gradlew uploadArchives
-
