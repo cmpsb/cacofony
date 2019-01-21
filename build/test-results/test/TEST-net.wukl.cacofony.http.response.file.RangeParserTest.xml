@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="net.wukl.cacofony.http.response.file.RangeParserTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2019-01-21T16:13:41" hostname="versenwald" time="0.005">
+  <properties/>
+  <testcase name="testParseNegativeEnd()" classname="net.wukl.cacofony.http.response.file.RangeParserTest" time="0.001"/>
+  <testcase name="testParseInvertedRange()" classname="net.wukl.cacofony.http.response.file.RangeParserTest" time="0.0"/>
+  <testcase name="testParseManyBytes()" classname="net.wukl.cacofony.http.response.file.RangeParserTest" time="0.0"/>
+  <testcase name="testManyRanges()" classname="net.wukl.cacofony.http.response.file.RangeParserTest" time="0.001"/>
+  <testcase name="testParseOverflowStart()" classname="net.wukl.cacofony.http.response.file.RangeParserTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

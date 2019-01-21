@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="net.wukl.cacofony.mime.MimeDbLoaderTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2019-01-21T16:13:41" hostname="versenwald" time="0.008">
+  <properties/>
+  <testcase name="testMixed()" classname="net.wukl.cacofony.mime.MimeDbLoaderTest" time="0.004"/>
+  <testcase name="testLoadSingle()" classname="net.wukl.cacofony.mime.MimeDbLoaderTest" time="0.001"/>
+  <testcase name="testLoadExtensionLessType()" classname="net.wukl.cacofony.mime.MimeDbLoaderTest" time="0.001"/>
+  <testcase name="testLoadComment()" classname="net.wukl.cacofony.mime.MimeDbLoaderTest" time="0.001"/>
+  <testcase name="testLoadMultiExtension()" classname="net.wukl.cacofony.mime.MimeDbLoaderTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

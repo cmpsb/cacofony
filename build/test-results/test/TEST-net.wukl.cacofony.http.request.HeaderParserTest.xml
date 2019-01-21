@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="net.wukl.cacofony.http.request.HeaderParserTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2019-01-21T16:13:41" hostname="versenwald" time="0.003">
+  <properties/>
+  <testcase name="testObsFold()" classname="net.wukl.cacofony.http.request.HeaderParserTest" time="0.001"/>
+  <testcase name="testValidMulti()" classname="net.wukl.cacofony.http.request.HeaderParserTest" time="0.001"/>
+  <testcase name="testInvalidSyntax()" classname="net.wukl.cacofony.http.request.HeaderParserTest" time="0.0"/>
+  <testcase name="testValidSimple()" classname="net.wukl.cacofony.http.request.HeaderParserTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

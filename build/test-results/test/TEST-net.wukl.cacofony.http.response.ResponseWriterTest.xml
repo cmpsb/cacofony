@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="net.wukl.cacofony.http.response.ResponseWriterTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2019-01-21T16:13:41" hostname="versenwald" time="0.019">
+  <properties/>
+  <testcase name="testWriteStreamedResponseToHeadRequest()" classname="net.wukl.cacofony.http.response.ResponseWriterTest" time="0.005"/>
+  <testcase name="testWritePlainResponseToHeadRequest()" classname="net.wukl.cacofony.http.response.ResponseWriterTest" time="0.005"/>
+  <testcase name="testWriteStraightEncodedResponseWithoutServerSupport()" classname="net.wukl.cacofony.http.response.ResponseWriterTest" time="0.001"/>
+  <testcase name="testWriteStraightEncodedResponsetoHeadRequest()" classname="net.wukl.cacofony.http.response.ResponseWriterTest" time="0.002"/>
+  <testcase name="testWriteErrorResponse()" classname="net.wukl.cacofony.http.response.ResponseWriterTest" time="0.001"/>
+  <testcase name="testWritePlainResponse()" classname="net.wukl.cacofony.http.response.ResponseWriterTest" time="0.001"/>
+  <testcase name="testWriteStraightEncodedResponseWithAcceptMismatch()" classname="net.wukl.cacofony.http.response.ResponseWriterTest" time="0.0"/>
+  <testcase name="testWriteStreamedResponse()" classname="net.wukl.cacofony.http.response.ResponseWriterTest" time="0.001"/>
+  <testcase name="testWriteStraightEncodedResponse()" classname="net.wukl.cacofony.http.response.ResponseWriterTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
