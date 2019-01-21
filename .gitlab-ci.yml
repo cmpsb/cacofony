@@ -1,3 +1,5 @@
+image: 11-jdk-slim
+
 stages:
   - test
   - build
