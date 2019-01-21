@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="net.wukl.cacofony.util.UrlCodecTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2019-01-21T16:13:44" hostname="versenwald" time="0.001">
-  <properties/>
-  <testcase name="testEncodeUtf8()" classname="net.wukl.cacofony.util.UrlCodecTest" time="0.0"/>
-  <testcase name="testEncodeAllowedSpecialCookieComponent()" classname="net.wukl.cacofony.util.UrlCodecTest" time="0.0"/>
-  <testcase name="testEncodeSpace()" classname="net.wukl.cacofony.util.UrlCodecTest" time="0.001"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>
