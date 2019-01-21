@@ -1,12 +1,13 @@
 package net.cmpsb.cacofony.yaml;
 
-import net.cmpsb.cacofony.di.DependencyResolver;
-import net.cmpsb.cacofony.di.Factory;
 import net.cmpsb.cacofony.server.MutableServerSettings;
 import net.cmpsb.cacofony.server.Server;
 import net.cmpsb.cacofony.server.ServerBuilder;
 import net.cmpsb.cacofony.server.host.HostBuilder;
 import net.cmpsb.cacofony.templating.TemplatingService;
+import net.wukl.cacodi.DependencyResolver;
+import net.wukl.cacodi.Factory;
+import net.wukl.cacodi.Manual;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
@@ -41,6 +42,7 @@ public class YamlLoader {
     /**
      * Creates a new yaml loader.
      */
+    @Manual
     public YamlLoader() {
         this.yaml = new Yaml();
         this.settingsLoader = new SettingsLoader();

@@ -1,7 +1,6 @@
 package net.cmpsb.cacofony.route;
 
 import net.cmpsb.cacofony.controller.Controller;
-import net.cmpsb.cacofony.di.DependencyResolver;
 import net.cmpsb.cacofony.http.cookie.CookieParser;
 import net.cmpsb.cacofony.http.exception.NotFoundException;
 import net.cmpsb.cacofony.http.request.Method;
@@ -17,6 +16,7 @@ import net.cmpsb.cacofony.mime.MimeType;
 import net.cmpsb.cacofony.mime.StrictMimeParser;
 import net.cmpsb.cacofony.util.Ob;
 import net.cmpsb.cacofony.util.UrlCodec;
+import net.wukl.cacodi.DependencyResolver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -1,6 +1,5 @@
 package net.cmpsb.cacofony.server.host;
 
-import net.cmpsb.cacofony.di.DependencyResolver;
 import net.cmpsb.cacofony.exception.ExceptionHandler;
 import net.cmpsb.cacofony.http.request.MutableRequest;
 import net.cmpsb.cacofony.http.response.Response;
@@ -9,6 +8,7 @@ import net.cmpsb.cacofony.mime.MimeParser;
 import net.cmpsb.cacofony.route.Router;
 import net.cmpsb.cacofony.route.RoutingEntry;
 import net.cmpsb.cacofony.server.ServerSettings;
+import net.wukl.cacodi.DependencyResolver;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

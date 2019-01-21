@@ -1,7 +1,6 @@
 package net.cmpsb.cacofony.server.host;
 
 import net.cmpsb.cacofony.controller.Controller;
-import net.cmpsb.cacofony.di.DependencyResolver;
 import net.cmpsb.cacofony.http.request.Method;
 import net.cmpsb.cacofony.http.request.Request;
 import net.cmpsb.cacofony.http.response.EmptyResponse;
@@ -10,6 +9,7 @@ import net.cmpsb.cacofony.http.response.ResponseCode;
 import net.cmpsb.cacofony.mime.MimeType;
 import net.cmpsb.cacofony.route.CompiledPath;
 import net.cmpsb.cacofony.route.RoutingEntry;
+import net.wukl.cacodi.DependencyResolver;
 
 import java.util.Arrays;
 import java.util.Collections;

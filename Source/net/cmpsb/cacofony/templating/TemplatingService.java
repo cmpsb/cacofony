@@ -1,7 +1,7 @@
 package net.cmpsb.cacofony.templating;
 
-import net.cmpsb.cacofony.di.Service;
 import net.cmpsb.cacofony.http.response.Response;
+import net.wukl.cacodi.Service;
 
 import java.util.Collections;
 import java.util.Map;

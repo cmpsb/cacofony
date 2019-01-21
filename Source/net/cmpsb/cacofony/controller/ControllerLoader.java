@@ -1,6 +1,5 @@
 package net.cmpsb.cacofony.controller;
 
-import net.cmpsb.cacofony.di.DependencyResolver;
 import net.cmpsb.cacofony.http.request.Method;
 import net.cmpsb.cacofony.mime.MimeParser;
 import net.cmpsb.cacofony.mime.MimeType;
@@ -10,6 +9,7 @@ import net.cmpsb.cacofony.route.Requirement;
 import net.cmpsb.cacofony.route.Route;
 import net.cmpsb.cacofony.route.Router;
 import net.cmpsb.cacofony.route.RoutingEntry;
+import net.wukl.cacodi.DependencyResolver;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

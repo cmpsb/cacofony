@@ -1,9 +1,9 @@
 package net.cmpsb.cacofony.route;
 
-import net.cmpsb.cacofony.di.DependencyResolver;
 import net.cmpsb.cacofony.http.request.MutableRequest;
 import net.cmpsb.cacofony.http.request.Request;
 import net.cmpsb.cacofony.http.response.Response;
+import net.wukl.cacodi.DependencyResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -2,11 +2,11 @@ package net.cmpsb.cacofony.templating.freemarker;
 
 import freemarker.template.Configuration;
 import freemarker.template.Version;
-import net.cmpsb.cacofony.di.Factory;
 import net.cmpsb.cacofony.mime.MimeGuesser;
 import net.cmpsb.cacofony.mime.MimeParser;
 import net.cmpsb.cacofony.yaml.FactoryFactory;
 import net.cmpsb.cacofony.yaml.InvalidYamlException;
+import net.wukl.cacodi.Factory;
 
 import java.io.File;
 import java.io.IOException;

@@ -79,6 +79,8 @@ dependencies {
     compile 'ch.qos.logback:logback-core:1.1.8'
     compile 'org.codehaus.groovy:groovy:2.4.+'
 
+    compile 'net.wukl:cacodi:1.1.0'
+
     // CSV parser.
     compile 'com.opencsv:opencsv:3.9'
 
@@ -106,36 +108,23 @@ dependencies {
     testCompile 'org.assertj:assertj-core:3.6.2'
 
     // Mockito.
-    testCompile 'org.mockito:mockito-core:2.7.+'
+    testCompile 'org.mockito:mockito-core:2.23.+'
 
     // Test helpers.
     testCompile 'com.github.stefanbirkner:system-rules:1.16.+'
-    testCompile 'nl.jqno.equalsverifier:equalsverifier:2.2.+'
+    testCompile 'nl.jqno.equalsverifier:equalsverifier:3.1.+'
 }
 
 checkstyle {
-    config = resources.text.fromFile(
-        new File(rootProject.rootDir, 'Configuration/Checkstyle/cmpsb_style.xml')
-    )
-
-    toolVersion = '7.6'
+    toolVersion = '8.16'
 }
 
 junitPlatform {
     logManager 'java.util.logging.LogManager'
 }
 
-afterEvaluate {
-    jacoco {
-        toolVersion = '0.7.9'
-        applyTo junitPlatformTest
-    }
-
-    jacocoTestReport {
-        executionData junitPlatformTest
-    }
-
-    junitPlatformTest.finalizedBy jacocoTestReport
+jacoco {
+    toolVersion = '0.8.2'
 }
 
 uploadArchives {

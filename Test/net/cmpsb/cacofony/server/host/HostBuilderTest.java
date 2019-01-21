@@ -1,10 +1,10 @@
 package net.cmpsb.cacofony.server.host;
 
-import net.cmpsb.cacofony.di.DependencyResolver;
 import net.cmpsb.cacofony.exception.ExceptionHandler;
 import net.cmpsb.cacofony.mime.MimeParser;
 import net.cmpsb.cacofony.route.Router;
 import net.cmpsb.cacofony.server.ServerSettings;
+import net.wukl.cacodi.DependencyResolver;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

@@ -2,11 +2,11 @@ package net.cmpsb.cacofony.route;
 
 import net.cmpsb.cacofony.controller.Controller;
 import net.cmpsb.cacofony.controller.ControllerLoader;
-import net.cmpsb.cacofony.di.DependencyResolver;
 import net.cmpsb.cacofony.http.request.MutableRequest;
 import net.cmpsb.cacofony.http.request.Request;
 import net.cmpsb.cacofony.http.response.Response;
 import net.cmpsb.cacofony.mime.FastMimeParser;
+import net.wukl.cacodi.DependencyResolver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

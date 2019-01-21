@@ -1,6 +1,6 @@
 package net.cmpsb.cacofony.yaml;
 
-import net.cmpsb.cacofony.di.Factory;
+import net.wukl.cacodi.Factory;
 
 import java.util.Map;
 

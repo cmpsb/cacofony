@@ -1,9 +1,9 @@
 package net.cmpsb.cacofony.server;
 
-import net.cmpsb.cacofony.di.DependencyResolver;
 import net.cmpsb.cacofony.server.host.DefaultHostBuilder;
 import net.cmpsb.cacofony.server.host.Host;
 import net.cmpsb.cacofony.server.host.HostBuilder;
+import net.wukl.cacodi.DependencyResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

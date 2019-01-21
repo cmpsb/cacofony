@@ -1,7 +1,6 @@
 package net.cmpsb.cacofony.server.host;
 
 import net.cmpsb.cacofony.controller.ControllerLoader;
-import net.cmpsb.cacofony.di.DependencyResolver;
 import net.cmpsb.cacofony.exception.ExceptionHandler;
 import net.cmpsb.cacofony.http.response.ResponsePreparer;
 import net.cmpsb.cacofony.http.response.ResponseWriter;
@@ -9,6 +8,7 @@ import net.cmpsb.cacofony.route.ResourceFileRouteFactory;
 import net.cmpsb.cacofony.route.Router;
 import net.cmpsb.cacofony.route.RoutingEntry;
 import net.cmpsb.cacofony.route.StaticFileRouteFactory;
+import net.wukl.cacodi.DependencyResolver;
 
 import java.nio.file.Path;
 

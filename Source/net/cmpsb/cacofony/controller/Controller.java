@@ -1,9 +1,9 @@
 package net.cmpsb.cacofony.controller;
 
-import net.cmpsb.cacofony.di.Inject;
-import net.cmpsb.cacofony.di.Service;
 import net.cmpsb.cacofony.http.response.Response;
 import net.cmpsb.cacofony.templating.TemplatingService;
+import net.wukl.cacodi.Inject;
+import net.wukl.cacodi.Service;
 
 import java.util.Map;
 

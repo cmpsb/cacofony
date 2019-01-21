@@ -1,12 +1,12 @@
 package net.cmpsb.cacofony.server.host;
 
 import freemarker.template.Configuration;
-import net.cmpsb.cacofony.di.DependencyResolver;
-import net.cmpsb.cacofony.di.Factory;
 import net.cmpsb.cacofony.exception.ExceptionHandler;
 import net.cmpsb.cacofony.server.ServerSettings;
 import net.cmpsb.cacofony.templating.TemplatingService;
 import net.cmpsb.cacofony.templating.freemarker.FreeMarkerService;
+import net.wukl.cacodi.DependencyResolver;
+import net.wukl.cacodi.Factory;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;

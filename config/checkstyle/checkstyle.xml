@@ -170,10 +170,7 @@
 
     </module>
 
-    <!-- Add in a suppression filter. -->
     <module name="SuppressionFilter">
-        <property name="file" value="Configuration/Checkstyle/suppressions.xml"/>
-        <property name="optional" value="false"/>
+        <property name="file" value="${config_loc}/suppressions.xml"/>
     </module>
-
 </module>

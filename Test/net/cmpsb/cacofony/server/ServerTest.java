@@ -1,8 +1,8 @@
 package net.cmpsb.cacofony.server;
 
-import net.cmpsb.cacofony.di.DependencyResolver;
 import net.cmpsb.cacofony.mime.FastMimeParser;
 import net.cmpsb.cacofony.mime.MimeParser;
+import net.wukl.cacodi.DependencyResolver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

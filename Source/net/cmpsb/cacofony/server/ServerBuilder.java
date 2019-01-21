@@ -1,6 +1,5 @@
 package net.cmpsb.cacofony.server;
 
-import net.cmpsb.cacofony.di.DependencyResolver;
 import net.cmpsb.cacofony.exception.DefaultExceptionHandler;
 import net.cmpsb.cacofony.exception.ExceptionHandler;
 import net.cmpsb.cacofony.mime.FastMimeParser;
@@ -9,6 +8,7 @@ import net.cmpsb.cacofony.mime.MimeDbLoader;
 import net.cmpsb.cacofony.mime.MimeParser;
 import net.cmpsb.cacofony.templating.DummyTemplatingService;
 import net.cmpsb.cacofony.templating.TemplatingService;
+import net.wukl.cacodi.DependencyResolver;
 
 import javax.net.ssl.SSLServerSocketFactory;
 import java.util.Set;
