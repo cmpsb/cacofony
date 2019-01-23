@@ -4,6 +4,7 @@ import net.wukl.cacofony.server.host.DefaultHostBuilder;
 import net.wukl.cacofony.server.host.Host;
 import net.wukl.cacofony.server.host.HostBuilder;
 import net.wukl.cacodi.DependencyResolver;
+import net.wukl.cacofony.server.host.HostMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -125,13 +126,14 @@ public class Server {
 
         logger.debug("Bootstrapping server.");
 
-        final ConnectionHandler handler = this.resolver.get(ConnectionHandler.class);
+        final HostMap hosts = this.resolver.get(HostMap.class);
+
         for (final HostBuilder builder : this.hostBuilders) {
             final Host host = builder.build();
             logger.debug("Built host {}.", host.getName());
-            handler.addHost(host);
+            hosts.add(host);
         }
-        handler.setDefaultHost(this.defaultHostBuilder.build());
+        hosts.setDefault(this.defaultHostBuilder.build());
 
         final ListenerFactory factory = this.resolver.get(ListenerFactory.class);
         for (final Port port : this.settings.getPorts()) {

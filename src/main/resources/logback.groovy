@@ -7,4 +7,4 @@ appender("STDOUT", ConsoleAppender) {
 }
 root(INFO, ["STDOUT"])
 
-logger("net.cmpsb.cacofony", DEBUG)
+logger("net.wukl.cacofony", DEBUG)
