@@ -129,7 +129,9 @@ public class ConnectionHandlerTest {
         }).when(this.namedWriter).write(any(), any(), any());
 
         assertTimeout(Duration.ofSeconds(1), () ->
-                this.handler.handle(this.address, this.port, this.in, this.out, scheme)
+                this.handler.handle(
+                        new Connection(this.address, this.port, this.in, this.out, scheme)
+                )
         );
 
         assertThat(requests).isEmpty();
@@ -165,7 +167,9 @@ public class ConnectionHandlerTest {
         }).when(this.namedWriter).write(any(), any(), any());
 
         assertTimeout(Duration.ofSeconds(1), () ->
-                this.handler.handle(this.address, this.port, this.in, this.out, scheme)
+                this.handler.handle(
+                        new Connection(this.address, this.port, this.in, this.out, scheme)
+                )
         );
 
         assertThat(requests).isEmpty();
@@ -182,7 +186,9 @@ public class ConnectionHandlerTest {
                 .handle(eq(null), eq(exception));
 
         assertTimeout(Duration.ofSeconds(1), () ->
-                this.handler.handle(this.address, this.port, this.in, this.out, scheme)
+                this.handler.handle(
+                        new Connection(this.address, this.port, this.in, this.out, scheme)
+                )
         );
 
         verify(this.defaultPreparer).prepare(eq(null), eq(exceptionResponse));

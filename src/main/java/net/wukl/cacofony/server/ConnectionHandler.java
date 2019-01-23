@@ -13,10 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -73,29 +71,21 @@ public class ConnectionHandler {
     /**
      * Handles an active connection.
      *
-     * @param address   the client's address
-     * @param port      the TCP port
-     * @param clientIn  the client's input stream
-     * @param clientOut the client's output stream
-     * @param scheme    the request scheme
+     * @param conn the connection to handle
      */
-    public void handle(final InetAddress address,
-                       final int port,
-                       final InputStream clientIn,
-                       final OutputStream clientOut,
-                       final String scheme) {
+    public void handle(final Connection conn) {
         try {
-            logger.debug("Remote {} connected.", address);
+            logger.debug("Remote {} connected.", conn.getAddress());
 
-            final ProtectedOutputStream out = new ProtectedOutputStream(clientOut);
-            final HttpInputStream in = new HttpInputStream(clientIn);
+            final ProtectedOutputStream out = new ProtectedOutputStream(conn.getOut());
+            final HttpInputStream in = new HttpInputStream(conn.getIn());
 
-            this.waitForRequest(address, port, out, in, scheme);
+            this.waitForRequest(conn, in, out);
 
             out.allowClosing(true);
             out.close();
 
-            logger.debug("Remote {} disconnected.", address);
+            logger.debug("Remote {} disconnected.", conn.getAddress());
         } catch (final IOException ex) {
             if (ex.getMessage() != null && ex.getMessage().contains("Connection reset by peer")) {
                 logger.debug("Client closed connection.");
@@ -111,19 +101,15 @@ public class ConnectionHandler {
     /**
      * The main request-response loop.
      *
-     * @param address the client's address
-     * @param port    the TCP port
-     * @param out     the client's target stream
-     * @param in      the client's source stream
-     * @param scheme  the URI scheme
+     * @param conn the connection to serve
+     * @param in the http input stream to use
+     * @param out the protected output stream to use
      *
      * @throws IOException if an I/O error occurs
      */
-    private void waitForRequest(final InetAddress address,
-                                final int port,
-                                final OutputStream out,
-                                final HttpInputStream in,
-                                final String scheme) throws IOException {
+    private void waitForRequest(
+            final Connection conn, final HttpInputStream in, final ProtectedOutputStream out
+    ) throws IOException {
         MutableRequest request;
 
         do {
@@ -133,9 +119,9 @@ public class ConnectionHandler {
 
             try {
                 request = this.parser.parse(in);
-                request.setPort(port);
-                request.setScheme(scheme);
-                request.setRemote(address);
+                request.setPort(conn.getPort());
+                request.setScheme(conn.getScheme());
+                request.setRemote(conn.getAddress());
 
                 final String hostname = request.getHost();
                 host = this.hosts.getOrDefault(hostname, this.defaultHost);
@@ -163,7 +149,7 @@ public class ConnectionHandler {
 
             if (request != null) {
                 logger.info("{} \"{} {} HTTP/{}.{}\" {} {}",
-                        address,
+                        conn.getAddress(),
                         request.getMethod(),
                         request.getRawPath(),
                         request.getMajorVersion(),

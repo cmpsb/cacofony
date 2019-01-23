@@ -74,7 +74,8 @@ public class Listener implements Runnable {
                 this.executor.submit(() -> {
                     try (InputStream in = client.getInputStream();
                          OutputStream out = client.getOutputStream()) {
-                        this.handler.handle(address, port, in, out, this.scheme);
+                        final var connection = new Connection(address, port, in, out, this.scheme);
+                        this.handler.handle(connection);
                     } catch (final IOException ex) {
                         logger.error("I/O exception while accepting a client: ", ex);
                     } finally {

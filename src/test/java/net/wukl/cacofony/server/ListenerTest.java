@@ -17,7 +17,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -64,8 +63,7 @@ public class ListenerTest {
     public void testHandleCalled(final String scheme) throws IOException {
         doAnswer(invocation -> {
             throw new VerificationException();
-        }).when(this.handler)
-                .handle(eq(this.address), eq(0), eq(this.in), eq(this.out), eq(scheme));
+        }).when(this.handler).handle(any());
 
         final Listener listener =
                 new Listener(this.serverSocket, this.executor, this.handler, scheme);
