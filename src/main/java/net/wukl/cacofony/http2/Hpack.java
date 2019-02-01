@@ -4,14 +4,17 @@ import net.wukl.cacofony.http.request.Header;
 import net.wukl.cacofony.http2.huffman.Huffman;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Stack;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * An HPACK (RFC 7541) encoder and decoder.
@@ -23,6 +26,11 @@ public class Hpack {
     private static final TableEntry[] STATIC_TABLE = new TableEntry[62];
 
     /**
+     * The inverse static table mapping entries to their positions in the static table.
+     */
+    private static final Map<TableEntry, Integer> INV_STATIC_TABLE = new HashMap<>();
+
+    /**
      * The number of entries in the static table, excluding the invalid null entry.
      */
     private static final int STATIC_TABLE_LENGTH = 62;
@@ -31,6 +39,11 @@ public class Hpack {
      * The number of bits available in an octet extending an integer.
      */
     private static final int EXTENDED_INTEGER_BITS = 7;
+
+    /**
+     * The bit used to indicate a continuation of an extended integer.
+     */
+    private static final int EXTENSION_CONTINUATION_MASK = 0b1000_0000;
 
     /**
      * The pattern used to parse a row in the static table source file.
@@ -66,7 +79,9 @@ public class Hpack {
                     }
 
                     final var index = Integer.parseInt(indexStr);
-                    STATIC_TABLE[index] = new TableEntry(key, value, 0);
+                    final var entry = new TableEntry(key, value, 0);
+                    STATIC_TABLE[index] = entry;
+                    INV_STATIC_TABLE.put(entry, index);
                 }
             }
         } catch (final IOException ex) {
@@ -80,6 +95,11 @@ public class Hpack {
     private final DynamicTable decompressionTable = new DynamicTable();
 
     /**
+     * The dynamic table generated while compressing headers.
+     */
+    private final DynamicTable compressionTable = new DynamicTable();
+
+    /**
      * The Huffman codec to use.
      */
     private final Huffman huffman;
@@ -87,18 +107,23 @@ public class Hpack {
     /**
      * The maximum size of the dynamic table connection-wide.
      */
-    private int maxDynamicSize;
+    private int maxDynDecodingSize = 4096;
+
+    /**
+     * The maximum size of the encoding dynamic table connection-wide.
+     */
+    private int maxDynEncodingSize = 4096;
 
     /**
      * Creates a new HPACK codec.
      *
      * @param huffman the Huffman codec to use for reading and writing compressed strings
-     * @param maxDynamicSize the maximum size of the dynamic table as set by HTTP/2
      */
-    public Hpack(final Huffman huffman, final int maxDynamicSize) {
+    public Hpack(final Huffman huffman) {
         this.huffman = huffman;
-        this.maxDynamicSize = maxDynamicSize;
-        this.decompressionTable.resize(this.maxDynamicSize);
+
+        this.decompressionTable.resize(this.maxDynDecodingSize);
+        this.compressionTable.resize(this.maxDynEncodingSize);
     }
 
     /**
@@ -129,7 +154,7 @@ public class Hpack {
                 i = parsedSize.index;
                 final var size = parsedSize.value.intValue();
 
-                if (size >= this.maxDynamicSize) {
+                if (size >= this.maxDynDecodingSize) {
                     throw new HpackDecodingException(
                             "New dynamic table size exceeds connection limit"
                     );
@@ -145,17 +170,166 @@ public class Hpack {
     }
 
     /**
-     * Adjusts the maximum dynamic table size.
+     * Compresses a set of headers into a byte stream.
+     *
+     * @param headers the headers to compress
+     *
+     * @return the bytes consisting of the compressed headers
+     */
+    public byte[] compress(final List<Header> headers) {
+        try (var bytes = new ByteArrayOutputStream()) {
+
+            final var entries = headers.stream()
+                    .flatMap(h -> h.getValues().stream().map(v ->
+                            new TableEntry(h.getKey(), v, h.isSensitive())
+                    ))
+                    .collect(Collectors.toList());
+
+            for (final var entry : entries) {
+                final var index = this.getIndexInTable(entry);
+                if (index != 0) {
+                    bytes.write(this.writeInt(0b1000_0000, 7, index));
+                    continue;
+                }
+
+                final int prefix;
+                final int prefixLength;
+                if (entry.isSensitive) {
+                    prefix = 0b0001_0000;
+                    prefixLength = 4;
+                } else {
+                    prefix = 0b0100_0000;
+                    prefixLength = 6;
+                }
+
+                final var partialIndex = this.getIndexInTable(entry.getKeyEntry());
+                bytes.write(this.writeInt(prefix, prefixLength, partialIndex));
+                if (partialIndex == 0) {
+                    this.writeString(entry.key, bytes);
+                }
+
+                this.writeString(entry.value, bytes);
+
+                if (!entry.isSensitive) {
+                    this.compressionTable.insert(entry);
+                }
+            }
+
+            return bytes.toByteArray();
+        } catch (final IOException ex) {
+            // Never happens. Still, wrap the exception and rethrow just to be sure.
+            throw new RuntimeException(ex);
+        }
+    }
+
+    /**
+     * Returns the index of a table entry.
+     *
+     * If the entry is not present in any table, 0 is returned instead.
+     *
+     * @param entry the entry to look for
+     *
+     * @return the index, or 0 if the entry is not present
+     */
+    private int getIndexInTable(final TableEntry entry) {
+        final var staticIndex = INV_STATIC_TABLE.get(entry);
+        if (staticIndex != null) {
+            return staticIndex;
+        }
+
+        return this.compressionTable.indexOf(entry);
+    }
+
+    /**
+     * Writes an integer into the byte string.
+     *
+     * @param lead the leading bits that are not part of the integer
+     * @param prefixLength the number of bits the integer prefix
+     * @param value the actual value to store
+     *
+     * @return the bytes representing the integer
+     */
+    private byte[] writeInt(final int lead, final int prefixLength, final int value) {
+        final var initialMax = (1 << prefixLength) - 1;
+
+        if (value < initialMax) {
+            return new byte[] {(byte) ((lead | value) & 0xFF)};
+        }
+
+        if (value < initialMax + (1 << EXTENDED_INTEGER_BITS)) {
+            return new byte[] {
+                    (byte) ((lead | initialMax) & 0xFF),
+                    (byte) ((value - initialMax) & 0xFF)
+            };
+        }
+
+        final var extensionMask = (1 << EXTENDED_INTEGER_BITS) - 1;
+
+        if (value < initialMax + (1 << (EXTENDED_INTEGER_BITS * 2))) {
+            return new byte[] {
+                    (byte) ((lead | initialMax) & 0xFF),
+                    (byte) (((value - initialMax) & extensionMask) | EXTENSION_CONTINUATION_MASK),
+                    (byte) (((value - initialMax) >> EXTENDED_INTEGER_BITS) & extensionMask)
+            };
+        }
+
+        if (value < initialMax + (1 << (EXTENDED_INTEGER_BITS * 3))) {
+            return new byte[] {
+                    (byte) ((lead | initialMax) & 0xFF),
+                    (byte) ((value - initialMax) & extensionMask),
+                    (byte) ((((value - initialMax) >> EXTENDED_INTEGER_BITS) & extensionMask)
+                            | EXTENSION_CONTINUATION_MASK),
+                    (byte) (((value - initialMax) >> (2 * EXTENDED_INTEGER_BITS)) & extensionMask)
+            };
+        }
+
+        throw new EncodingException("Integer is too large: " + value);
+    }
+
+    /**
+     * Writes a Huffman-encoded string with length to the byte stream.
+     *
+     * The string is encoded using UTF-8.
+     *
+     * @param str the string to write
+     * @param out the byte array output stream to write the bytes to
+     *
+     * @throws IOException probably never
+     */
+    private void writeString(final String str, final ByteArrayOutputStream out) throws IOException {
+        final var bytes = this.huffman.encode(str);
+
+        out.write(this.writeInt(0b1000_0000, 7, bytes.length));
+        out.write(bytes);
+    }
+
+    /**
+     * Adjusts the maximum dynamic table size for decoding.
      *
      * @param newMaxSize the new maximum size
      * @param force if {@code true}, the maximum size is directly applied to the dynamic table,
      *              otherwise the value is set for future comparison
      */
-    public void updateMaximumSize(final int newMaxSize, final boolean force) {
-        this.maxDynamicSize = newMaxSize;
+    public void updateMaximumDecodingSize(final int newMaxSize, final boolean force) {
+        this.maxDynDecodingSize = newMaxSize;
 
         if (force) {
             this.decompressionTable.resize(newMaxSize);
+        }
+    }
+
+    /**
+     * Adjusts the maximum dynamic table size for encoding.
+     *
+     * @param newMaxSize the new maximum size
+     * @param force if {@code true}, the maximum size is directly applied to the dynamic table,
+     *              otherwise the value is set for future comparison
+     */
+    public void updateMaximumEncodingSize(final int newMaxSize, final boolean force) {
+        this.maxDynEncodingSize = newMaxSize;
+
+        if (force) {
+            this.compressionTable.resize(newMaxSize);
         }
     }
 
@@ -362,7 +536,7 @@ public class Hpack {
         ++i;
 
         long value = 0;
-        for (; i < data.length && (data[i] & (1 << EXTENDED_INTEGER_BITS)) != 0; ++i) {
+        for (; i < data.length && (data[i] & EXTENSION_CONTINUATION_MASK) != 0; ++i) {
             value |= (data[i] & ((1 << EXTENDED_INTEGER_BITS) - 1))
                     << ((i - ii) * EXTENDED_INTEGER_BITS);
         }
@@ -491,6 +665,11 @@ public class Hpack {
         private final int length;
 
         /**
+         * Whether the entry originated from a security-sensitive header.
+         */
+        private final boolean isSensitive;
+
+        /**
          * Creates a new table entry.
          *
          * @param key the name of the header
@@ -501,6 +680,51 @@ public class Hpack {
             this.key = key;
             this.value = value;
             this.length = length;
+            this.isSensitive = false;
+        }
+
+        /**
+         * Creates a new table entry and calculates the size of the entry.
+         *
+         * The size of the entry is based on the sum of the number of bytes the key and value
+         * take together when encoded with UTF-8 plus 32 bytes of overhead as per
+         * RFC 7541 Section 4.1.
+         *
+         * @param key the key
+         * @param value the value
+         * @param isSensitive whether the entry originated from a security-sensitive header
+         */
+        private TableEntry(final String key, final String value, final boolean isSensitive) {
+            this.key = key;
+            this.value = value;
+            this.length = this.key.getBytes(StandardCharsets.UTF_8).length
+                    + this.value.getBytes(StandardCharsets.UTF_8).length
+                    + 32;
+            this.isSensitive = isSensitive;
+        }
+
+        /**
+         * Returns an entry without any value, for searching for indexed-key literals.
+         *
+         * @return the entry with the same key and the value set to {@code null}
+         */
+        private TableEntry getKeyEntry() {
+            return new TableEntry(this.key, null, 0);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            if (!(obj instanceof TableEntry)) {
+                return false;
+            }
+
+            final var other = (TableEntry) obj;
+            return this.key.equalsIgnoreCase(other.key) && Objects.equals(this.value, other.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.key.toLowerCase(), this.value);
         }
     }
 
@@ -524,7 +748,7 @@ public class Hpack {
          * The current size of the table in RFC 7541 parlance.
          *
          * This is the upper limit, but can by dynamically changed through HPACK. The connection-set
-         * maximum is at {@link Hpack#maxDynamicSize}.
+         * maximum is at {@link Hpack#maxDynDecodingSize}.
          */
         private int capacity = 0;
 
@@ -539,6 +763,26 @@ public class Hpack {
          */
         private TableEntry get(final int index) {
             return this.table.get(this.table.size() - (index - STATIC_TABLE_LENGTH) - 1);
+        }
+
+        /**
+         * Looks up the index of an entry in the table.
+         *
+         * The index includes the static table offset.
+         *
+         * If the entry is not found, 0 is returned instead.
+         *
+         * @param entry the entry to look for
+         *
+         * @return the index
+         */
+        private int indexOf(final TableEntry entry) {
+            final var index = this.table.indexOf(entry);
+            if (index != -1) {
+                return (this.table.size() - index - 1) + STATIC_TABLE_LENGTH;
+            }
+
+            return 0;
         }
 
         /**

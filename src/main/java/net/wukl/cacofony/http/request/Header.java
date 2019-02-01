@@ -1,11 +1,18 @@
 package net.wukl.cacofony.http.request;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 /**
- * A request header.
+ * A request or response header.
+ *
+ * The header has a non-{@code null} name and zero or more values. Values also can not be
+ * {@code null}.
+ *
+ * When using HTTP/2, it is wise to mark headers that can contain security-sensitive information
+ * as sensitive (using
  */
 public class Header {
     /**
@@ -19,14 +26,18 @@ public class Header {
     private final List<String> values;
 
     /**
+     * Whether the header contains sensitive information and should not be compressed.
+     */
+    private final boolean sensitive;
+
+    /**
      * Creates a new header.
      *
      * @param key the header key
      * @param values the header values
      */
     public Header(final String key, final List<String> values) {
-        this.key = key;
-        this.values = new ArrayList<>(values);
+        this(key, values, false);
     }
 
     /**
@@ -36,8 +47,7 @@ public class Header {
      * @param value the header value
      */
     public Header(final String key, final String value) {
-        this.key = key;
-        this.values = new ArrayList<>(List.of(value));
+        this(key, value, false);
     }
 
     /**
@@ -48,8 +58,46 @@ public class Header {
      * @param key the header key
      */
     public Header(final String key) {
+        this(key, false);
+    }
+
+    /**
+     * Creates a new header.
+     *
+     * @param key the header key
+     * @param values the header values
+     * @param sensitive if {@code true}, the header is treated as a security-sensitive part
+     *                  of the response
+     */
+    public Header(final String key, final List<String> values, final boolean sensitive) {
         this.key = key;
-        this.values = new ArrayList<>();
+        this.values = new ArrayList<>(values);
+        this.sensitive = sensitive;
+    }
+
+    /**
+     * Creates a new header.
+     *
+     * @param key the header key
+     * @param value the header value
+     * @param sensitive if {@code true}, the header is treated as a security-sensitive part
+     *                  of the response
+     */
+    public Header(final String key, final String value, final boolean sensitive) {
+        this(key, Collections.singletonList(value), sensitive);
+    }
+
+    /**
+     * Creates a new header.
+     *
+     * The header contains no values.
+     *
+     * @param key the header key
+     * @param sensitive if {@code true}, the header is treated as a security-sensitive part
+     *                  of the response
+     */
+    public Header(final String key, final boolean sensitive) {
+        this(key, Collections.emptyList(), sensitive);
     }
 
     /**
@@ -93,16 +141,37 @@ public class Header {
     }
 
     /**
+     * Checks whether the header could contain sensitive information.
+     *
+     * @return {@code true} if the header could contain sensitive information,
+     *         {@code false} otherwise
+     */
+    public boolean isSensitive() {
+        return this.sensitive;
+    }
+
+    /**
      * Adds all values from the other header to this header.
+     *
+     * It is an error to merge the values of a header with a different key or to merge the values
+     * of a security-sensitive header into a header without that flag set.
      *
      * @param header the other header
      *
      * @throws IllegalArgumentException if the header keys differ (case-insensitive)
+     *          or if the source header is sensitive, but the target header is not
      */
     public void add(final Header header) {
         if (!this.key.equalsIgnoreCase(header.key)) {
             throw new IllegalArgumentException(
                     this.key + " and " + header.key + " cannot be merged automatically"
+            );
+        }
+
+        if (!this.sensitive && header.sensitive) {
+            throw new IllegalArgumentException(
+                    "Cannot add sensitive values to a normal header. "
+                    + "Merge the other way or re-create this header with the sensitive flag set."
             );
         }
 
