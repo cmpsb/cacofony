@@ -75,9 +75,9 @@ public class Hpack {
     }
 
     /**
-     * The dynamic table generated during a connection.
+     * The dynamic table generated while decompressing headers.
      */
-    private final DynamicTable dynamicTable = new DynamicTable();
+    private final DynamicTable decompressionTable = new DynamicTable();
 
     /**
      * The Huffman codec to use.
@@ -98,7 +98,7 @@ public class Hpack {
     public Hpack(final Huffman huffman, final int maxDynamicSize) {
         this.huffman = huffman;
         this.maxDynamicSize = maxDynamicSize;
-        this.dynamicTable.resize(this.maxDynamicSize);
+        this.decompressionTable.resize(this.maxDynamicSize);
     }
 
     /**
@@ -135,7 +135,7 @@ public class Hpack {
                     );
                 }
 
-                this.dynamicTable.resize(parsedSize.value.intValue());
+                this.decompressionTable.resize(parsedSize.value.intValue());
             } else {
                 throw new HpackDecodingException("Unrecognized header field encoding");
             }
@@ -155,7 +155,7 @@ public class Hpack {
         this.maxDynamicSize = newMaxSize;
 
         if (force) {
-            this.dynamicTable.resize(newMaxSize);
+            this.decompressionTable.resize(newMaxSize);
         }
     }
 
@@ -280,7 +280,7 @@ public class Hpack {
         headers.insert(key, value);
 
         if (addToTable) {
-            this.dynamicTable.insert(
+            this.decompressionTable.insert(
                     new TableEntry(key, value, keyLength + parsedValue.length + 32)
             );
         }
@@ -307,7 +307,7 @@ public class Hpack {
             return STATIC_TABLE[index];
         }
 
-        return this.dynamicTable.get(index);
+        return this.decompressionTable.get(index);
     }
 
     /**
