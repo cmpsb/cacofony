@@ -5,8 +5,8 @@
         "http://www.puppycrawl.com/dtds/suppressions_1_1.dtd">
 
 <suppressions>
-    <!-- Don't require javadoc in tests. -->
-    <suppress checks="Javadoc.*|MagicNumber|VisibilityModifier|DesignForExtension"
+    <!-- Don't require javadoc and proper method names in tests. -->
+    <suppress checks="Javadoc.*|MagicNumber|VisibilityModifier|DesignForExtension|MethodName"
               files="(Test.*\.java)|(.*Test\.java)$"/>
 
     <!-- Don't require javadoc for controllers. -->
