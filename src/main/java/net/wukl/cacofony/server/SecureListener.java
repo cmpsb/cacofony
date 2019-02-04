@@ -1,6 +1,6 @@
 package net.wukl.cacofony.server;
 
-import net.wukl.cacofony.server.protocol.Http2ProtocolFactory;
+import net.wukl.cacofony.http2.Http2ProtocolFactory;
 import net.wukl.cacofony.server.protocol.HttpProtocolFactory;
 import net.wukl.cacofony.server.protocol.Protocol;
 import org.slf4j.Logger;

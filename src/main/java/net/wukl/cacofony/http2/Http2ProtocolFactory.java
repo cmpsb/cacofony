@@ -1,6 +1,7 @@
-package net.wukl.cacofony.server.protocol;
+package net.wukl.cacofony.http2;
 
 import net.wukl.cacofony.server.Connection;
+import net.wukl.cacofony.server.protocol.ProtocolFactory;
 
 /**
  * A factory creating HTTP/2 protocol instances.

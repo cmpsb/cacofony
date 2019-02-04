@@ -1,6 +1,6 @@
 package net.wukl.cacofony.server;
 
-import net.wukl.cacofony.server.protocol.Http2ProtocolFactory;
+import net.wukl.cacofony.http2.Http2ProtocolFactory;
 import net.wukl.cacofony.server.protocol.HttpProtocolFactory;
 
 import javax.net.ssl.SSLServerSocket;
