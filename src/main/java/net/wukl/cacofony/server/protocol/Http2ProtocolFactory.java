@@ -17,6 +17,6 @@ public class Http2ProtocolFactory implements ProtocolFactory<Http2Protocol> {
      */
     @Override
     public Http2Protocol build(final Connection conn) {
-        return new Http2Protocol();
+        return new Http2Protocol(conn);
     }
 }

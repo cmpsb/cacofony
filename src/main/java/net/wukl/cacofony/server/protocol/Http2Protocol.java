@@ -1,11 +1,26 @@
 package net.wukl.cacofony.server.protocol;
 
 import net.wukl.cacofony.http.exception.NotImplementedException;
+import net.wukl.cacofony.server.Connection;
 
 /**
  * The HTTP/2 protocol.
  */
 public class Http2Protocol implements Protocol {
+    /**
+     * The connection with the client.
+     */
+    private final Connection conn;
+
+    /**
+     * Creates a new HTTP/2 protocol instance.
+     *
+     * @param conn the connection with the client
+     */
+    public Http2Protocol(final Connection conn) {
+        this.conn = conn;
+    }
+
     /**
      * Returns the name of the protocol.
      *
