@@ -1,4 +1,4 @@
-package net.wukl.cacofony.http2.huffman;
+package net.wukl.cacofony.http2.hpack.huffman;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,7 +17,7 @@ public class Huffman {
     /**
      * The path to the table file.
      */
-    private static final String TABLE_PATH = "/net/wukl/cacofony/http2/huffman-table.txt";
+    private static final String TABLE_PATH = "huffman-table.txt";
 
     /**
      * The pattern used to extract entries in the table from RFC 7541 appendix B.
@@ -115,7 +115,7 @@ public class Huffman {
      *
      * @return the string, without any end-of-string characters
      *
-     * @throws DecodingException if the bits do not correctly encode a string
+     * @throws HuffmanDecodingException if the bits do not correctly encode a string
      */
     public String decode(final byte[] data, final Charset charset) {
         var string = new byte[data.length * Byte.SIZE / EXPECTED_BITS_PER_CHAR];
@@ -135,7 +135,7 @@ public class Huffman {
                     break;
                 }
 
-                throw new DecodingException("Data truncated");
+                throw new HuffmanDecodingException("Data truncated");
             }
 
             // Check if the minimum code fits in the current byte
@@ -160,7 +160,7 @@ public class Huffman {
                 final var ch = DECODING_TABLE.get(seq);
                 if (ch != null) {
                     if (ch.equals(EOS)) {
-                        throw new DecodingException("Stray EOS character");
+                        throw new HuffmanDecodingException("Stray EOS character");
                     }
 
                     if (c >= string.length) {
@@ -186,11 +186,11 @@ public class Huffman {
                         break;
                     }
 
-                    throw new DecodingException("Data truncated");
+                    throw new HuffmanDecodingException("Data truncated");
                 }
 
                 if (len >= MAX_CODE_LENGTH) {
-                    throw new DecodingException("Invalid bit sequence");
+                    throw new HuffmanDecodingException("Invalid bit sequence");
                 }
 
                 // Grab the next bit and increase the code size
@@ -214,7 +214,7 @@ public class Huffman {
      *
      * @return the string, without any end-of-string characters
      *
-     * @throws DecodingException if the bits do not correctly encode a string
+     * @throws HuffmanDecodingException if the bits do not correctly encode a string
      */
     public String decode(final byte[] data) {
         return this.decode(data, StandardCharsets.UTF_8);

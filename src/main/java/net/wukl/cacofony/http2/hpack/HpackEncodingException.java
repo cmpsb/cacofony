@@ -1,13 +1,13 @@
-package net.wukl.cacofony.http2;
+package net.wukl.cacofony.http2.hpack;
 
 /**
  * @author Luc Everse
  */
-public class EncodingException extends RuntimeException {
+public class HpackEncodingException extends RuntimeException {
     /**
      * Creates a new encoding exception.
      */
-    public EncodingException() {
+    public HpackEncodingException() {
         super();
     }
 
@@ -16,7 +16,7 @@ public class EncodingException extends RuntimeException {
      *
      * @param message the detail message explaining what caused the exception
      */
-    public EncodingException(final String message) {
+    public HpackEncodingException(final String message) {
         super(message);
     }
 
@@ -25,7 +25,7 @@ public class EncodingException extends RuntimeException {
      *
      * @param cause the exception that caused this exception
      */
-    public EncodingException(final Throwable cause) {
+    public HpackEncodingException(final Throwable cause) {
         super(cause);
     }
 
@@ -35,7 +35,7 @@ public class EncodingException extends RuntimeException {
      * @param message the detail message explaining what caused the exception
      * @param cause   the exception that caused this exception
      */
-    public EncodingException(final String message, final Throwable cause) {
+    public HpackEncodingException(final String message, final Throwable cause) {
         super(message, cause);
     }
 }

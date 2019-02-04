@@ -1,7 +1,7 @@
-package net.wukl.cacofony.http2;
+package net.wukl.cacofony.http2.hpack;
 
 import net.wukl.cacofony.http.request.Header;
-import net.wukl.cacofony.http2.huffman.Huffman;
+import net.wukl.cacofony.http2.hpack.huffman.Huffman;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -283,7 +283,7 @@ public class Hpack {
             };
         }
 
-        throw new EncodingException("Integer is too large: " + value);
+        throw new HpackEncodingException("Integer is too large: " + value);
     }
 
     /**

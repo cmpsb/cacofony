@@ -1,7 +1,7 @@
-package net.wukl.cacofony.http2;
+package net.wukl.cacofony.http2.hpack;
 
 import net.wukl.cacofony.http.request.Header;
-import net.wukl.cacofony.http2.huffman.Huffman;
+import net.wukl.cacofony.http2.hpack.huffman.Huffman;
 import org.assertj.core.presentation.HexadecimalRepresentation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

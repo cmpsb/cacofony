@@ -1,4 +1,4 @@
-package net.wukl.cacofony.http2;
+package net.wukl.cacofony.http2.hpack;
 
 /**
  * An exception signaling a problem occurred while initializing the static HPACK table.

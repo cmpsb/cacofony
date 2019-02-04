@@ -1,4 +1,4 @@
-package net.wukl.cacofony.http2;
+package net.wukl.cacofony.http2.hpack;
 
 /**
  * @author Luc Everse

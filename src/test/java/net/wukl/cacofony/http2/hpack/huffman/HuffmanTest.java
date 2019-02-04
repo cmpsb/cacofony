@@ -1,4 +1,4 @@
-package net.wukl.cacofony.http2.huffman;
+package net.wukl.cacofony.http2.hpack.huffman;
 
 import org.assertj.core.presentation.HexadecimalRepresentation;
 import org.junit.jupiter.api.BeforeEach;
@@ -102,6 +102,6 @@ public class HuffmanTest {
      * @return the stream or {@code null} if the file could not be found
      */
     private InputStream getFile(final String name) {
-        return HuffmanTest.class.getResourceAsStream("/net/wukl/cacofony/http2/huffman/" + name);
+        return HuffmanTest.class.getResourceAsStream(name);
     }
 }

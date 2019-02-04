@@ -1,4 +1,4 @@
-package net.wukl.cacofony.http2.huffman;
+package net.wukl.cacofony.http2.hpack.huffman;
 
 /**
  * An exception generated if the Huffman pre-processing stage fails.
