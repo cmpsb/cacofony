@@ -1,5 +1,7 @@
 package net.wukl.cacofony.http2.frame;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Set;
 
 /**
@@ -28,9 +30,12 @@ public interface Frame {
     int getStreamId();
 
     /**
-     * Translates the frame payload into a set of bytes for transmission.
+     * Translates the frame payload into a set of bytes for transmission and writes them to an
+     * output stream.
      *
-     * @return the bytes
+     * @param out the stream to write the bytes to
+     *
+     * @throws IOException if an I/O error occurs
      */
-    byte[] payloadToBytes();
+    void writePayload(OutputStream out) throws IOException;
 }

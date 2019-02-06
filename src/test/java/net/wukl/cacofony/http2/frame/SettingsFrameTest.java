@@ -4,6 +4,8 @@ import net.wukl.cacofony.http2.settings.Setting;
 import net.wukl.cacofony.http2.settings.SettingIdentifier;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -35,15 +37,19 @@ public class SettingsFrameTest {
     }
 
     @Test
-    public void testToBytesOfEmptySettings() {
+    public void testToBytesOfEmptySettings() throws IOException {
         final var frame = new SettingsFrame(List.of(), false);
-        assertThat(frame.payloadToBytes()).isEmpty();
+        final var bytes = new ByteArrayOutputStream();
+        frame.writePayload(bytes);
+        assertThat(bytes.size()).isZero();
     }
 
     @Test
-    public void testToBytesOfAcknowledgement() {
+    public void testToBytesOfAcknowledgement() throws IOException {
         final var frame = SettingsFrame.ACK;
-        assertThat(frame.payloadToBytes()).isEmpty();
+        final var bytes = new ByteArrayOutputStream();
+        frame.writePayload(bytes);
+        assertThat(bytes.size()).isZero();
     }
 
     @Test
@@ -55,28 +61,30 @@ public class SettingsFrameTest {
     }
 
     @Test
-    public void testToBytesOfSingleSetting() {
+    public void testToBytesOfSingleSetting() throws IOException {
         final var frame = new SettingsFrame(Collections.singletonList(
             new Setting(SettingIdentifier.ENABLE_PUSH, 1)
         ));
-        final var bytes = frame.payloadToBytes();
+        final var bytes = new ByteArrayOutputStream();
+        frame.writePayload(bytes);
 
-        assertThat(bytes).containsExactly(
+        assertThat(bytes.toByteArray()).containsExactly(
                 0x00, 0x02,
                 0x00, 0x00, 0x00, 0x01
         );
     }
 
     @Test
-    public void testToBytesOfMultipleSettings() {
+    public void testToBytesOfMultipleSettings() throws IOException {
         final var frame = new SettingsFrame(List.of(
             new Setting(SettingIdentifier.HEADER_TABLE_SIZE, 0xf00ff00f),
             new Setting(SettingIdentifier.MAX_CONCURRENT_STREAMS, 0x11AAACC6L)
         ));
 
-        final var bytes = frame.payloadToBytes();
+        final var bytes = new ByteArrayOutputStream();
+        frame.writePayload(bytes);
 
-        assertThat(bytes).containsExactly(
+        assertThat(bytes.toByteArray()).containsExactly(
             0x00, 0x01,
             0xf0, 0x0f, 0xf0, 0x0f,
             0x00, 0x03,

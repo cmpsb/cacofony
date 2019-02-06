@@ -2,8 +2,8 @@ package net.wukl.cacofony.http2.frame;
 
 import net.wukl.cacofony.http2.settings.Setting;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -110,21 +110,13 @@ public final class SettingsFrame implements Frame {
     }
 
     @Override
-    public byte[] payloadToBytes() {
+    public void writePayload(final OutputStream out) throws IOException {
         if (this.settings.isEmpty() || this.acknowledgement) {
-            return new byte[0];
+            return;
         }
 
-        final var out = new ByteArrayOutputStream();
         for (final var setting : this.settings) {
-            try {
-                out.write(setting.toBytes());
-            } catch (final IOException ex) {
-                // Very unlikely.
-                throw new RuntimeException(ex);
-            }
+            out.write(setting.toBytes());
         }
-
-        return out.toByteArray();
     }
 }
