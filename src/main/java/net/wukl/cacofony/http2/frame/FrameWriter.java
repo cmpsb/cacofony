@@ -17,7 +17,7 @@ public class FrameWriter {
      * @throws IOException if an I/O error occurs
      */
     public void write(final Frame frame, final OutputStream out) throws IOException {
-        final var length = frame.getLength();
+        final var length = frame.getPayloadLength();
         final var id = frame.getStreamId();
 
         final var buf = new byte[] {

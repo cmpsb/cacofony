@@ -13,7 +13,7 @@ public interface Frame {
      *
      * @return the length of the payload
      */
-    int getLength();
+    int getPayloadLength();
 
     /**
      * Returns the type of the frame.

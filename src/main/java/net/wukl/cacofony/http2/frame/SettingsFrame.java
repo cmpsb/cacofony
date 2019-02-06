@@ -90,7 +90,7 @@ public final class SettingsFrame implements Frame {
     }
 
     @Override
-    public int getLength() {
+    public int getPayloadLength() {
         return this.settings.size() * BYTES_PER_SETTING;
     }
 
