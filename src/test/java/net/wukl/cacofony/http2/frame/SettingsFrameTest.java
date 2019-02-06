@@ -41,6 +41,7 @@ public class SettingsFrameTest {
         final var frame = new SettingsFrame(List.of(), false);
         final var bytes = new ByteArrayOutputStream();
         frame.writePayload(bytes);
+        assertThat(frame.getLength()).isZero();
         assertThat(bytes.size()).isZero();
     }
 
@@ -49,6 +50,7 @@ public class SettingsFrameTest {
         final var frame = SettingsFrame.ACK;
         final var bytes = new ByteArrayOutputStream();
         frame.writePayload(bytes);
+        assertThat(frame.getLength()).isZero();
         assertThat(bytes.size()).isZero();
     }
 
@@ -68,6 +70,7 @@ public class SettingsFrameTest {
         final var bytes = new ByteArrayOutputStream();
         frame.writePayload(bytes);
 
+        assertThat(frame.getLength()).isEqualTo(6);
         assertThat(bytes.toByteArray()).containsExactly(
                 0x00, 0x02,
                 0x00, 0x00, 0x00, 0x01
@@ -84,6 +87,7 @@ public class SettingsFrameTest {
         final var bytes = new ByteArrayOutputStream();
         frame.writePayload(bytes);
 
+        assertThat(frame.getLength()).isEqualTo(12);
         assertThat(bytes.toByteArray()).containsExactly(
             0x00, 0x01,
             0xf0, 0x0f, 0xf0, 0x0f,
