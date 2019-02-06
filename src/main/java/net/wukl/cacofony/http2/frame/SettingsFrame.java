@@ -25,6 +25,11 @@ public final class SettingsFrame implements Frame {
     public static final SettingsFrame ACK = new SettingsFrame(true);
 
     /**
+     * The number of bytes used per serialized setting within the frame's payload.
+     */
+    private static final int BYTES_PER_SETTING = 6;
+
+    /**
      * The settings contained within the frame.
      */
     private final List<Setting> settings;
@@ -82,6 +87,11 @@ public final class SettingsFrame implements Frame {
      */
     public SettingsFrame(final boolean acknowledgement) {
         this(Collections.emptyList(), acknowledgement);
+    }
+
+    @Override
+    public int getLength() {
+        return this.settings.size() * BYTES_PER_SETTING;
     }
 
     @Override

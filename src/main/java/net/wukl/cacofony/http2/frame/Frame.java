@@ -9,6 +9,13 @@ import java.util.Set;
  */
 public interface Frame {
     /**
+     * Returns the number of bytes in the frame's payload.
+     *
+     * @return the length of the payload
+     */
+    int getLength();
+
+    /**
      * Returns the type of the frame.
      *
      * @return the frame type
