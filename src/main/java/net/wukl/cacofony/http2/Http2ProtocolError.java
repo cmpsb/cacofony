@@ -3,7 +3,7 @@ package net.wukl.cacofony.http2;
 /**
  * An exception indicating an HTTP/2 protocol error.
  */
-public class Http2ProtocolError extends RuntimeException {
+public class Http2ProtocolError extends Http2ConnectionError {
     /**
      * Creates a new http2 protocol exception.
      */

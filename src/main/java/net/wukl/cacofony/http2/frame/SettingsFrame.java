@@ -27,7 +27,7 @@ public final class SettingsFrame implements Frame {
     /**
      * The number of bytes used per serialized setting within the frame's payload.
      */
-    private static final int BYTES_PER_SETTING = 6;
+    public static final int BYTES_PER_SETTING = 6;
 
     /**
      * The settings contained within the frame.

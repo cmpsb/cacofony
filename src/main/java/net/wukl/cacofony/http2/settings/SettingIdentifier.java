@@ -1,5 +1,8 @@
 package net.wukl.cacofony.http2.settings;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * The various setting identifiers.
  *
@@ -40,6 +43,33 @@ public enum SettingIdentifier {
      * The 16-bit value corresponding the identifier.
      */
     private final int value;
+
+    /**
+     * A mapping between the numeric values and the actual identifiers.
+     */
+    private static final Map<Integer, SettingIdentifier> INT_TO_ID_MAP = new HashMap<>();
+
+    static {
+        for (final var value : values()) {
+            assert !INT_TO_ID_MAP.containsKey(value.getValue())
+                    : "Duplicate setting identifier value";
+
+            INT_TO_ID_MAP.put(value.getValue(), value);
+        }
+    }
+
+    /**
+     * Looks up an identifier by its 16-bit value.
+     *
+     * If there is no known identifier for the given value, {@code null} is returned instead.
+     *
+     * @param value the value
+     *
+     * @return the identifier or {@code null} if the value is not recognized
+     */
+    public static SettingIdentifier valueOf(final int value) {
+        return INT_TO_ID_MAP.get(value);
+    }
 
     /**
      * Creates a new setting identifier.

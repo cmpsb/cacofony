@@ -77,6 +77,23 @@ public enum FrameType {
     ));
 
     /**
+     * The mapping between byte values and types.
+     */
+    private static final FrameType[] BYTE_TO_TYPE_MAP = new FrameType[1 << Byte.SIZE];
+
+    static {
+        for (int i = 0; i < (1 << Byte.SIZE); ++i) {
+            BYTE_TO_TYPE_MAP[i] = null;
+        }
+
+        for (final var value : values()) {
+            assert BYTE_TO_TYPE_MAP[value.getValue()] == null : "FrameType value collision";
+
+            BYTE_TO_TYPE_MAP[value.getValue()] = value;
+        }
+    }
+
+    /**
      * The byte value of the type.
      */
     private final byte value;
@@ -147,7 +164,7 @@ public enum FrameType {
      *
      * @return the flags in the byte
      */
-    public Set<FrameFlag> fromBitString(final byte bits) {
+    public Set<FrameFlag> getFlagsFromBitString(final int bits) {
         final var flags = new HashSet<FrameFlag>();
 
         for (int i = 0; i < 8; ++i) {
@@ -164,5 +181,18 @@ public enum FrameType {
         }
 
         return flags;
+    }
+
+    /**
+     * Looks up a frame type by its byte value.
+     *
+     * If the type is not known, {@code null} is returned instead.
+     *
+     * @param value the byte value of the frame type to look for
+     *
+     * @return the frame type or {@code null} if there is no known frame type with that value
+     */
+    public static FrameType valueOf(final int value) {
+        return BYTE_TO_TYPE_MAP[value & 0xFF];
     }
 }
