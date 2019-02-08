@@ -2,8 +2,6 @@ package net.wukl.cacofony.http2.frame;
 
 import net.wukl.cacofony.http2.settings.Setting;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -119,14 +117,21 @@ public final class SettingsFrame implements Frame {
         return 0;
     }
 
-    @Override
-    public void writePayload(final OutputStream out) throws IOException {
-        if (this.settings.isEmpty() || this.acknowledgement) {
-            return;
-        }
+    /**
+     * Checks whether the frame is a settings acknowledgement or a regular frame.
+     *
+     * @return {@code true} if the frame is an acknowledgement, {@code false} otherwise
+     */
+    public boolean isAcknowledgement() {
+        return this.acknowledgement;
+    }
 
-        for (final var setting : this.settings) {
-            out.write(setting.toBytes());
-        }
+    /**
+     * Returns the settings within the frame.
+     *
+     * @return the settings
+     */
+    public List<Setting> getSettings() {
+        return this.settings;
     }
 }

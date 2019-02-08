@@ -1,7 +1,5 @@
 package net.wukl.cacofony.http2.frame;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Set;
 
 /**
@@ -91,20 +89,5 @@ public class EmptyFrame implements Frame {
     @Override
     public int getStreamId() {
         return this.streamId;
-    }
-
-    /**
-     * Translates the frame payload into a set of bytes for transmission and writes them to an
-     * output stream.
-     *
-     * Since this class guarantees no usable (thus practically empty) payload,
-     * this returns immediately. This holds even if {@link #getPayloadLength()} returns non-zero.
-     *
-     * @param out the stream to write the bytes to
-     *
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    public void writePayload(final OutputStream out) throws IOException {
     }
 }
