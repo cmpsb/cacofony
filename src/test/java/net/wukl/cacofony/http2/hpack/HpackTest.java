@@ -146,25 +146,25 @@ public class HpackTest {
 
     @Test
     public void testDecodeExample2_1() {
-        final var headers = this.hpack.read(EXAMPLE_2_1_PAYLOAD);
+        final var headers = this.hpack.decompress(EXAMPLE_2_1_PAYLOAD);
         assertThat(headers).containsExactlyInAnyOrderElementsOf(EXAMPLE_2_1_HEADERS);
     }
 
     @Test
     public void testDecodeExample2_2() {
-        final var headers = this.hpack.read(EXAMPLE_2_2_PAYLOAD);
+        final var headers = this.hpack.decompress(EXAMPLE_2_2_PAYLOAD);
         assertThat(headers).containsExactlyInAnyOrderElementsOf(EXAMPLE_2_2_HEADERS);
     }
 
     @Test
     public void testDecodeExample2_3() {
-        final var headers = this.hpack.read(EXAMPLE_2_3_PAYLOAD);
+        final var headers = this.hpack.decompress(EXAMPLE_2_3_PAYLOAD);
         assertThat(headers).containsExactlyInAnyOrderElementsOf(EXAMPLE_2_3_HEADERS);
     }
 
     @Test
     public void testDecodeExample2_4() {
-        final var headers = this.hpack.read(EXAMPLE_2_4_PAYLOAD);
+        final var headers = this.hpack.decompress(EXAMPLE_2_4_PAYLOAD);
         assertThat(headers).containsExactlyInAnyOrderElementsOf(EXAMPLE_2_4_HEADERS);
     }
 
@@ -178,28 +178,28 @@ public class HpackTest {
 
     @Test
     public void testDecodeExample3_1() {
-        final var headers = this.hpack.read(EXAMPLE_3_1_PAYLOAD);
+        final var headers = this.hpack.decompress(EXAMPLE_3_1_PAYLOAD);
         assertThat(headers).containsExactlyInAnyOrderElementsOf(EXAMPLE_3_1_HEADERS);
     }
 
     @Test
     public void testDecodeExample3_2() {
-        this.hpack.read(EXAMPLE_3_1_PAYLOAD);
-        final var headers = this.hpack.read(EXAMPLE_3_2_PAYLOAD);
+        this.hpack.decompress(EXAMPLE_3_1_PAYLOAD);
+        final var headers = this.hpack.decompress(EXAMPLE_3_2_PAYLOAD);
         assertThat(headers).containsExactlyInAnyOrderElementsOf(EXAMPLE_3_2_HEADERS);
     }
 
     @Test
     public void testDecodeExample3_3() {
-        this.hpack.read(EXAMPLE_3_1_PAYLOAD);
-        this.hpack.read(EXAMPLE_3_2_PAYLOAD);
-        final var headers = this.hpack.read(EXAMPLE_3_3_PAYLOAD);
+        this.hpack.decompress(EXAMPLE_3_1_PAYLOAD);
+        this.hpack.decompress(EXAMPLE_3_2_PAYLOAD);
+        final var headers = this.hpack.decompress(EXAMPLE_3_3_PAYLOAD);
         assertThat(headers).containsExactlyInAnyOrderElementsOf(EXAMPLE_3_3_HEADERS);
     }
 
     @Test
     public void testDecodeExample4_1() {
-        final var headers = this.hpack.read(EXAMPLE_4_1_PAYLOAD);
+        final var headers = this.hpack.decompress(EXAMPLE_4_1_PAYLOAD);
         assertThat(headers).containsExactlyInAnyOrderElementsOf(EXAMPLE_4_1_HEADERS);
     }
 
@@ -213,8 +213,8 @@ public class HpackTest {
 
     @Test
     public void testDecodeExample4_2() {
-        this.hpack.read(EXAMPLE_4_1_PAYLOAD);
-        final var headers = this.hpack.read(EXAMPLE_4_2_PAYLOAD);
+        this.hpack.decompress(EXAMPLE_4_1_PAYLOAD);
+        final var headers = this.hpack.decompress(EXAMPLE_4_2_PAYLOAD);
         assertThat(headers).containsExactlyInAnyOrderElementsOf(EXAMPLE_4_2_HEADERS);
     }
 
@@ -229,9 +229,9 @@ public class HpackTest {
 
     @Test
     public void testDecodeExample4_3() {
-        this.hpack.read(EXAMPLE_4_1_PAYLOAD);
-        this.hpack.read(EXAMPLE_4_2_PAYLOAD);
-        final var headers = this.hpack.read(EXAMPLE_4_3_PAYLOAD);
+        this.hpack.decompress(EXAMPLE_4_1_PAYLOAD);
+        this.hpack.decompress(EXAMPLE_4_2_PAYLOAD);
+        final var headers = this.hpack.decompress(EXAMPLE_4_3_PAYLOAD);
         assertThat(headers).containsExactlyInAnyOrderElementsOf(EXAMPLE_4_3_HEADERS);
     }
 

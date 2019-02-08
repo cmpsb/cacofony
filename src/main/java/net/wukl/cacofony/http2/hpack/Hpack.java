@@ -136,7 +136,7 @@ public class Hpack {
      *
      * @return the set of headers
      */
-    public List<Header> read(final byte[] data) {
+    public List<Header> decompress(final byte[] data) {
         final var headers = new HeaderSet();
 
         for (int i = 0; i < data.length;) {
