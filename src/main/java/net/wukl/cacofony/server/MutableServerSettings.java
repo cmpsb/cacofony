@@ -1,5 +1,6 @@
 package net.wukl.cacofony.server;
 
+import net.wukl.cacodi.Manual;
 import net.wukl.cacofony.http.encoding.TransferEncoding;
 
 import java.util.HashSet;
@@ -37,16 +38,30 @@ public class MutableServerSettings implements ServerSettings {
     private final Set<Port> ports = new HashSet<>();
 
     /**
-     * Creates a new set of server settings by copying the defaults.
+     * The maximum number of concurrent streams the HTTP/2 server is willing to accept.
      */
-    public MutableServerSettings() {
-        final ServerSettings defaults = new DefaultSettings();
+    private int maxConcurrentStreams;
 
+    /**
+     * Creates a new set of server settings by copying the other settings object.
+     *
+     * @param defaults the settings to copy
+     */
+    public MutableServerSettings(final ServerSettings defaults) {
         this.compressionEnabled = defaults.isCompressionEnabled();
         this.compressByDefault = defaults.canCompressByDefault();
         this.compressionAlgorithms = new HashSet<>(defaults.getCompressionAlgorithms());
         this.broadcastServerVersion = defaults.mayBroadcastServerVersion();
+        this.ports.addAll(defaults.getPorts());
+        this.maxConcurrentStreams = defaults.getMaxConcurrentStreams();
+    }
 
+    /**
+     * Creates a new set of server settings by copying the defaults.
+     */
+    @Manual
+    public MutableServerSettings() {
+        this(new DefaultSettings());
     }
 
     /**
@@ -161,5 +176,24 @@ public class MutableServerSettings implements ServerSettings {
      */
     public void addPort(final Port port) {
         this.ports.add(port);
+    }
+
+    /**
+     * Returns the maximum number of concurrent streams the HTTP/2 server will accept.
+     *
+     * @return the maximum number of concurrent streams
+     */
+    @Override
+    public int getMaxConcurrentStreams() {
+        return this.maxConcurrentStreams;
+    }
+
+    /**
+     * Sets the maximum number of concurrent streams the HTTP/2 server will accept.
+     *
+     * @param max the maximum number of concurrent streams
+     */
+    public void setMaxConcurrentStreams(final int max) {
+        this.maxConcurrentStreams = max;
     }
 }
