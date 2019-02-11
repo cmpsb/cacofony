@@ -41,6 +41,7 @@ public class FrameReader {
 
         this.frameReaders[FrameType.SETTINGS.getValue()] = this::readSettingsFrame;
         this.frameReaders[FrameType.WINDOW_UPDATE.getValue()] = this::readWindowUpdateFrame;
+        this.frameReaders[FrameType.PRIORITY.getValue()] = this::readPriorityFrame;
     }
 
     /**
@@ -145,6 +146,32 @@ public class FrameReader {
                 | ((bytes[2] & 0xFF) << 8) | (bytes[3] & 0xFF);
 
         return new WindowUpdateFrame(proto.getStreamId(), value);
+    }
+
+    /**
+     * Reads a PRIORITY frame from the input stream.
+     *
+     * @param proto the prototype containing the frame header
+     * @param in the input stream to read the frame from
+     *
+     * @return the frame
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private Frame readPriorityFrame(final Frame proto, final InputStream in) throws IOException {
+        if (proto.getPayloadLength() != 5) {
+            throw new Http2FrameSizeError("The payload size is not exactly 5 for a PRIORITY");
+        }
+
+        final var depBytes = in.readNBytes(4);
+        final var weigh = in.read();
+
+        final boolean exclusive = (depBytes[0] & 0x80) != 0;
+
+        final long dependencyId = ((depBytes[0] & 0x7F) << 24) | ((depBytes[1] & 0xFF) << 16)
+                | ((depBytes[2] & 0xFF) << 8) | (depBytes[3] & 0xFF);
+
+        return new PriorityFrame(proto.getStreamId(), exclusive, (int) dependencyId, weigh);
     }
 
     /**
