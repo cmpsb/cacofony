@@ -36,6 +36,7 @@ public class FrameReader {
         }
 
         this.frameReaders[FrameType.SETTINGS.getValue()] = this::readSettingsFrame;
+        this.frameReaders[FrameType.WINDOW_UPDATE.getValue()] = this::readWindowUpdateFrame;
     }
 
     /**
@@ -116,6 +117,29 @@ public class FrameReader {
         }
 
         return new SettingsFrame(settings);
+    }
+
+    /**
+     * Reads a WINDOW_UPDATE frame from the input stream.
+     *
+     * @param proto the prototype containing the frame header
+     * @param in the input stream to read the frame from
+     *
+     * @return the frame
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private Frame readWindowUpdateFrame(final Frame proto, final InputStream in)
+            throws IOException {
+        if (proto.getPayloadLength() != 4) {
+            throw new Http2FrameSizeError("The payload size is not exactly 4 for a WINDOW_UPDATE");
+        }
+
+        final var bytes = in.readNBytes(4);
+        final long value = ((bytes[0] & 0xFF) << 24) | ((bytes[1] & 0xFF) << 16)
+                | ((bytes[2] & 0xFF) << 8) | (bytes[3] & 0xFF);
+
+        return new WindowUpdateFrame(proto.getStreamId(), value);
     }
 
     /**
