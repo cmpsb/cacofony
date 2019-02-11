@@ -30,7 +30,11 @@ public class FrameReader {
         for (int i = 0; i < (1 << Byte.SIZE); ++i) {
             final var index = i;
             this.frameReaders[i] = (p, in) -> {
-                logger.warn("Unrecognized frame type {} ({})", p.getType(), index);
+                logger.warn(
+                        "Unrecognized frame type {} ({}), discarding {} bytes",
+                        p.getType(), index, p.getPayloadLength()
+                );
+                in.readNBytes(p.getPayloadLength());
                 return p;
             };
         }
@@ -52,10 +56,11 @@ public class FrameReader {
     public Frame read(final InputStream in) throws IOException {
         final var header = in.readNBytes(9);
 
-        final var length = (header[0] << 16) | (header[1] << 8) | header[2];
+        final var length = (header[0] & 0xFF << 16) | (header[1] & 0xFF << 8) | header[2] & 0xFF;
         final var rawType = header[3] & 0xFF;
         final var flagsByte = header[4];
-        final var streamId = (header[5] << 24) | (header[6] << 16) | (header[7] << 8) | header[8];
+        final var streamId = (header[5] & 0xFF << 24) | (header[6] & 0xFF << 16)
+                | (header[7] & 0xFF << 8) | header[8] & 0xFF;
 
         final var type = FrameType.valueOf(rawType);
         final Set<FrameFlag> flags;
