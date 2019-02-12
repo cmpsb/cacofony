@@ -30,6 +30,7 @@ public class FrameWriter {
         }
 
         this.frameWriters[FrameType.SETTINGS.getValue()] = this::writeSettings;
+        this.frameWriters[FrameType.WINDOW_UPDATE.getValue()] = this::writeWindowUpdate;
     }
 
     /**
@@ -94,6 +95,25 @@ public class FrameWriter {
         for (final var setting : ((SettingsFrame) frame).getSettings()) {
             out.write(setting.toBytes());
         }
+    }
+
+    /**
+     * Writes a WINDOW_UPDATE frame to the output stream.
+     *
+     * @param frame the WINDOW_UPDATE frame
+     * @param out the output stream
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private void writeWindowUpdate(final Frame frame, final OutputStream out) throws IOException {
+        assert frame instanceof WindowUpdateFrame
+                : "Non-WINDOW_UPDATE frame passed to writeWindowUpdate";
+
+        final var increment = ((WindowUpdateFrame) frame).getIncrement();
+        out.write((int) (increment >>> 24) & 0xFF);
+        out.write((int) (increment >>> 16) & 0xFF);
+        out.write((int) (increment >>> 8) & 0xFF);
+        out.write((int) (increment & 0xFF));
     }
 
     /**
