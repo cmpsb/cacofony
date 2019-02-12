@@ -110,10 +110,48 @@ public class FrameWriter {
                 : "Non-WINDOW_UPDATE frame passed to writeWindowUpdate";
 
         final var increment = ((WindowUpdateFrame) frame).getIncrement();
-        out.write((int) (increment >>> 24) & 0xFF);
-        out.write((int) (increment >>> 16) & 0xFF);
-        out.write((int) (increment >>> 8) & 0xFF);
-        out.write((int) (increment & 0xFF));
+        this.writeUnsignedInt(increment, out);
+    }
+
+    /**
+     * Writes a PRIORITY frame to the output stream.
+     *
+     * @param frame the PRIORITY frame
+     * @param out the output stream
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private void writePriority(final Frame frame, final OutputStream out) throws IOException {
+        assert frame instanceof PriorityFrame : "Non-PRIORITY frame passed to writePriority";
+
+        final var priorityFrame = (PriorityFrame) frame;
+        final long exclusiveMask;
+        if (priorityFrame.isExclusive()) {
+            exclusiveMask = 1 << 31;
+        } else {
+            exclusiveMask = 0;
+        }
+
+        final var dependencyId = priorityFrame.getDependencyId();
+        final var weight = priorityFrame.getWeight();
+
+        this.writeUnsignedInt(dependencyId | exclusiveMask, out);
+        out.write(weight & 0xFF);
+    }
+
+    /**
+     * Writes an unsigned 32-bit integer to the output stream.
+     *
+     * @param value the integer to write
+     * @param out the stream to write the number to
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private void writeUnsignedInt(final long value, final OutputStream out) throws IOException {
+        out.write((int) (value >>> 24) & 0xFF);
+        out.write((int) (value >>> 16) & 0xFF);
+        out.write((int) (value >>> 8) & 0xFF);
+        out.write((int) value & 0xFF);
     }
 
     /**
