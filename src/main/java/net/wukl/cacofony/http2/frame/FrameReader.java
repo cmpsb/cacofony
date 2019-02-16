@@ -1,6 +1,7 @@
 package net.wukl.cacofony.http2.frame;
 
 import net.wukl.cacofony.http2.Http2ProtocolError;
+import net.wukl.cacofony.http2.hpack.Hpack;
 import net.wukl.cacofony.http2.settings.Setting;
 import net.wukl.cacofony.http2.settings.SettingIdentifier;
 import org.slf4j.Logger;
@@ -19,14 +20,28 @@ public class FrameReader {
     private static final Logger logger = LoggerFactory.getLogger(FrameReader.class);
 
     /**
+     * The number of bytes a PRIORITY frame's payload should be.
+     */
+    private static final int PRIORITY_PAYLOAD_LENGTH = 5;
+
+    /**
      * Specialized frame readers for each of the possible frame types.
      */
     private final SpecFrameReader[] frameReaders = new SpecFrameReader[256];
 
     /**
-     * Creates a new frame reader.
+     * The HPACK codec.
      */
-    public FrameReader() {
+    private final Hpack hpack;
+
+    /**
+     * Creates a new frame reader.
+     *
+     * @param hpack the HPACK decompressor
+     */
+    public FrameReader(final Hpack hpack) {
+        this.hpack = hpack;
+
         for (int i = 0; i < (1 << Byte.SIZE); ++i) {
             final var index = i;
             this.frameReaders[i] = (p, in) -> {
@@ -42,6 +57,7 @@ public class FrameReader {
         this.frameReaders[FrameType.SETTINGS.getValue()] = this::readSettingsFrame;
         this.frameReaders[FrameType.WINDOW_UPDATE.getValue()] = this::readWindowUpdateFrame;
         this.frameReaders[FrameType.PRIORITY.getValue()] = this::readPriorityFrame;
+        this.frameReaders[FrameType.HEADERS.getValue()] = this::readHeaders;
     }
 
     /**
@@ -159,10 +175,26 @@ public class FrameReader {
      * @throws IOException if an I/O error occurs
      */
     private Frame readPriorityFrame(final Frame proto, final InputStream in) throws IOException {
-        if (proto.getPayloadLength() != 5) {
+        if (proto.getPayloadLength() != PRIORITY_PAYLOAD_LENGTH) {
             throw new Http2FrameSizeError("The payload size is not exactly 5 for a PRIORITY");
         }
 
+        return this.readRawPriorityFrame(proto.getStreamId(), in);
+    }
+
+    /**
+     * Reads the raw payload of a PRIORITY frame.
+     *
+     * @param streamId the identifier of the stream the frame belongs to
+     * @param in the input stream to read the payload from
+     *
+     * @return the frame
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private PriorityFrame readRawPriorityFrame(
+            final int streamId, final InputStream in
+    ) throws IOException {
         final var depBytes = in.readNBytes(4);
         final var weigh = in.read();
 
@@ -171,7 +203,44 @@ public class FrameReader {
         final long dependencyId = ((depBytes[0] & 0x7F) << 24) | ((depBytes[1] & 0xFF) << 16)
                 | ((depBytes[2] & 0xFF) << 8) | (depBytes[3] & 0xFF);
 
-        return new PriorityFrame(proto.getStreamId(), exclusive, (int) dependencyId, weigh);
+        return new PriorityFrame(streamId, exclusive, (int) dependencyId, weigh);
+    }
+
+    /**
+     * Reads a HEADERS frame from the input stream.
+     *
+     * @param proto the prototype containing the frame header
+     * @param in the input stream to read the frame from
+     *
+     * @return the frame
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private Frame readHeaders(final Frame proto, final InputStream in) throws IOException {
+        int i = 0;
+        final int padLength;
+        if (proto.getFlags().contains(FrameFlag.PADDED)) {
+            padLength = in.read();
+            i += 1;
+        } else {
+            padLength = 0;
+        }
+
+        final PriorityFrame priority;
+        if (proto.getFlags().contains(FrameFlag.PRIORITY)) {
+            priority = this.readRawPriorityFrame(proto.getStreamId(), in);
+            i += PRIORITY_PAYLOAD_LENGTH;
+        } else {
+            priority = null;
+        }
+
+        if (proto.getPayloadLength() - i <= padLength) {
+            throw new Http2ProtocolError("Padding exceeds payload length");
+        }
+
+        final var block = in.readNBytes(proto.getPayloadLength() - i - padLength);
+
+        return new HeadersFrame(proto.getFlags(), proto.getStreamId(), block, priority);
     }
 
     /**

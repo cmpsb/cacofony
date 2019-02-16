@@ -2,11 +2,14 @@ package net.wukl.cacofony.http2.frame;
 
 import net.wukl.cacofony.http2.settings.Setting;
 import net.wukl.cacofony.http2.settings.SettingIdentifier;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.List;
 
@@ -16,11 +19,18 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Luc Everse
  */
 public class SettingsFrameWriterTest {
+    private SecureRandom random;
     private FrameWriter writer;
 
     @BeforeEach
     public void before() {
-        this.writer = new FrameWriter();
+        this.random = Mockito.mock(SecureRandom.class);
+        this.writer = new FrameWriter(this.random);
+    }
+
+    @AfterEach
+    public void after() {
+        Mockito.verify(this.random, Mockito.never()).nextInt(Mockito.anyInt());
     }
 
     @Test

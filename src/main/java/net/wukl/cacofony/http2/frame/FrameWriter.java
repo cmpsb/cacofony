@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.security.SecureRandom;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -14,14 +16,34 @@ public class FrameWriter {
     private static final Logger logger = LoggerFactory.getLogger(FrameWriter.class);
 
     /**
+     * A simple buffer full of zeros to write as padding.
+     */
+    private static final byte[] NULL_BYTES = new byte[256];
+
+    static {
+        for (int i = 0; i < NULL_BYTES.length; ++i) {
+            NULL_BYTES[i] = 0;
+        }
+    }
+
+    /**
      * Specialized frame writers.
      */
     private final SpecFrameWriter[] frameWriters = new SpecFrameWriter[256];
 
     /**
-     * Creates a new frame writer.
+     * The random number generator used to generate padding.
      */
-    public FrameWriter() {
+    private final SecureRandom random;
+
+    /**
+     * Creates a new frame writer.
+     *
+     * @param random the random number generator used to generate padding
+     */
+    public FrameWriter(final SecureRandom random) {
+        this.random = random;
+
         for (int i = 0; i < 256; ++i) {
             final var index = i;
             this.frameWriters[i] = (f, o) -> {
@@ -31,6 +53,8 @@ public class FrameWriter {
 
         this.frameWriters[FrameType.SETTINGS.getValue()] = this::writeSettings;
         this.frameWriters[FrameType.WINDOW_UPDATE.getValue()] = this::writeWindowUpdate;
+        this.frameWriters[FrameType.PRIORITY.getValue()] = this::writePriority;
+        this.frameWriters[FrameType.HEADERS.getValue()] = this::writeHeaders;
     }
 
     /**
@@ -42,7 +66,18 @@ public class FrameWriter {
      * @throws IOException if an I/O error occurs
      */
     public void write(final Frame frame, final OutputStream out) throws IOException {
-        final var length = frame.getPayloadLength();
+        final var flags = new HashSet<>(frame.getFlags());
+
+        final var padded = frame.getType().getFlagPositions().containsKey(FrameFlag.PADDED);
+        final int numPadBytes;
+        if (padded) {
+            flags.add(FrameFlag.PADDED);
+            numPadBytes = this.random.nextInt(255) + 1;
+        } else {
+            numPadBytes = 0;
+        }
+
+        final var length = frame.getPayloadLength() + numPadBytes;
         final var id = frame.getStreamId();
 
         final var typeValue = frame.getType().getValue();
@@ -52,7 +87,7 @@ public class FrameWriter {
                 (byte) ((length >>>  8) & 0xFF),
                 (byte) (length & 0xFF),
                 typeValue,
-                this.flagsToByte(frame.getType(), frame.getFlags()),
+                this.flagsToByte(frame.getType(), flags),
                 (byte) ((id >>> 24) & 0xFF),
                 (byte) ((id >>> 16) & 0xFF),
                 (byte) ((id >>>  8) & 0xFF),
@@ -60,8 +95,17 @@ public class FrameWriter {
         };
 
         out.write(buf);
+
+        if (padded) {
+            out.write(numPadBytes & 0xFF);
+        }
+
         if (!(frame instanceof EmptyFrame) && length > 0) {
             this.frameWriters[typeValue].write(frame, out);
+        }
+
+        if (padded) {
+            out.write(NULL_BYTES, 0, numPadBytes - 1);
         }
     }
 
@@ -137,6 +181,26 @@ public class FrameWriter {
 
         this.writeUnsignedInt(dependencyId | exclusiveMask, out);
         out.write(weight & 0xFF);
+    }
+
+    /**
+     * Writes a HEADERS frame to the output stream.
+     *
+     * @param frame the HEADERS frame
+     * @param out the output stream
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private void writeHeaders(final Frame frame, final OutputStream out) throws IOException {
+        assert frame instanceof HeadersFrame : "Non-HEADERS frame passed to writeHeaders";
+
+        final var headersFrame = (HeadersFrame) frame;
+        final var priorityFrame = headersFrame.getPriorityFrame();
+        if (priorityFrame != null) {
+            this.writePriority(priorityFrame, out);
+        }
+
+        out.write(headersFrame.getHeaderBlock());
     }
 
     /**
