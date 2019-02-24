@@ -54,10 +54,21 @@ public class FrameReader {
             };
         }
 
-        this.frameReaders[FrameType.SETTINGS.getValue()] = this::readSettingsFrame;
-        this.frameReaders[FrameType.WINDOW_UPDATE.getValue()] = this::readWindowUpdateFrame;
-        this.frameReaders[FrameType.PRIORITY.getValue()] = this::readPriorityFrame;
-        this.frameReaders[FrameType.HEADERS.getValue()] = this::readHeaders;
+        this.addReader(FrameType.SETTINGS, this::readSettingsFrame);
+        this.addReader(FrameType.WINDOW_UPDATE, this::readWindowUpdateFrame);
+        this.addReader(FrameType.PRIORITY, this::readPriorityFrame);
+        this.addReader(FrameType.HEADERS, this::readHeaders);
+        this.addReader(FrameType.DATA, this::readData);
+    }
+
+    /**
+     * Installs a specialized frame reader in the reader table.
+     *
+     * @param type the frame type the reader is specialized for
+     * @param reader the reader
+     */
+    private void addReader(final FrameType type, final SpecFrameReader reader) {
+        this.frameReaders[type.getValue()] = reader;
     }
 
     /**
@@ -87,8 +98,25 @@ public class FrameReader {
             flags = Collections.emptySet();
         }
 
-        final var protoFrame = new EmptyFrame(length, type, flags, streamId);
-        return this.frameReaders[rawType].read(protoFrame, in);
+        int i = 0;
+        final int padLength;
+        if (flags.contains(FrameFlag.PADDED)) {
+            padLength = in.read();
+            i += 1;
+        } else {
+            padLength = 0;
+        }
+
+        if (length - i <= padLength) {
+            throw new Http2ProtocolError("Padding exceeds payload length");
+        }
+
+        final var protoFrame = new EmptyFrame(length - i - padLength, type, flags, streamId);
+        final var frame = this.frameReaders[rawType].read(protoFrame, in);
+
+        in.readNBytes(padLength);
+
+        return frame;
     }
 
     /**
@@ -218,13 +246,6 @@ public class FrameReader {
      */
     private Frame readHeaders(final Frame proto, final InputStream in) throws IOException {
         int i = 0;
-        final int padLength;
-        if (proto.getFlags().contains(FrameFlag.PADDED)) {
-            padLength = in.read();
-            i += 1;
-        } else {
-            padLength = 0;
-        }
 
         final PriorityFrame priority;
         if (proto.getFlags().contains(FrameFlag.PRIORITY)) {
@@ -234,13 +255,25 @@ public class FrameReader {
             priority = null;
         }
 
-        if (proto.getPayloadLength() - i <= padLength) {
-            throw new Http2ProtocolError("Padding exceeds payload length");
-        }
-
-        final var block = in.readNBytes(proto.getPayloadLength() - i - padLength);
+        final var block = in.readNBytes(proto.getPayloadLength() - i);
 
         return new HeadersFrame(proto.getFlags(), proto.getStreamId(), block, priority);
+    }
+
+    /**
+     * Reads a DATA frame from the input stream.
+     *
+     * @param proto the prototype containing the frame header
+     * @param in the input stream to read the frame from
+     *
+     * @return the frame
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private Frame readData(final Frame proto, final InputStream in) throws IOException {
+        final var bytes = in.readNBytes(proto.getPayloadLength());
+
+        return new DataFrame(proto.getStreamId(), proto.getFlags(), bytes);
     }
 
     /**

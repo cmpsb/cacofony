@@ -51,10 +51,21 @@ public class FrameWriter {
             };
         }
 
-        this.frameWriters[FrameType.SETTINGS.getValue()] = this::writeSettings;
-        this.frameWriters[FrameType.WINDOW_UPDATE.getValue()] = this::writeWindowUpdate;
-        this.frameWriters[FrameType.PRIORITY.getValue()] = this::writePriority;
-        this.frameWriters[FrameType.HEADERS.getValue()] = this::writeHeaders;
+        this.addWriter(FrameType.SETTINGS, this::writeSettings);
+        this.addWriter(FrameType.WINDOW_UPDATE, this::writeWindowUpdate);
+        this.addWriter(FrameType.PRIORITY, this::writePriority);
+        this.addWriter(FrameType.HEADERS, this::writeHeaders);
+        this.addWriter(FrameType.DATA, this::writeData);
+    }
+
+    /**
+     * Installs a specialized frame writer in the writer table.
+     *
+     * @param type the frame type the writer is specialized for
+     * @param writer the writer
+     */
+    private void addWriter(final FrameType type, final SpecFrameWriter writer) {
+        this.frameWriters[type.getValue()] = writer;
     }
 
     /**
@@ -201,6 +212,19 @@ public class FrameWriter {
         }
 
         out.write(headersFrame.getHeaderBlock());
+    }
+
+    /**
+     * Writes a DATA frame to the output stream.
+     *
+     * @param frame the DATA frame
+     * @param out the output stream
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private void writeData(final Frame frame, final OutputStream out) throws IOException {
+        assert frame instanceof DataFrame : "Non-DATA frame passed to writeData";
+        out.write(((DataFrame) frame).getBytes());
     }
 
     /**
