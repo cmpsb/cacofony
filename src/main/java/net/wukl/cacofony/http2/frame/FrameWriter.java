@@ -228,6 +228,20 @@ public class FrameWriter {
     }
 
     /**
+     * Writes a CONTINUATION frame to the output stream.
+     *
+     * @param frame the CONTINUATION frame
+     * @param out the output stream
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private void writeContinuation(final Frame frame, final OutputStream out) throws IOException {
+        assert frame instanceof ContinuationFrame
+                : "Non-CONTINUATION frame passed to writeContinuation";
+        out.write(((ContinuationFrame) frame).getBytes());
+    }
+
+    /**
      * Writes an unsigned 32-bit integer to the output stream.
      *
      * @param value the integer to write

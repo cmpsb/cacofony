@@ -59,6 +59,7 @@ public class FrameReader {
         this.addReader(FrameType.PRIORITY, this::readPriorityFrame);
         this.addReader(FrameType.HEADERS, this::readHeaders);
         this.addReader(FrameType.DATA, this::readData);
+        this.addReader(FrameType.CONTINUATION, this::readContinuation);
     }
 
     /**
@@ -274,6 +275,23 @@ public class FrameReader {
         final var bytes = in.readNBytes(proto.getPayloadLength());
 
         return new DataFrame(proto.getStreamId(), proto.getFlags(), bytes);
+    }
+
+    /**
+     * Reads a CONTINUATION frame from the input stream.
+     *
+     * @param proto the prototype containing the frame header
+     * @param in the input stream to read the frame from
+     *
+     * @return the frame
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private Frame readContinuation(final Frame proto, final InputStream in) throws IOException {
+        final var bytes = in.readNBytes(proto.getPayloadLength());
+        return new ContinuationFrame(
+                proto.getStreamId(), proto.getFlags().contains(FrameFlag.END_HEADERS), bytes
+        );
     }
 
     /**
