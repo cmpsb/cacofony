@@ -62,6 +62,7 @@ public class FrameReader {
         this.addReader(FrameType.DATA, this::readData);
         this.addReader(FrameType.CONTINUATION, this::readContinuation);
         this.addReader(FrameType.GOAWAY, this::readGoAway);
+        this.addReader(FrameType.RST_STREAM, this::readRstStream);
     }
 
     /**
@@ -310,6 +311,23 @@ public class FrameReader {
         final var debugData = in.readNBytes(proto.getPayloadLength() - 2 * Integer.BYTES);
 
         return new GoAwayFrame((int) lastStreamId, errorCode, debugData);
+    }
+
+    /**
+     * Reads an RST_STREAM frame from the input stream.
+     *
+     * @param proto the prototype containing the frame header
+     * @param in the input stream to read the frame from
+     *
+     * @return the frame
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private Frame readRstStream(final Frame proto, final InputStream in) throws IOException {
+        final var errorCodeId = this.readUnsignedInt(in);
+        final var errorCode = ErrorCode.getForCode(errorCodeId);
+
+        return new RstStreamFrame(proto.getStreamId(), errorCode);
     }
 
     /**

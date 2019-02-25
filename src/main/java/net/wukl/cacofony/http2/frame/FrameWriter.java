@@ -56,6 +56,9 @@ public class FrameWriter {
         this.addWriter(FrameType.PRIORITY, this::writePriority);
         this.addWriter(FrameType.HEADERS, this::writeHeaders);
         this.addWriter(FrameType.DATA, this::writeData);
+        this.addWriter(FrameType.CONTINUATION, this::writeContinuation);
+        this.addWriter(FrameType.GOAWAY, this::writeGoAway);
+        this.addWriter(FrameType.RST_STREAM, this::writeRstStream);
     }
 
     /**
@@ -256,6 +259,20 @@ public class FrameWriter {
         this.writeUnsignedInt(goAway.getLastStreamId(), out);
         this.writeUnsignedInt(goAway.getErrorCode().getCode(), out);
         out.write(goAway.getDebugData());
+    }
+
+    /**
+     * Writes an RST_STREAM frame to the output stream.
+     *
+     * @param frame the RST_STREAM frame
+     * @param out the output stream
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private void writeRstStream(final Frame frame, final OutputStream out) throws IOException {
+        assert frame instanceof RstStreamFrame : "Non-RST_STREAM frame passed to writeRstStream";
+
+        this.writeUnsignedInt(((RstStreamFrame) frame).getErrorCode().getCode(), out);
     }
 
     /**
