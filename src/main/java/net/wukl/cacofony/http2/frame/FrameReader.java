@@ -1,5 +1,6 @@
 package net.wukl.cacofony.http2.frame;
 
+import net.wukl.cacofony.http2.ErrorCode;
 import net.wukl.cacofony.http2.Http2ProtocolError;
 import net.wukl.cacofony.http2.hpack.Hpack;
 import net.wukl.cacofony.http2.settings.Setting;
@@ -60,6 +61,7 @@ public class FrameReader {
         this.addReader(FrameType.HEADERS, this::readHeaders);
         this.addReader(FrameType.DATA, this::readData);
         this.addReader(FrameType.CONTINUATION, this::readContinuation);
+        this.addReader(FrameType.GOAWAY, this::readGoAway);
     }
 
     /**
@@ -186,10 +188,7 @@ public class FrameReader {
             throw new Http2FrameSizeError("The payload size is not exactly 4 for a WINDOW_UPDATE");
         }
 
-        final var bytes = in.readNBytes(4);
-        final long value = ((bytes[0] & 0xFF) << 24) | ((bytes[1] & 0xFF) << 16)
-                | ((bytes[2] & 0xFF) << 8) | (bytes[3] & 0xFF);
-
+        final var value = this.readUnsignedInt(in);
         return new WindowUpdateFrame(proto.getStreamId(), value);
     }
 
@@ -292,6 +291,40 @@ public class FrameReader {
         return new ContinuationFrame(
                 proto.getStreamId(), proto.getFlags().contains(FrameFlag.END_HEADERS), bytes
         );
+    }
+
+    /**
+     * Reads a GOAWAY frame from the input stream.
+     *
+     * @param proto the prototype containing the frame header
+     * @param in the input stream to read the frame from
+     *
+     * @return the frame
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private Frame readGoAway(final Frame proto, final InputStream in) throws IOException {
+        final var lastStreamId = this.readUnsignedInt(in);
+        final var errorCodeId = this.readUnsignedInt(in);
+        final var errorCode = ErrorCode.getForCode(errorCodeId);
+        final var debugData = in.readNBytes(proto.getPayloadLength() - 2 * Integer.BYTES);
+
+        return new GoAwayFrame((int) lastStreamId, errorCode, debugData);
+    }
+
+    /**
+     * Reads an unsigned integer from the input stream.
+     *
+     * @param in the input stream to read the integer from
+     *
+     * @return the unsigned integer
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private long readUnsignedInt(final InputStream in) throws IOException {
+        final var bytes = in.readNBytes(4);
+        return ((bytes[0] & 0xFF) << 24) | ((bytes[1] & 0xFF) << 16)
+                | ((bytes[2] & 0xFF) << 8) | (bytes[3] & 0xFF);
     }
 
     /**

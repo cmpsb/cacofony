@@ -242,6 +242,23 @@ public class FrameWriter {
     }
 
     /**
+     * Writes a GOAWAY frame to the output stream.
+     *
+     * @param frame the GOAWAY frame
+     * @param out tho output stream
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private void writeGoAway(final Frame frame, final OutputStream out) throws IOException {
+        assert frame instanceof GoAwayFrame : "Non-GOAWAY frame passed to writeGoAway";
+        final var goAway = (GoAwayFrame) frame;
+
+        this.writeUnsignedInt(goAway.getLastStreamId(), out);
+        this.writeUnsignedInt(goAway.getErrorCode().getCode(), out);
+        out.write(goAway.getDebugData());
+    }
+
+    /**
      * Writes an unsigned 32-bit integer to the output stream.
      *
      * @param value the integer to write
