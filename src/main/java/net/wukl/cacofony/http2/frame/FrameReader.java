@@ -64,6 +64,7 @@ public class FrameReader {
         this.addReader(FrameType.GOAWAY, this::readGoAway);
         this.addReader(FrameType.RST_STREAM, this::readRstStream);
         this.addReader(FrameType.PING, this::readPing);
+        this.addReader(FrameType.PUSH_PROMISE, this::readPushPromise);
     }
 
     /**
@@ -348,6 +349,26 @@ public class FrameReader {
 
         final var bytes = in.readNBytes(PingFrame.PAYLOAD_SIZE);
         return new PingFrame(proto.getFlags().contains(FrameFlag.ACK), bytes);
+    }
+
+    /**
+     * Reads a PUSH_PROMISE frame from the input stream.
+     *
+     * @param proto the prototype containing the frame header
+     * @param in the input stream to read the frame from
+     *
+     * @return the frame
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private Frame readPushPromise(final Frame proto, final InputStream in) throws IOException {
+        final var promisedId = this.readUnsignedInt(in);
+        final var fragment = in.readNBytes(proto.getPayloadLength() - Integer.BYTES);
+
+        return new PushPromiseFrame(
+            proto.getStreamId(), proto.getFlags().contains(FrameFlag.END_HEADERS),
+            (int) promisedId, fragment
+        );
     }
 
     /**

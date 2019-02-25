@@ -60,6 +60,7 @@ public class FrameWriter {
         this.addWriter(FrameType.GOAWAY, this::writeGoAway);
         this.addWriter(FrameType.RST_STREAM, this::writeRstStream);
         this.addWriter(FrameType.PING, this::writePing);
+        this.addWriter(FrameType.PUSH_PROMISE, this::writePushPromise);
     }
 
     /**
@@ -288,6 +289,24 @@ public class FrameWriter {
         assert frame instanceof PingFrame : "Non-PING frame passed to writePing";
 
         out.write(((PingFrame) frame).getPayload());
+    }
+
+    /**
+     * Writes a PUSH_PROMISE frame to the output stream.
+     *
+     * @param frame the PUSH_PROMISE frame
+     * @param out the output stream
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private void writePushPromise(final Frame frame, final OutputStream out) throws IOException {
+        assert frame instanceof PushPromiseFrame
+            : "Non-PUSH_PROMISE frame passed to writePushPromise";
+
+        final var pushPromise = (PushPromiseFrame) frame;
+
+        this.writeUnsignedInt(pushPromise.getPromisedStreamId(), out);
+        out.write(pushPromise.getFragment());
     }
 
     /**
