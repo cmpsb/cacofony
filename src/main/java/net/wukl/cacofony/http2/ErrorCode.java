@@ -92,11 +92,13 @@ public enum ErrorCode {
      * @return the error code instance
      */
     public static ErrorCode getForCode(final long code) {
-        if (code < 0 || code >= HTTP_1_1_REQUIRED.code) {
+        if (code < 0 || code > HTTP_1_1_REQUIRED.code) {
             return UNRECOGNIZED_ERROR;
         }
 
-        return values()[(int) code];
+        final var value = values()[(int) code];
+        assert value.code == code;
+        return value;
     }
 
     /**
