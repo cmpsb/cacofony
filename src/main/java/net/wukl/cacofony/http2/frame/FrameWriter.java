@@ -59,6 +59,7 @@ public class FrameWriter {
         this.addWriter(FrameType.CONTINUATION, this::writeContinuation);
         this.addWriter(FrameType.GOAWAY, this::writeGoAway);
         this.addWriter(FrameType.RST_STREAM, this::writeRstStream);
+        this.addWriter(FrameType.PING, this::writePing);
     }
 
     /**
@@ -273,6 +274,20 @@ public class FrameWriter {
         assert frame instanceof RstStreamFrame : "Non-RST_STREAM frame passed to writeRstStream";
 
         this.writeUnsignedInt(((RstStreamFrame) frame).getErrorCode().getCode(), out);
+    }
+
+    /**
+     * Writes a PING frame to the output stream.
+     *
+     * @param frame the PING frame
+     * @param out the output stream
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private void writePing(final Frame frame, final OutputStream out) throws IOException {
+        assert frame instanceof PingFrame : "Non-PING frame passed to writePing";
+
+        out.write(((PingFrame) frame).getPayload());
     }
 
     /**

@@ -63,6 +63,7 @@ public class FrameReader {
         this.addReader(FrameType.CONTINUATION, this::readContinuation);
         this.addReader(FrameType.GOAWAY, this::readGoAway);
         this.addReader(FrameType.RST_STREAM, this::readRstStream);
+        this.addReader(FrameType.PING, this::readPing);
     }
 
     /**
@@ -328,6 +329,25 @@ public class FrameReader {
         final var errorCode = ErrorCode.getForCode(errorCodeId);
 
         return new RstStreamFrame(proto.getStreamId(), errorCode);
+    }
+
+    /**
+     * Reads a PING frame from the input stream.
+     *
+     * @param proto the prototype containing the frame header
+     * @param in the input stream to read the frame from
+     *
+     * @return the frame
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    private Frame readPing(final Frame proto, final InputStream in) throws IOException {
+        if (proto.getPayloadLength() != PingFrame.PAYLOAD_SIZE) {
+            throw new Http2FrameSizeError("Ping does not contain exactly 8 bytes");
+        }
+
+        final var bytes = in.readNBytes(PingFrame.PAYLOAD_SIZE);
+        return new PingFrame(proto.getFlags().contains(FrameFlag.ACK), bytes);
     }
 
     /**
