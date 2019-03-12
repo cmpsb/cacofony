@@ -276,9 +276,14 @@ public class Huffman {
         }
 
         final var remainder = b % Byte.SIZE;
-        bytes[b / 8] |= (EOS_BYTE & 0xFF) >>> remainder;
+        if (remainder > 0) {
+            bytes[b / 8] |= (EOS_BYTE & 0xFF) >>> remainder;
+            b += Byte.SIZE - remainder;
+        }
 
-        b += Byte.SIZE - remainder;
+        if (b == bytes.length * Byte.SIZE) {
+            return bytes;
+        }
 
         final var finalBytes = new byte[b / Byte.SIZE];
         System.arraycopy(bytes, 0, finalBytes, 0, b / Byte.SIZE);

@@ -8,6 +8,7 @@ import net.wukl.cacofony.http2.settings.SettingIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -90,6 +91,10 @@ public class FrameReader {
     public Frame read(final InputStream in) throws IOException {
         final var header = in.readNBytes(9);
 
+        if (header.length != 9) {
+            throw new EOFException();
+        }
+
         final var length = (header[0] & 0xFF << 16) | (header[1] & 0xFF << 8) | header[2] & 0xFF;
         final var rawType = header[3] & 0xFF;
         final var flagsByte = header[4];
@@ -108,12 +113,13 @@ public class FrameReader {
         final int padLength;
         if (flags.contains(FrameFlag.PADDED)) {
             padLength = in.read();
+            logger.debug("{} frame padded with extra {} bytes", type, padLength);
             i += 1;
         } else {
             padLength = 0;
         }
 
-        if (length - i <= padLength) {
+        if (length - i < padLength) {
             throw new Http2ProtocolError("Padding exceeds payload length");
         }
 

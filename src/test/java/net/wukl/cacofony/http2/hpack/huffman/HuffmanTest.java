@@ -94,6 +94,15 @@ public class HuffmanTest {
                 .containsExactly(0xa8, 0xeb, 0x10, 0x64, 0x9c, 0xbf);
     }
 
+    @Test
+    public void testEncodeTextPlainRegression() {
+        final var encoded = this.huffman.encode("text/plain");
+
+        assertThat(encoded)
+                .withRepresentation(new HexadecimalRepresentation())
+                .containsExactly(0x49, 0x7C, 0xA5, 0x8A, 0xE8, 0x19, 0xAA);
+    }
+
     /**
      * Loads a file from the test class' resource folder.
      *

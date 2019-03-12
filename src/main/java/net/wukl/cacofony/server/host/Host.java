@@ -2,6 +2,9 @@ package net.wukl.cacofony.server.host;
 
 import net.wukl.cacofony.controller.ControllerLoader;
 import net.wukl.cacofony.exception.ExceptionHandler;
+import net.wukl.cacofony.http.exception.HttpException;
+import net.wukl.cacofony.http.request.MutableRequest;
+import net.wukl.cacofony.http.response.Response;
 import net.wukl.cacofony.http.response.ResponsePreparer;
 import net.wukl.cacofony.http.response.ResponseWriter;
 import net.wukl.cacofony.route.ResourceFileRouteFactory;
@@ -10,6 +13,7 @@ import net.wukl.cacofony.route.RoutingEntry;
 import net.wukl.cacofony.route.StaticFileRouteFactory;
 import net.wukl.cacodi.DependencyResolver;
 
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 
 /**
@@ -156,5 +160,34 @@ public class Host {
         final ResourceFileRouteFactory factory = this.resolver.get(ResourceFileRouteFactory.class);
         final RoutingEntry entry = factory.build(prefix, jar, dir);
         this.router.addRoute(entry);
+    }
+
+    /**
+     * Handles a request for this host.
+     *
+     * @param request the request to handle
+     *
+     * @return the response to the request
+     *
+     * @throws Throwable if any error occurs
+     */
+    public Response handle(final MutableRequest request) throws Throwable {
+        Response response;
+        try {
+            try {
+                response = this.router.handle(request);
+            } catch (final InvocationTargetException ex) {
+                // "Unpack" an exception raised through reflection calls.
+                throw ex.getCause();
+            }
+        } catch (final HttpException ex) {
+            response = this.exceptionHandler.handle(request, ex);
+        } catch (final Exception ex) {
+            response = this.exceptionHandler.handle(request, ex);
+        }
+
+        this.responsePreparer.prepare(request, response);
+
+        return response;
     }
 }

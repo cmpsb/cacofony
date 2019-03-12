@@ -1,6 +1,5 @@
 package net.wukl.cacofony.server.protocol;
 
-import net.wukl.cacofony.http.exception.HttpException;
 import net.wukl.cacofony.http.exception.SilentException;
 import net.wukl.cacofony.http.request.MutableRequest;
 import net.wukl.cacofony.http.request.Request;
@@ -15,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * A protocol supporting HTTP/1.0 and HTTP/1.1.
@@ -92,32 +90,10 @@ public class HttpProtocol implements Protocol {
 
             final String hostname = request.getHost();
             host = this.hosts.get(hostname);
-
-            try {
-                response = host.getRouter().handle(request);
-            } catch (final InvocationTargetException ex) {
-                // "Unpack" an exception raised through reflection calls.
-                throw ex.getCause();
-            }
-
-            host.getResponsePreparer().prepare(request, response);
+            response = host.handle(request);
         } catch (final SilentException ex) {
             logger.warn("Server closed connection. {}", ex.getMessage());
             return null;
-        } catch (final HttpException ex) {
-            if (host == null) {
-                throw ex;
-            }
-
-            response = host.getExceptionHandler().handle(request, ex);
-            host.getResponsePreparer().prepare(request, response);
-        } catch (final Exception ex) {
-            if (host == null) {
-                throw ex;
-            }
-
-            response = host.getExceptionHandler().handle(request, ex);
-            host.getResponsePreparer().prepare(request, response);
         }
 
         if (request != null) {
@@ -144,8 +120,6 @@ public class HttpProtocol implements Protocol {
 
         return this;
     }
-
-
 
     /**
      * Returns whether to close the connection after serving a request.

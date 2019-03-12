@@ -79,12 +79,15 @@ public class FrameWriter {
      * @param frame the frame to write
      * @param out the output stream to write the frame to
      *
+     * @return the number of bytes the writer wrote to the output stream, excluding the header
+     *
      * @throws IOException if an I/O error occurs
      */
-    public void write(final Frame frame, final OutputStream out) throws IOException {
+    public int write(final Frame frame, final OutputStream out) throws IOException {
         final var flags = new HashSet<>(frame.getFlags());
 
-        final var padded = frame.getType().getFlagPositions().containsKey(FrameFlag.PADDED);
+        final var padded = frame.getType().getFlagPositions().containsKey(FrameFlag.PADDED)
+                                   && frame.getPayloadLength() > 0;
         final int numPadBytes;
         if (padded) {
             flags.add(FrameFlag.PADDED);
@@ -113,7 +116,7 @@ public class FrameWriter {
         out.write(buf);
 
         if (padded) {
-            out.write(numPadBytes & 0xFF);
+            out.write((numPadBytes - 1) & 0xFF);
         }
 
         if (!(frame instanceof EmptyFrame) && length > 0) {
@@ -123,6 +126,8 @@ public class FrameWriter {
         if (padded) {
             out.write(NULL_BYTES, 0, numPadBytes - 1);
         }
+
+        return length;
     }
 
     /**

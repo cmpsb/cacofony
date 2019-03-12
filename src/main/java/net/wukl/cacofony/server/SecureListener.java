@@ -166,6 +166,8 @@ public class SecureListener implements Listener {
                         protocol = this.httpFactory.build(connection);
                         break;
                     case "h2":
+                        client.setSoTimeout(0);
+                        client.setTcpNoDelay(true);
                         protocol = this.http2Factory.build(connection);
                         break;
                     default:

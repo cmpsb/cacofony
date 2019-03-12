@@ -15,6 +15,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocketFactory;
 import java.security.NoSuchAlgorithmException;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * A builder for the Server class.
@@ -94,6 +96,8 @@ public class ServerBuilder {
         this.resolver.implementDefault(TemplatingService.class, DummyTemplatingService.class);
         this.resolver.implementDefault(ExceptionHandler.class, DefaultExceptionHandler.class);
         this.resolver.implementDefault(MimeParser.class, FastMimeParser.class);
+
+        this.resolver.addDefault(ExecutorService.class, Executors.newCachedThreadPool());
 
         this.resolver.addDefaultFactory(MimeDb.class, r -> {
             final MimeDb db = new MimeDb();
