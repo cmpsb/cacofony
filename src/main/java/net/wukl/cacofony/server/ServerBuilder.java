@@ -1,5 +1,6 @@
 package net.wukl.cacofony.server;
 
+import net.wukl.cacodi.Manual;
 import net.wukl.cacofony.exception.DefaultExceptionHandler;
 import net.wukl.cacofony.exception.ExceptionHandler;
 import net.wukl.cacofony.mime.FastMimeParser;
@@ -10,8 +11,12 @@ import net.wukl.cacofony.templating.DummyTemplatingService;
 import net.wukl.cacofony.templating.TemplatingService;
 import net.wukl.cacodi.DependencyResolver;
 
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocketFactory;
+import java.security.NoSuchAlgorithmException;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * A builder for the Server class.
@@ -23,12 +28,6 @@ public class ServerBuilder {
      * The dependency resolver to use.
      */
     private final DependencyResolver resolver;
-
-    /**
-     * The server socket factory.
-     */
-    private SSLServerSocketFactory socketFactory =
-            (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 
     /**
      * The server listener factory.
@@ -52,17 +51,9 @@ public class ServerBuilder {
     /**
      * Creates a new server builder.
      */
+    @Manual
     public ServerBuilder() {
         this(new DependencyResolver());
-    }
-
-    /**
-     * Sets the socket factory.
-     *
-     * @param socketFactory the socket factory
-     */
-    public void setSocketFactory(final SSLServerSocketFactory socketFactory) {
-        this.socketFactory = socketFactory;
     }
 
     /**
@@ -87,14 +78,26 @@ public class ServerBuilder {
             ports.add(new Port(443, true));
         }
 
+        try {
+            this.resolver.addDefault(SSLContext.class, SSLContext.getDefault());
+        } catch (final NoSuchAlgorithmException ex) {
+            throw new RuntimeException(ex);
+        }
+
+        this.resolver.addDefaultFactory(SSLServerSocketFactory.class, r -> {
+            final var context = r.get(SSLContext.class);
+            return context.getServerSocketFactory();
+        });
+
         this.resolver.addDefault(ServerSettings.class, this.settings);
         this.resolver.addDefaultFactory(ServerProperties.class, r -> ServerProperties.load());
-        this.resolver.addDefault(SSLServerSocketFactory.class, this.socketFactory);
         this.resolver.implementDefault(ListenerFactory.class, this.listenerFactory);
 
         this.resolver.implementDefault(TemplatingService.class, DummyTemplatingService.class);
         this.resolver.implementDefault(ExceptionHandler.class, DefaultExceptionHandler.class);
         this.resolver.implementDefault(MimeParser.class, FastMimeParser.class);
+
+        this.resolver.addDefault(ExecutorService.class, Executors.newCachedThreadPool());
 
         this.resolver.addDefaultFactory(MimeDb.class, r -> {
             final MimeDb db = new MimeDb();

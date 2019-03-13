@@ -254,10 +254,16 @@ public class MutableRequest extends Request {
     @Override
     public String getHost() {
         if (this.host == null) {
-            final List<String> values = this.getHeaders("host");
+            final var hostHeader = this.getHeaders("host");
+            final List<String> values;
+            if (hostHeader != null) {
+                values = hostHeader;
+            } else {
+                values = this.getHeaders(":authority");
+            }
 
             if (values == null || values.size() != 1) {
-                throw new BadRequestException("None or multiple Host headers present.");
+                throw new BadRequestException("None or multiple Host/:authority headers present.");
             }
 
             final String hostSpec = values.get(0);
@@ -448,6 +454,17 @@ public class MutableRequest extends Request {
         for (final String key : otherHeaders.keySet()) {
             this.headers.computeIfAbsent(key, k -> new ArrayList<>()).addAll(otherHeaders.get(key));
         }
+    }
+
+    /**
+     * Adopts the headers from another map.
+     *
+     * @param otherHeaders the other headers
+     */
+    public void adoptHeaders(final List<Header> otherHeaders) {
+        otherHeaders.forEach(h -> {
+            this.headers.computeIfAbsent(h.getKey(), k -> new ArrayList<>()).addAll(h.getValues());
+        });
     }
 
     /**

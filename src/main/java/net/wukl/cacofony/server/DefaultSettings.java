@@ -54,4 +54,20 @@ public class DefaultSettings implements ServerSettings {
     public Set<Port> getPorts() {
         return new HashSet<>();
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getMaxConcurrentStreams() {
+        return 128;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isHttp2Enabled() {
+        return false;
+    }
 }

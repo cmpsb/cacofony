@@ -1,12 +1,13 @@
 ---
+http/2: true
 ports:
   - port: 8080
-    secure: false
+    secure: true
 
 hosts:
   localhost:
     controllers:
-      - net.wukl.cacofony.example.localhost
+      - net.wukl.cacofony.example.localhost.controller
     templating:
       factory: net.wukl.cacofony.templating.freemarker.FreeMarkerServiceFactoryFactory
       options:
@@ -33,5 +34,5 @@ hosts:
 
   127.0.0.1:
     controllers:
-      - package: net.wukl.cacofony.example.loopback
+      - package: net.wukl.cacofony.example.loopback.controller
         prefix: /lo

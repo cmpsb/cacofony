@@ -40,4 +40,18 @@ public interface ServerSettings {
      * @return the ports the server should listen on
      */
     Set<Port> getPorts();
+
+    /**
+     * Returns the maximum number of concurrent streams the HTTP/2 server will accept.
+     *
+     * @return the maximum number of concurrent streams
+     */
+    int getMaxConcurrentStreams();
+
+    /**
+     * Returns whether the server is allowed to process HTTP/2 requests.
+     *
+     * @return {@code true} if the server is may process HTTP/2 requests, {@code false} otherwise
+     */
+    boolean isHttp2Enabled();
 }

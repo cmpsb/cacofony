@@ -142,8 +142,8 @@ public class ExampleController extends Controller {
                 out.flush();
                 try {
                     Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    // Do nothing.
+                } catch (final InterruptedException ex) {
+                    break;
                 }
             }
         });

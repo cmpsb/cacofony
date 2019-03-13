@@ -1,5 +1,9 @@
 package net.wukl.cacofony.server;
 
+import net.wukl.cacofony.http2.Http2ProtocolFactory;
+import net.wukl.cacofony.server.protocol.HttpProtocolFactory;
+
+import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -28,15 +32,40 @@ public class DefaultListenerFactory implements ListenerFactory {
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
     /**
-     * Creates a new default listener factory.
-     *
-     * @param factory  the SSL server socket factory
-     * @param handler  the connection handler to direct the listeners to
+     * The factory for HTTP/1 protocol instances.
      */
-    public DefaultListenerFactory(final SSLServerSocketFactory factory,
-                                  final ConnectionHandler handler) {
+    private final HttpProtocolFactory httpProtocolFactory;
+
+    /**
+     * The factory for HTTP/2 protocol instances.
+     */
+    private final Http2ProtocolFactory http2ProtocolFactory;
+
+    /**
+     * The global server settings.
+     */
+    private final ServerSettings settings;
+
+    /**
+     * Creates a new default listener factory.
+     *  @param factory  the SSL server socket factory
+     * @param handler  the connection handler to direct the listeners to
+     * @param httpProtocolFactory  the factory for HTTP protocol instances
+     * @param http2ProtocolFactory the factory for HTTP/2 protocol instances
+     * @param settings the global server settings
+     */
+    public DefaultListenerFactory(
+            final SSLServerSocketFactory factory,
+            final ConnectionHandler handler,
+            final HttpProtocolFactory httpProtocolFactory,
+            final Http2ProtocolFactory http2ProtocolFactory,
+            final ServerSettings settings
+    ) {
         this.factory = factory;
         this.handler = handler;
+        this.httpProtocolFactory = httpProtocolFactory;
+        this.http2ProtocolFactory = http2ProtocolFactory;
+        this.settings = settings;
     }
 
     /**
@@ -67,7 +96,9 @@ public class DefaultListenerFactory implements ListenerFactory {
      */
     private Listener bootInsecure(final Port port) throws IOException {
         final ServerSocket socket = new ServerSocket(port.getPort());
-        return new Listener(socket, this.executor, this.handler, "http");
+        return new InsecureListener(
+                socket, this.executor, this.handler, "http", this.httpProtocolFactory
+        );
     }
 
     /**
@@ -80,7 +111,11 @@ public class DefaultListenerFactory implements ListenerFactory {
      * @throws IOException if an I/O error occurs
      */
     private Listener bootSecure(final Port port) throws IOException {
-        final ServerSocket socket = this.factory.createServerSocket(port.getPort());
-        return new Listener(socket, this.executor, this.handler, "https");
+        final var socket = (SSLServerSocket) this.factory.createServerSocket(port.getPort());
+        return new SecureListener(
+                socket, this.executor, this.handler, "https",
+                this.httpProtocolFactory, this.http2ProtocolFactory,
+                this.settings
+        );
     }
 }

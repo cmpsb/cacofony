@@ -1,5 +1,6 @@
 package net.wukl.cacofony.server;
 
+import net.wukl.cacodi.Manual;
 import net.wukl.cacofony.http.encoding.TransferEncoding;
 
 import java.util.HashSet;
@@ -37,16 +38,36 @@ public class MutableServerSettings implements ServerSettings {
     private final Set<Port> ports = new HashSet<>();
 
     /**
-     * Creates a new set of server settings by copying the defaults.
+     * The maximum number of concurrent streams the HTTP/2 server is willing to accept.
      */
-    public MutableServerSettings() {
-        final ServerSettings defaults = new DefaultSettings();
+    private int maxConcurrentStreams;
 
+    /**
+     * Whether the server is allowed to accept HTTP/2 requests.
+     */
+    private boolean http2Enabled;
+
+    /**
+     * Creates a new set of server settings by copying the other settings object.
+     *
+     * @param defaults the settings to copy
+     */
+    public MutableServerSettings(final ServerSettings defaults) {
         this.compressionEnabled = defaults.isCompressionEnabled();
         this.compressByDefault = defaults.canCompressByDefault();
         this.compressionAlgorithms = new HashSet<>(defaults.getCompressionAlgorithms());
         this.broadcastServerVersion = defaults.mayBroadcastServerVersion();
+        this.ports.addAll(defaults.getPorts());
+        this.maxConcurrentStreams = defaults.getMaxConcurrentStreams();
+        this.http2Enabled = defaults.isHttp2Enabled();
+    }
 
+    /**
+     * Creates a new set of server settings by copying the defaults.
+     */
+    @Manual
+    public MutableServerSettings() {
+        this(new DefaultSettings());
     }
 
     /**
@@ -161,5 +182,43 @@ public class MutableServerSettings implements ServerSettings {
      */
     public void addPort(final Port port) {
         this.ports.add(port);
+    }
+
+    /**
+     * Returns the maximum number of concurrent streams the HTTP/2 server will accept.
+     *
+     * @return the maximum number of concurrent streams
+     */
+    @Override
+    public int getMaxConcurrentStreams() {
+        return this.maxConcurrentStreams;
+    }
+
+    /**
+     * Sets the maximum number of concurrent streams the HTTP/2 server will accept.
+     *
+     * @param max the maximum number of concurrent streams
+     */
+    public void setMaxConcurrentStreams(final int max) {
+        this.maxConcurrentStreams = max;
+    }
+
+    /**
+     * Returns whether the server is allowed to process HTTP/2 requests.
+     *
+     * @return {@code true} if the server is may process HTTP/2 requests, {@code false} otherwise
+     */
+    @Override
+    public boolean isHttp2Enabled() {
+        return this.http2Enabled;
+    }
+
+    /**
+     * Enables or disables HTTP/2.
+     *
+     * @param enabled whether to enable HTTP/2
+     */
+    public void setHttp2Enabled(final boolean enabled) {
+        this.http2Enabled = enabled;
     }
 }
