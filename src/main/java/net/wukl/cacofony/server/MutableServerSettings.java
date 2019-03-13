@@ -43,6 +43,11 @@ public class MutableServerSettings implements ServerSettings {
     private int maxConcurrentStreams;
 
     /**
+     * Whether the server is allowed to accept HTTP/2 requests.
+     */
+    private boolean http2Enabled;
+
+    /**
      * Creates a new set of server settings by copying the other settings object.
      *
      * @param defaults the settings to copy
@@ -54,6 +59,7 @@ public class MutableServerSettings implements ServerSettings {
         this.broadcastServerVersion = defaults.mayBroadcastServerVersion();
         this.ports.addAll(defaults.getPorts());
         this.maxConcurrentStreams = defaults.getMaxConcurrentStreams();
+        this.http2Enabled = defaults.isHttp2Enabled();
     }
 
     /**
@@ -195,5 +201,24 @@ public class MutableServerSettings implements ServerSettings {
      */
     public void setMaxConcurrentStreams(final int max) {
         this.maxConcurrentStreams = max;
+    }
+
+    /**
+     * Returns whether the server is allowed to process HTTP/2 requests.
+     *
+     * @return {@code true} if the server is may process HTTP/2 requests, {@code false} otherwise
+     */
+    @Override
+    public boolean isHttp2Enabled() {
+        return this.http2Enabled;
+    }
+
+    /**
+     * Enables or disables HTTP/2.
+     *
+     * @param enabled whether to enable HTTP/2
+     */
+    public void setHttp2Enabled(final boolean enabled) {
+        this.http2Enabled = enabled;
     }
 }

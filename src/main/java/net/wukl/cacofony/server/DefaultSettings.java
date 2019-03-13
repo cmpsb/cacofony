@@ -60,6 +60,14 @@ public class DefaultSettings implements ServerSettings {
      */
     @Override
     public int getMaxConcurrentStreams() {
-        return 16;
+        return 128;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isHttp2Enabled() {
+        return false;
     }
 }

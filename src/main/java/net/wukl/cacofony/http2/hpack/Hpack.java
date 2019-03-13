@@ -2,6 +2,8 @@ package net.wukl.cacofony.http2.hpack;
 
 import net.wukl.cacofony.http.request.Header;
 import net.wukl.cacofony.http2.hpack.huffman.Huffman;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -20,6 +22,8 @@ import java.util.stream.Collectors;
  * An HPACK (RFC 7541) encoder and decoder.
  */
 public class Hpack {
+    private static final Logger logger = LoggerFactory.getLogger(Hpack.class);
+
     /**
      * The static header table.
      */
@@ -537,15 +541,16 @@ public class Hpack {
 
         long value = 0;
         for (; i < data.length && (data[i] & EXTENSION_CONTINUATION_MASK) != 0; ++i) {
-            value |= (data[i] & ((1 << EXTENDED_INTEGER_BITS) - 1))
-                    << ((i - ii) * EXTENDED_INTEGER_BITS);
+            value |= (data[i] & ~EXTENSION_CONTINUATION_MASK)
+                             << ((i - ii - 1) * EXTENDED_INTEGER_BITS);
         }
 
         if (i >= data.length) {
             throw new HpackDecodingException("Continued integer truncated");
         }
 
-        value |= data[i] << ((i - ii) * EXTENDED_INTEGER_BITS);
+        value |= data[i] << ((i - ii - 1) * EXTENDED_INTEGER_BITS);
+        ++i;
 
         return new ParsedValue<>(value + prefix, i, i - ii);
     }
@@ -762,6 +767,13 @@ public class Hpack {
          * @return the entry or {@code null} if the entry does not exist
          */
         private TableEntry get(final int index) {
+            if (index > this.table.size() + STATIC_TABLE_LENGTH) {
+                throw new HpackDecodingException(
+                        "Table index (" + index + ") outside of table space ("
+                                + this.table.size() + " + " + STATIC_TABLE_LENGTH + ")"
+                );
+            }
+
             return this.table.get(this.table.size() - (index - STATIC_TABLE_LENGTH) - 1);
         }
 

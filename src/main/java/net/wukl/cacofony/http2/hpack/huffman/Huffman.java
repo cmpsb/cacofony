@@ -129,7 +129,7 @@ public class Huffman {
             final var remainder = Byte.SIZE - (b % Byte.SIZE);
 
             // If the bit string ends before a full minimum code can be read, check for EOS.
-            if (b + MIN_CODE_LENGTH >= data.length * Byte.SIZE) {
+            if (b + MIN_CODE_LENGTH > data.length * Byte.SIZE) {
                 seq.bits = data[b / Byte.SIZE] & ((1 << remainder) - 1);
                 if (seq.bits == EOS_CODE.bits >>> (EOS_CODE.length - remainder)) {
                     break;

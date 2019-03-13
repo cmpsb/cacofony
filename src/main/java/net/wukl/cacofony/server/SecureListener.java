@@ -13,6 +13,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -53,6 +55,11 @@ public class SecureListener implements Listener {
     private final Http2ProtocolFactory http2Factory;
 
     /**
+     * The global server settings.
+     */
+    private final ServerSettings settings;
+
+    /**
      * Creates a new listener.
      *
      * @param socket   the socket to listen on
@@ -61,12 +68,14 @@ public class SecureListener implements Listener {
      * @param scheme   the connection scheme this listener handles
      * @param httpProtocolFactory the factory for HTTP/1 protocol instances
      * @param http2ProtocolFactory the factory for HTTP/2 protocol instances
+     * @param settings the global server settings
      */
     public SecureListener(
             final SSLServerSocket socket, final ExecutorService executor,
             final ConnectionHandler handler, final String scheme,
             final HttpProtocolFactory httpProtocolFactory,
-            final Http2ProtocolFactory http2ProtocolFactory
+            final Http2ProtocolFactory http2ProtocolFactory,
+            final ServerSettings settings
     ) {
         this.socket = socket;
         this.executor = executor;
@@ -74,11 +83,16 @@ public class SecureListener implements Listener {
         this.scheme = scheme;
         this.httpFactory = httpProtocolFactory;
         this.http2Factory = http2ProtocolFactory;
+        this.settings = settings;
+
+        final var protocols = new ArrayList<>(List.of("http/1.1", "http/1.0", "http/0.9"));
+        if (this.settings.isHttp2Enabled()) {
+            protocols.add(0, "h2");
+        }
 
         final var socketParams = this.socket.getSSLParameters();
-        socketParams.setApplicationProtocols(
-                new String[] {"h2", "http/1.1", "http/1.0", "http/0.9"}
-        );
+        final var protocolArray = new String[protocols.size()];
+        socketParams.setApplicationProtocols(protocols.toArray(protocolArray));
         this.socket.setSSLParameters(socketParams);
     }
 

@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 
 /**
  * A handler for active connections.
@@ -33,6 +34,8 @@ public class ConnectionHandler {
         } catch (final IOException ex) {
             if (ex.getMessage() != null && ex.getMessage().contains("Connection reset by peer")) {
                 logger.debug("Client closed connection.");
+            } else if (ex instanceof SocketTimeoutException) {
+                logger.debug("Server closed connection.");
             } else {
                 logger.error("I/O exception while serving a client: ", ex);
             }

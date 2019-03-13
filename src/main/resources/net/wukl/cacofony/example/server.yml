@@ -1,4 +1,5 @@
 ---
+http/2: true
 ports:
   - port: 8080
     secure: true
