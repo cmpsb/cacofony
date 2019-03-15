@@ -351,7 +351,7 @@ public class Http2Protocol implements Protocol {
      * @param frame the frame
      */
     private void handlePriority(final Frame frame) {
-        logger.warn("Ignoring priority frame for stream {}", frame.getStreamId());
+        logger.debug("Ignoring priority frame for stream {}", frame.getStreamId());
     }
 
     /**
