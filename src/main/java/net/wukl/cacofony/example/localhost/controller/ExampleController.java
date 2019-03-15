@@ -8,6 +8,8 @@ import net.wukl.cacofony.http.request.Request;
 import net.wukl.cacofony.http.response.StreamedResponse;
 import net.wukl.cacofony.http.response.TextResponse;
 import net.wukl.cacofony.http.response.Response;
+import net.wukl.cacofony.http.response.sse.ServerSentEvent;
+import net.wukl.cacofony.http.response.sse.SseResponse;
 import net.wukl.cacofony.mime.MimeType;
 import net.wukl.cacofony.route.Route;
 import net.wukl.cacofony.util.Ob;
@@ -151,6 +153,38 @@ public class ExampleController extends Controller {
         response.setContentType(MimeType.html());
 
         return response;
+    }
+
+    @Route(path = "/eventstream", types = {"text/event-stream"})
+    public Response sseStream() throws IOException {
+        final var filename = "/net/wukl/cacofony/example/localhost/plumbing.txt";
+
+        return new SseResponse(sse -> {
+            try (var in  = new BufferedReader(
+                    new InputStreamReader(this.getClass().getResourceAsStream(filename))
+            )) {
+                while (true) {
+                    final var line = in.readLine();
+
+                    if (line == null) {
+                        break;
+                    }
+
+                    sse.send(new ServerSentEvent(line));
+
+                    try {
+                        Thread.sleep(2000);
+                    } catch (final InterruptedException ex) {
+                        break;
+                    }
+                }
+            }
+        });
+    }
+
+    @Route(path = "/sse")
+    public Response sse() throws IOException {
+        return this.render("sse.ftlh");
     }
 
     /**
