@@ -77,10 +77,15 @@ public class ControllerLoader {
      * @param pack   the package to inspect for controllers
      */
     public void loadAll(final String prefix, final String pack) {
+        logger.debug("Loading all controllers in {} under prefix \"{}\"", pack, prefix);
+
         Reflections reflections = new Reflections(pack);
         Set<Class<? extends Controller>> controllers = reflections.getSubTypesOf(Controller.class);
 
-        controllers.forEach(c -> this.load(prefix, c));
+        controllers.forEach(c -> {
+            this.load(prefix, c);
+            logger.debug("Loaded controller {}", c.getCanonicalName());
+        });
     }
 
     /**

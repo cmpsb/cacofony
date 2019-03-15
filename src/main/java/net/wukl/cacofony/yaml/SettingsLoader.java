@@ -33,10 +33,12 @@ public class SettingsLoader {
                 this.get(spec, "compress by default", settings.canCompressByDefault());
         final boolean broadcastServerVersion =
                 this.get(spec, "broadcast server version", settings.mayBroadcastServerVersion());
+        final boolean http2Enabled = this.get(spec, "http/2", settings.isHttp2Enabled());
 
         settings.setCompressionEnabled(compressionEnabled);
         settings.setCompressByDefault(compressByDefault);
         settings.setBroadcastServerVersion(broadcastServerVersion);
+        settings.setHttp2Enabled(http2Enabled);
 
         this.setPorts(settings, spec);
         this.setCompressionAlgorithms(settings, spec);

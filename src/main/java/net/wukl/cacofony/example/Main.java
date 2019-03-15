@@ -1,11 +1,10 @@
 package net.wukl.cacofony.example;
 
-import freemarker.template.Configuration;
-import net.wukl.cacofony.server.MutableServerSettings;
-import net.wukl.cacofony.server.Server;
-import net.wukl.cacofony.server.ServerBuilder;
-import net.wukl.cacofony.server.host.HostBuilder;
+import net.wukl.cacodi.DependencyResolver;
+import net.wukl.cacofony.tls.SslContextFactory;
+import net.wukl.cacofony.yaml.YamlLoader;
 
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 
 /**
@@ -29,23 +28,19 @@ public final class Main {
      * @throws IOException if an I/O error occurs
      */
     public static void main(final String[] args) throws IOException {
-        final MutableServerSettings settings = new MutableServerSettings();
-        settings.addInsecurePort(8080);
+        final var resolver = new DependencyResolver();
 
-        final ServerBuilder serverBuilder = new ServerBuilder();
-        serverBuilder.setSettings(settings);
+        final var sslContextFactory = resolver.get(SslContextFactory.class);
+        try (var in = Main.class.getResourceAsStream("keystore.p12")) {
+            final var context = sslContextFactory.fromStream(in, "123456");
+            resolver.add(SSLContext.class, context);
+        }
 
-        final Server server = serverBuilder.build();
-        final HostBuilder localhostBuilder = server.addHost("localhost");
-        localhostBuilder.addControllers("net.cmpsb.cacofony.example.localhost");
+        final var yamlLoader = resolver.get(YamlLoader.class);
 
-        final HostBuilder loopbackBuilder = server.addHost("127.0.0.1");
-        loopbackBuilder.addControllers("net.cmpsb.cacofony.example.loopback");
-
-        final Configuration cfg = new Configuration(Configuration.VERSION_2_3_26);
-        cfg.setClassForTemplateLoading(Main.class, "/net/wukl/cacofony/example");
-        localhostBuilder.withFreeMarker(cfg);
-
+        final var server = yamlLoader.load(
+                Main.class.getResourceAsStream("/net/wukl/cacofony/example/server.yml")
+        );
         server.run();
     }
 }
