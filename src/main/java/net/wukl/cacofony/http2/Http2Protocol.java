@@ -301,10 +301,13 @@ public class Http2Protocol implements Protocol {
             throw new Http2ProtocolError("Unknown or closed stream identifier " + streamId);
         }
 
+        final var bytes = ((DataFrame) frame).getBytes();
         final var out = stream.getRequestPipe().getOut();
-        out.write(((DataFrame) frame).getBytes());
+        out.write(bytes);
 
-        if (frame.getFlags().contains(FrameFlag.END_STREAM)) {
+        stream.addBytesReceived(bytes.length);
+
+        if (frame.getFlags().contains(FrameFlag.END_STREAM) || stream.hasReceivedAllBytes()) {
             out.close();
             this.streams.remove(streamId);
         }
