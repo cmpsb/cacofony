@@ -44,6 +44,16 @@ public class Stream implements AutoCloseable {
     private final List<Future<?>> associatedFutures = new ArrayList<>();
 
     /**
+     * The length of the content the client is willing to send on this stream.
+     */
+    private transient long contentLength = -1;
+
+    /**
+     * The number of bytes received from the client.
+     */
+    private transient long bytesReceived = 0;
+
+    /**
      * Creates a new stream instance.
      *
      * @param id the identifier of the stream this instance represents
@@ -149,6 +159,59 @@ public class Stream implements AutoCloseable {
      */
     public void associateFuture(final Future<?> future) {
         this.associatedFutures.add(future);
+    }
+
+    /**
+     * Sets the number of bytes the client has announced they intend to send to the server
+     * over this stream.
+     *
+     * @param contentLength the number of bytes the client will send
+     */
+    public void setContentLength(final long contentLength) {
+        this.contentLength = contentLength;
+    }
+
+    /**
+     * Returns the number of bytes the client has announced they intend to send to the server
+     * over this stream, or {@code -1} if the client will stream additional data instead.
+     *
+     * @return the number of bytes the client will send or -1
+     */
+    public long getContentLength() {
+        return this.contentLength;
+    }
+
+    /**
+     * Increases the number of bytes currently received on this stream.
+     *
+     * @param bytes the number of bytes to increase the count with
+     */
+    public void addBytesReceived(final long bytes) {
+        this.bytesReceived += bytes;
+    }
+
+    /**
+     * Returns the number of bytes currently received on this stream.
+     *
+     * @return the number of bytes received
+     */
+    public long getBytesReceived() {
+        return this.bytesReceived;
+    }
+
+    /**
+     * Checks whether the stream has received all bytes the client had announced they would send.
+     *
+     * If no content length was announced, this function returns {@code false}.
+     *
+     * @return {@code true} if all bytes have been received, {@code false} otherwise
+     */
+    public boolean hasReceivedAllBytes() {
+        if (this.contentLength == -1) {
+            return false;
+        }
+
+        return this.bytesReceived >= this.contentLength;
     }
 
     /**

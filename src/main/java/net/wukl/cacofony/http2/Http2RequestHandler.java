@@ -81,6 +81,15 @@ public class Http2RequestHandler {
                 request.setRemote(conn.getAddress());
                 request.setBody(stream.getRequestPipe().getIn());
 
+                final var contentLengthStr = request.getHeader("Content-Length");
+                if (contentLengthStr != null) {
+                    final var contentLength = Long.parseLong(contentLengthStr);
+                    stream.setContentLength(contentLength);
+                    if (contentLength == 0) {
+                        stream.getRequestPipe().getOut().close();
+                    }
+                }
+
                 final var host = this.hosts.get(request.getHost());
                 final var response = host.handle(request);
 
